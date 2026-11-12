@@ -286,6 +286,108 @@ body:has(.auth-glass-stage) main.page-shell > .alert {
   border-top: 1px solid #dce7df;
 }
 
+/* =========================================================
+   VISTA 9: PORTAL DE ADMINISTRACIÓN (DOCTORES, HORARIOS, RECEPCIONISTAS)
+   ========================================================= */
+.admin-doctor-cell {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+}
+
+.admin-doctor-cell__photo {
+  width: 2.55rem;
+  height: 2.55rem;
+  flex: 0 0 2.55rem;
+  border: 2px solid var(--clinic-gold);
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 4px 10px rgba(15, 60, 38, 0.14);
+}
+
+.admin-doctor-cell strong {
+  color: #13251b;
+  font-weight: 750;
+}
+
+.admin-cmp-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: .25rem .62rem;
+  border: 1px solid rgba(201, 155, 46, 0.45);
+  border-radius: .5rem;
+  background: var(--clinic-gold-pale);
+  color: #5c4206;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: .78rem;
+  font-weight: 800;
+}
+
+.admin-state-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: .26rem .72rem;
+  border: 1px solid #b5dec4;
+  border-radius: 999px;
+  background: #e7f6ec;
+  color: #155936;
+  font-size: .74rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.admin-state-pill[data-state="INACTIVO"],
+.admin-state-pill[data-state="RESERVADO"] {
+  border-color: #e8d9af;
+  background: #fff8e6;
+  color: #7a580a;
+}
+
+.admin-schedule-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: .95rem;
+  margin-bottom: 1.2rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid rgba(201, 155, 46, 0.48);
+  border-left: 5px solid var(--clinic-gold);
+  border-radius: .95rem;
+  background: linear-gradient(125deg, #fdf8eb 0%, #ffffff 100%);
+  box-shadow: 0 8px 20px rgba(201, 155, 46, 0.08);
+}
+
+.admin-schedule-banner__icon {
+  display: grid;
+  width: 2.3rem;
+  height: 2.3rem;
+  flex: 0 0 2.3rem;
+  place-items: center;
+  border-radius: .65rem;
+  background: rgba(201, 155, 46, 0.2);
+  font-size: 1.15rem;
+}
+
+.admin-schedule-banner strong {
+  display: block;
+  color: #4f3905;
+  font-size: .88rem;
+  font-weight: 800;
+}
+
+.admin-schedule-banner span {
+  display: block;
+  margin-top: .18rem;
+  color: #5e4b1c;
+  font-size: .82rem;
+}
+
+.staff-workspace .alert-danger {
+  border-left: 5px solid #9e2a2b;
+  font-weight: 700;
+  box-shadow: 0 8px 22px rgba(158, 42, 43, 0.1);
+}
+
 /* Animaciones suaves de entrada */
 .login-page,
 .registration-layout,

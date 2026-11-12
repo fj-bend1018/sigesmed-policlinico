@@ -15,8 +15,8 @@
       </div>
       <div class="workspace-hero-pill workspace-hero-pill--gold">
         <div>
-          <strong>Sede La Esperanza</strong>
-          <span>Trujillo · Atención presencial</span>
+          <strong>San Gregorio, Ate</strong>
+          <span>Lima · Atención presencial</span>
         </div>
       </div>
     </div>
@@ -183,12 +183,38 @@
         </ng-container>
 
         <ng-container *ngSwitchCase="'doctors'">
+          <div class="staff-kpi-strip" aria-label="Resumen de médicos">
+            <div class="staff-kpi-card">
+              <span class="staff-kpi-card__label">Staff médico registrado</span>
+              <strong class="staff-kpi-card__value">{{ doctors.length }}</strong>
+              <span class="staff-kpi-card__hint">Profesionales en el directorio</span>
+            </div>
+            <div class="staff-kpi-card staff-kpi-card--gold">
+              <span class="staff-kpi-card__label">Médicos activos</span>
+              <strong class="staff-kpi-card__value">{{ activeDoctors.length }}</strong>
+              <span class="staff-kpi-card__hint">Habilitados para programación</span>
+            </div>
+            <div class="staff-kpi-card">
+              <span class="staff-kpi-card__label">Especialidades oficiales</span>
+              <strong class="staff-kpi-card__value">6</strong>
+              <span class="staff-kpi-card__hint">Cobertura integral del policlínico</span>
+            </div>
+          </div>
+
           <div class="workspace-toolbar"><span class="workspace-toolbar__label">Directorio de médicos</span>
             <a class="btn btn-primary" routerLink="/administrador/doctores/nuevo">Agregar doctor</a></div>
           <div class="workspace-table-wrap" *ngIf="!loading && doctors.length">
             <table class="workspace-table"><thead><tr><th>Nombre</th><th>CMP</th><th>Especialidades</th><th>Estado</th><th>Acciones</th></tr></thead>
-              <tbody><tr *ngFor="let doctor of doctors">
-                <td>{{ doctor.nombre }}</td><td>{{ doctor.cmp }}</td><td>{{ doctor.especialidades.join(', ') }}</td><td>{{ doctor.estado }}</td>
+              <tbody><tr *ngFor="let doctor of doctors; let idx = index">
+                <td>
+                  <div class="admin-doctor-cell">
+                    <img class="admin-doctor-cell__photo" [src]="idx % 2 === 0 ? 'assets/rediseno/spec-pediatria.jpg' : 'assets/rediseno/doc-male.jpg'" alt="">
+                    <strong>{{ doctor.nombre }}</strong>
+                  </div>
+                </td>
+                <td><span class="admin-cmp-badge">{{ doctor.cmp }}</span></td>
+                <td><span class="staff-specialty-pill">{{ doctor.especialidades.join(', ') }}</span></td>
+                <td><span class="admin-state-pill" [attr.data-state]="doctor.estado">{{ doctor.estado }}</span></td>
                 <td><div class="workspace-actions"><a class="btn btn-sm btn-outline-primary" [routerLink]="['/administrador/doctores', doctor.id, 'editar']">Editar</a>
                   <button class="btn btn-sm btn-outline-secondary" type="button" (click)="toggleDoctor(doctor)">{{ doctor.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}</button></div></td>
               </tr></tbody>
@@ -227,12 +253,20 @@
         </form></ng-container>
 
         <ng-container *ngSwitchCase="'schedules'">
+          <div class="admin-schedule-banner" role="note">
+            <span class="admin-schedule-banner__icon" aria-hidden="true">🛡️</span>
+            <div>
+              <strong>Protección de agenda activa (Regla 409)</strong>
+              <span>Los horarios que ya cuentan con citas reservadas no pueden ser eliminados para resguardar la atención del paciente.</span>
+            </div>
+          </div>
+
           <div class="workspace-toolbar"><span class="workspace-toolbar__label">Horarios de atención · próximos 30 días</span>
             <a class="btn btn-primary" routerLink="/administrador/horarios/nuevo">Agregar horario</a></div>
           <div class="workspace-table-wrap" *ngIf="!loading && schedules.length">
             <table class="workspace-table"><thead><tr><th>Fecha</th><th>Hora</th><th>Médico o servicio</th><th>Estado</th><th>Acciones</th></tr></thead>
-              <tbody><tr *ngFor="let schedule of schedules"><td>{{ schedule.fecha | date:'d MMM y' }}</td><td>{{ schedule.hora.slice(0, 5) }}</td>
-                <td>{{ schedule.doctor || schedule.servicio || '—' }}</td><td>{{ schedule.estado }}</td><td><div class="workspace-actions">
+              <tbody><tr *ngFor="let schedule of schedules"><td>{{ schedule.fecha | date:'d MMM y' }}</td><td><span class="staff-datetime-chip">{{ schedule.hora.slice(0, 5) }}</span></td>
+                <td><strong>{{ schedule.doctor || schedule.servicio || '—' }}</strong></td><td><span class="admin-state-pill" [attr.data-state]="schedule.estado">{{ schedule.estado }}</span></td><td><div class="workspace-actions">
                   <a *ngIf="schedule.disponible" class="btn btn-sm btn-outline-primary" [routerLink]="['/administrador/horarios', schedule.id, 'editar']">Editar</a>
                   <button class="btn btn-sm btn-outline-danger" type="button" (click)="deleteSchedule(schedule)">Eliminar</button>
                   <span *ngIf="!schedule.disponible" class="badge text-bg-warning ms-1">Reservado</span>
@@ -288,12 +322,36 @@
         </form></ng-container>
 
         <ng-container *ngSwitchCase="'receptionists'">
+          <div class="staff-kpi-strip" aria-label="Resumen de recepción">
+            <div class="staff-kpi-card">
+              <span class="staff-kpi-card__label">Personal registrado</span>
+              <strong class="staff-kpi-card__value">{{ receptionists.length }}</strong>
+              <span class="staff-kpi-card__hint">Cuentas operativas de recepción</span>
+            </div>
+            <div class="staff-kpi-card staff-kpi-card--gold">
+              <span class="staff-kpi-card__label">Rol asignado</span>
+              <strong class="staff-kpi-card__value">RECEPCIONISTA</strong>
+              <span class="staff-kpi-card__hint">Control de citas y asistencia</span>
+            </div>
+            <div class="staff-kpi-card">
+              <span class="staff-kpi-card__label">Política de seguridad</span>
+              <strong class="staff-kpi-card__value">Mín. 12 caracteres</strong>
+              <span class="staff-kpi-card__hint">DNI de 8 dígitos · Celular de 9</span>
+            </div>
+          </div>
+
           <div class="workspace-toolbar"><span class="workspace-toolbar__label">Personal de recepción</span>
             <a class="btn btn-primary" routerLink="/administrador/recepcionistas/nuevo">Agregar recepcionista</a></div>
           <div class="workspace-table-wrap" *ngIf="!loading && receptionists.length">
             <table class="workspace-table"><thead><tr><th>Nombre</th><th>DNI</th><th>Correo</th><th>Estado</th><th>Acciones</th></tr></thead>
-              <tbody><tr *ngFor="let person of receptionists"><td>{{ person.nombre }} {{ person.apellidoPaterno }} {{ person.apellidoMaterno }}</td>
-                <td>{{ person.dni }}</td><td>{{ person.correo }}</td><td>{{ person.estado }}</td><td><div class="workspace-actions">
+              <tbody><tr *ngFor="let person of receptionists">
+                <td>
+                  <div class="staff-patient-cell">
+                    <span class="staff-patient-cell__avatar" aria-hidden="true">{{ (person.nombre || 'R').slice(0, 1) }}</span>
+                    <strong>{{ person.nombre }} {{ person.apellidoPaterno }} {{ person.apellidoMaterno }}</strong>
+                  </div>
+                </td>
+                <td><span class="admin-cmp-badge">{{ person.dni }}</span></td><td>{{ person.correo }}</td><td><span class="admin-state-pill" [attr.data-state]="person.estado">{{ person.estado }}</span></td><td><div class="workspace-actions">
                   <a class="btn btn-sm btn-outline-primary" [routerLink]="['/administrador/recepcionistas', person.id, 'editar']">Editar</a>
                   <button class="btn btn-sm btn-outline-secondary" type="button" (click)="toggleReceptionist(person)">{{ person.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}</button>
                 </div></td></tr></tbody>

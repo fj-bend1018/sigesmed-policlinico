@@ -8,7 +8,7 @@
            class="home-hero__image scene-photo"
            [ngClass]="slide.imageClass"
            [class.is-active]="activeHeroSlide === index"
-           [style.background-image]="'url(' + slide.imageUrl + ')'"></div>
+           [style.background-image]="'url(' + $any(slide).imageUrl + ')'"></div>
     </div>
     <div class="home-hero__shade" aria-hidden="true"></div>
     <div class="home-hero__glow" aria-hidden="true"></div>
@@ -63,11 +63,11 @@
                 class="deck-slide"
                 [class.is-active]="activeHeroSlide === index"
                 (click)="showHeroSlide(index)">
-          <img class="deck-thumb" [src]="slide.imageUrl" [alt]="slide.deckTitle">
+          <img class="deck-thumb" [src]="$any(slide).imageUrl" [alt]="$any(slide).deckTitle">
           <div class="deck-info">
-            <small>{{ slide.deckCategory }}</small>
-            <strong>{{ slide.deckTitle }}</strong>
-            <span>{{ slide.deckSubtitle }}</span>
+            <small>{{ $any(slide).deckCategory }}</small>
+            <strong>{{ $any(slide).deckTitle }}</strong>
+            <span>{{ $any(slide).deckSubtitle }}</span>
           </div>
           <span class="deck-num" aria-hidden="true">{{ slide.number }}</span>
         </button>
@@ -112,10 +112,10 @@
       <div class="service-grid" aria-label="Especialidades">
         <article class="service-card" *ngFor="let specialty of specialties">
           <div class="service-card__photo scene-photo" [ngClass]="specialty.imageClass">
-            <img [src]="specialty.imageUrl" [alt]="specialty.name" loading="lazy">
+            <img [src]="$any(specialty).imageUrl" [alt]="specialty.name" loading="lazy">
             <div class="service-card__photo-overlay" aria-hidden="true"></div>
-            <span class="service-card__badge">{{ specialty.code }}</span>
-            <span class="service-card__schedule">{{ specialty.schedule }}</span>
+            <span class="service-card__badge">{{ $any(specialty).code }}</span>
+            <span class="service-card__schedule">{{ $any(specialty).schedule }}</span>
           </div>
           <div class="service-card__body">
             <h3>{{ specialty.name }}</h3>
@@ -140,10 +140,10 @@
         <div class="complementary-grid">
           <article class="service-card service-card--complementary" *ngFor="let service of complementaryServices">
             <div class="service-card__photo scene-photo" [ngClass]="service.imageClass">
-              <img [src]="service.imageUrl" [alt]="service.name" loading="lazy">
+              <img [src]="$any(service).imageUrl" [alt]="service.name" loading="lazy">
             </div>
             <div class="service-card__body">
-              <span class="service-card__sub-badge">{{ service.badge }}</span>
+              <span class="service-card__sub-badge">{{ $any(service).badge }}</span>
               <h3>{{ service.name }}</h3>
               <p>{{ service.description }}</p>
               <a class="service-card__link" routerLink="/login">Ver servicio <span aria-hidden="true">→</span></a>

@@ -2,6 +2,35 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+export interface HeroSlideItem {
+  readonly number: string;
+  readonly tag: string;
+  readonly deckCategory: string;
+  readonly deckTitle: string;
+  readonly deckSubtitle: string;
+  readonly title: string;
+  readonly description: string;
+  readonly imageUrl: string;
+  readonly imageClass: string;
+}
+
+export interface SpecialtyItem {
+  readonly code: string;
+  readonly name: string;
+  readonly schedule: string;
+  readonly description: string;
+  readonly imageUrl: string;
+  readonly imageClass: string;
+}
+
+export interface ComplementaryServiceItem {
+  readonly badge: string;
+  readonly name: string;
+  readonly description: string;
+  readonly imageUrl: string;
+  readonly imageClass: string;
+}
+
 @Component({
   standalone: true,
   selector: 'app-home',
@@ -9,7 +38,7 @@ import { RouterLink } from '@angular/router';
   templateUrl: './home.component.html'
 })
 export class HomeComponent implements OnInit, OnDestroy {
-  readonly heroSlides = [
+  readonly heroSlides: readonly HeroSlideItem[] = [
     {
       number: '01',
       tag: 'Policlínico Infantil · Obra Social de la Diócesis de Chosica',
@@ -43,9 +72,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       imageUrl: '/assets/rediseno/spec-familiar.jpg',
       imageClass: 'hero-scene--three'
     }
-  ] as const;
+  ];
 
-  readonly specialties = [
+  readonly specialties: readonly SpecialtyItem[] = [
     {
       code: '01 · INFANCIA',
       name: 'Pediatría general',
@@ -94,9 +123,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       imageUrl: '/assets/rediseno/spec-otorrino.jpg',
       imageClass: 'photo-ent'
     }
-  ] as const;
+  ];
 
-  readonly complementaryServices = [
+  readonly complementaryServices: readonly ComplementaryServiceItem[] = [
     {
       badge: 'SERVICIO COMPLEMENTARIO 01',
       name: 'Laboratorio clínico',
@@ -111,7 +140,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       imageUrl: '/assets/rediseno/diag-ecografia.jpg',
       imageClass: 'photo-ultrasound'
     }
-  ] as const;
+  ];
 
   activeHeroSlide = 0;
   private autoAdvanceTimer?: number;
