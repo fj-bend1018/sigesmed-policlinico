@@ -131,6 +131,53 @@ class AuthServiceTest {
         assertNotEquals(rawTokenCaptor.getValue(), tokenHash);
     }
 
+    @Test
+    void registrarPaciente_rechazaDniDuplicado() {
+        com.sigesmed.api.dto.auth.RegistroPacienteRequest request = new com.sigesmed.api.dto.auth.RegistroPacienteRequest(
+                "Juan", "Perez", "Gomez", "12345678", java.time.LocalDate.of(1995, 5, 20),
+                "juan@example.test", "ClaveValida123!");
+        when(usuarios.existsByDni("12345678")).thenReturn(true);
+
+        ApiException ex = assertThrows(ApiException.class, () -> service.registrarPaciente(request));
+        assertEquals(HttpStatus.CONFLICT, ex.getStatus());
+        assertEquals("DNI duplicado", ex.getMessage());
+        verify(usuarios, never()).save(any());
+    }
+
+    @Test
+    void registrarPaciente_rechazaCorreoDuplicado() {
+        com.sigesmed.api.dto.auth.RegistroPacienteRequest request = new com.sigesmed.api.dto.auth.RegistroPacienteRequest(
+                "Juan", "Perez", "Gomez", "87654321", java.time.LocalDate.of(1995, 5, 20),
+                "existente@example.test", "ClaveValida123!");
+        when(usuarios.existsByDni("87654321")).thenReturn(false);
+        when(pacientes.existsByDni("87654321")).thenReturn(false);
+        when(usuarios.findByIdentifier("existente@example.test")).thenReturn(List.of(user(10L, 0)));
+
+        ApiException ex = assertThrows(ApiException.class, () -> service.registrarPaciente(request));
+        assertEquals(HttpStatus.CONFLICT, ex.getStatus());
+        assertEquals("El correo ya está asociado a otra cuenta", ex.getMessage());
+        verify(usuarios, never()).save(any());
+    }
+
+    @Test
+    void registrarPaciente_exitoso() {
+        com.sigesmed.api.dto.auth.RegistroPacienteRequest request = new com.sigesmed.api.dto.auth.RegistroPacienteRequest(
+                "Nuevo", "Paciente", "Prueba", "88889999", java.time.LocalDate.of(1998, 3, 15),
+                "nuevo@example.test", "ClaveValida123!");
+        when(usuarios.existsByDni("88889999")).thenReturn(false);
+        when(pacientes.existsByDni("88889999")).thenReturn(false);
+        when(usuarios.findByIdentifier("nuevo@example.test")).thenReturn(List.of());
+        when(encoder.encode("ClaveValida123!")).thenReturn("hashBcrypt");
+        when(usuarios.save(any(Usuario.class))).thenAnswer(i -> i.getArgument(0));
+        when(pacientes.save(any(com.sigesmed.api.domain.entity.Paciente.class))).thenAnswer(i -> i.getArgument(0));
+
+        com.sigesmed.api.domain.entity.Paciente result = service.registrarPaciente(request);
+        assertEquals("88889999", result.getDni());
+        assertEquals("nuevo@example.test", result.getCorreo());
+        verify(usuarios).save(any());
+        verify(pacientes).save(any());
+    }
+
     private Usuario user(Long id, int attempts) {
         Usuario user = new Usuario("12345678", "hash", RolUsuario.PACIENTE);
         ReflectionTestUtils.setField(user, "id", id);

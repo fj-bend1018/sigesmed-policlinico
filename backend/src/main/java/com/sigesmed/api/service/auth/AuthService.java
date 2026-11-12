@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.Base64;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -56,14 +57,19 @@ public class AuthService {
 
     @Transactional
     public Paciente registrarPaciente(RegistroPacienteRequest request) {
-        if (usuarioRepository.existsByDni(request.dni()) || pacienteRepository.existsByDni(request.dni())) {
+        String dni = request.dni().trim();
+        String correo = request.correo().trim().toLowerCase(Locale.ROOT);
+        if (usuarioRepository.existsByDni(dni) || pacienteRepository.existsByDni(dni)) {
             throw new ApiException(HttpStatus.CONFLICT, "DNI duplicado");
         }
+        if (!usuarioRepository.findByIdentifier(correo).isEmpty()) {
+            throw new ApiException(HttpStatus.CONFLICT, "El correo ya está asociado a otra cuenta");
+        }
         Usuario usuario = usuarioRepository.save(new Usuario(
-                request.dni(), passwordEncoder.encode(request.clave()), RolUsuario.PACIENTE));
+                dni, passwordEncoder.encode(request.clave()), RolUsuario.PACIENTE));
         return pacienteRepository.save(new Paciente(usuario, request.nombre().trim(),
                 request.apellidoPaterno().trim(), blankToNull(request.apellidoMaterno()),
-                request.dni(), request.fechaNacimiento(), request.correo().trim().toLowerCase()));
+                dni, request.fechaNacimiento(), correo));
     }
 
     @Transactional(noRollbackFor = ApiException.class)
