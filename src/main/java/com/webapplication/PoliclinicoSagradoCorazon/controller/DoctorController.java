@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import org.springframework.web.bind.annotation.RequestMapping;
+
 import com.webapplication.PoliclinicoSagradoCorazon.dto.DoctorDTO;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Especialidad;
 import com.webapplication.PoliclinicoSagradoCorazon.service.DoctorService;
@@ -18,15 +20,18 @@ import com.webapplication.PoliclinicoSagradoCorazon.service.EspecialidadService;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
+@RequestMapping("/administrador/doctor")
 public class DoctorController {
 
-    @Autowired
-    private DoctorService doctorService;
+    private final DoctorService doctorService;
+    private final EspecialidadService especialidadService;
 
-    @Autowired
-    private EspecialidadService especialidadService;
+    public DoctorController(DoctorService doctorService, EspecialidadService especialidadService) {
+        this.doctorService = doctorService;
+        this.especialidadService = especialidadService;
+    }
 
-    @GetMapping("/administrador/doctor/nuevo")
+    @GetMapping("/nuevo")
     public String mostrarFormularioNuevoDoctor(Model model,HttpSession session) {
 
         List<Especialidad> listaEspecialidades = especialidadService.listarTodas();
@@ -39,7 +44,7 @@ public class DoctorController {
         return "redirect:/portalAdministrador?contenido=administrador-dashboard/formularioDoctor";
     }
 
-    @GetMapping("/administrador/doctor/modificar")
+    @GetMapping("/modificar")
     public String mostrarFormularioModificar(@RequestParam("doctorSeleccionado") int id, Model model,
             HttpSession session) {
 
@@ -54,21 +59,21 @@ public class DoctorController {
         return "redirect:/portalAdministrador?contenido=administrador-dashboard/formularioDoctor";
     }
 
-    @GetMapping("/administrador/doctor/activar")
+    @GetMapping("/activar")
     public String mostrarActivado(@RequestParam("doctorSeleccionado") int id, Model model) {
 
         doctorService.cambiarActivado(id);
         return "redirect:/portalAdministrador?contenido=administrador-dashboard/doctores";
     }
 
-    @GetMapping("/administrador/doctor/desactivar")
+    @GetMapping("/desactivar")
     public String mostrarDesactivado(@RequestParam("doctorSeleccionado") int id, Model model) {
 
         doctorService.cambiarDesactivado(id);
         return "redirect:/portalAdministrador?contenido=administrador-dashboard/doctores";
     }
 
-    @PostMapping("/administrador/doctor/guardar")
+    @PostMapping("/guardar")
     public String guardarDoctor(@ModelAttribute("doctor") DoctorDTO doctor) {
         if (doctor.getId() == 0) {
             doctorService.insertar(doctor);
@@ -79,8 +84,8 @@ public class DoctorController {
     }
 
     /*
-     * METODO ES REVISION, RECORDAR QUE SI SE ELIMINAR SE ELIMINARIA TODOS LOS
-     * HROARIOS Y CITAS QUE TIENEN VINCULADO, MEJOR OPCION PONER ESTADO INACTIVO
+     * Metodo en revision: recordar que si se eliminara se eliminarian todos los
+     * horarios y citas vinculados; mejor opcion es cambiar estado a INACTIVO.
      * 
      * @GetMapping("/administrador/doctor/eliminar")
      * public String eliminarDoctor(@RequestParam("doctorSeleccionado") int id) {

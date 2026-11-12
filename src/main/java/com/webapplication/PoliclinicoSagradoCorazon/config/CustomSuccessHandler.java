@@ -23,12 +23,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomSuccessHandler implements AuthenticationSuccessHandler {
 
-    @Autowired
-    private PacienteService pacienteService;
-    @Autowired
-    private RecepcionistaService recepcionistaService;
-    @Autowired
-    private AdministradorService administradorService;
+    private final PacienteService pacienteService;
+    private final RecepcionistaService recepcionistaService;
+    private final AdministradorService administradorService;
+
+    public CustomSuccessHandler(PacienteService pacienteService,
+                                RecepcionistaService recepcionistaService,
+                                AdministradorService administradorService) {
+        this.pacienteService = pacienteService;
+        this.recepcionistaService = recepcionistaService;
+        this.administradorService = administradorService;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,

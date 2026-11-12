@@ -141,8 +141,8 @@ public class DoctorDAO {
     }
 
     /*
-     * METODO ES REVISION, RECORDAR QUE SI SE ELIMINAR SE ELIMINARIA TODOS LOS
-     * HROARIOS Y CITAS QUE TIENEN VINCULADO, MEJOR OPCION PONER ESTADO INACTIVO
+     * Metodo en revision: recordar que si se eliminara se eliminarian todos los
+     * horarios y citas vinculados; mejor opcion es cambiar estado a INACTIVO.
      * public void eliminar(int id){
      * String sql = "DELETE FROM doctor WHERE id = ?";
      * jdbc.update(sql, id);

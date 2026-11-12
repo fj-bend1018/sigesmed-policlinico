@@ -27,20 +27,23 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class PagoController {
 
-    @Autowired
-    private CitaService citaService;
+    private final CitaService citaService;
+    private final PacienteService pacienteService;
+    private final HorarioService horarioService;
+    private final DoctorService doctorService;
+    private final EmailService emailService;
 
-    @Autowired
-    private PacienteService pacienteService;
-
-    @Autowired
-    private HorarioService horarioService;
-
-    @Autowired
-    private DoctorService doctorService;
-
-    @Autowired
-    private EmailService emailService;
+    public PagoController(CitaService citaService,
+                          PacienteService pacienteService,
+                          HorarioService horarioService,
+                          DoctorService doctorService,
+                          EmailService emailService) {
+        this.citaService = citaService;
+        this.pacienteService = pacienteService;
+        this.horarioService = horarioService;
+        this.doctorService = doctorService;
+        this.emailService = emailService;
+    }
 
     @PostMapping("/procesar-pago")
 public String procesarPago(

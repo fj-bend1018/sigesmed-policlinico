@@ -12,8 +12,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 public class SeguridadConfig {
 
-    @Autowired
-    private CustomSuccessHandler customSuccessHandler;
+    private final CustomSuccessHandler customSuccessHandler;
+
+    public SeguridadConfig(CustomSuccessHandler customSuccessHandler) {
+        this.customSuccessHandler = customSuccessHandler;
+    }
 
     /*
      * @Bean

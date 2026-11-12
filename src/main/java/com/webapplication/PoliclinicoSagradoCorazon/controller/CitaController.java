@@ -27,17 +27,20 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 public class CitaController {
 
-    @Autowired
-    private CitaService citaService;
+    private final CitaService citaService;
+    private final PacienteService pacienteService;
+    private final HorarioService horarioService;
+    private final DoctorService doctorService;
 
-    @Autowired
-    private PacienteService pacienteService;
-
-    @Autowired
-    private HorarioService horarioService;
-
-    @Autowired
-    private DoctorService doctorService;
+    public CitaController(CitaService citaService,
+                          PacienteService pacienteService,
+                          HorarioService horarioService,
+                          DoctorService doctorService) {
+        this.citaService = citaService;
+        this.pacienteService = pacienteService;
+        this.horarioService = horarioService;
+        this.doctorService = doctorService;
+    }
 
     @PostMapping("/confirmar-cita")
     public String confirmarCita() {
