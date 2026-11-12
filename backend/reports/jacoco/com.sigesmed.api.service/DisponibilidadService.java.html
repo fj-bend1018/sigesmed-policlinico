@@ -52,8 +52,8 @@ public class DisponibilidadService {
     public DisponibilidadService(EspecialidadRepository especialidadRepository,
             DoctorRepository doctorRepository, HorarioRepository horarioRepository,
             CitaRepository citaRepository, Clock clock) {
-<span class="fc" id="L55">        this(especialidadRepository, doctorRepository, horarioRepository, citaRepository, null, clock);</span>
-<span class="fc" id="L56">    }</span>
+<span class="nc" id="L55">        this(especialidadRepository, doctorRepository, horarioRepository, citaRepository, null, clock);</span>
+<span class="nc" id="L56">    }</span>
 
     @Transactional(readOnly = true)
     public List&lt;EspecialidadResponse&gt; especialidades() {

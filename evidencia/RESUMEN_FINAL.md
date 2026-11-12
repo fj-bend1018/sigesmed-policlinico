@@ -37,10 +37,10 @@ El reporte HTML de cobertura se regeneró exitosamente en [backend/reports/jacoc
 
 | Métrica JaCoCo | Cubierto | Total Analizado | Porcentaje |
 | :--- | :---: | :---: | :---: |
-| **Instrucciones (C0)** | 4,091 | 5,924 | **69%** |
-| **Ramas (Branches / C1)** | 220 | 411 | **53%** |
-| **Líneas de Código** | 751 | 1,049 | **72%** (71.6%) |
-| **Clases Analizadas** | 52 | 65 | **80%** |
+| **Instrucciones (C0)** | 4,061 | 5,924 | **68.5%** (68% en tabla JaCoCo) |
+| **Ramas (Branches / C1)** | 220 | 411 | **53.5%** (53% en tabla JaCoCo) |
+| **Líneas de Código** | 745 | 1,049 | **71.0%** (71% en tabla JaCoCo) |
+| **Clases Analizadas** | 52 | 65 | **80.0%** (80% en tabla JaCoCo) |
 
 *Aspectos destacados de cobertura:*
 - Capa de enumeraciones y modelos de dominio: **100% de cobertura**.

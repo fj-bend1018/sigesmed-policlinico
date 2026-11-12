@@ -50,8 +50,8 @@ public class CitaService {
 
     public CitaService(PacienteRepository pacienteRepository, HorarioRepository horarioRepository,
             CitaRepository citaRepository, EspecialidadRepository especialidadRepository, Clock clock) {
-<span class="fc" id="L53">        this(pacienteRepository, horarioRepository, citaRepository, especialidadRepository, null, clock);</span>
-<span class="fc" id="L54">    }</span>
+<span class="nc" id="L53">        this(pacienteRepository, horarioRepository, citaRepository, especialidadRepository, null, clock);</span>
+<span class="nc" id="L54">    }</span>
 
     @Transactional
     public CitaResponse reservar(Long usuarioId, Long horarioId, Long especialidadId) {

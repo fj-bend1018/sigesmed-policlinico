@@ -74,9 +74,9 @@ public class AdministracionService {
             HorarioRepository horarioRepository, CitaRepository citaRepository,
             RecepcionistaRepository recepcionistaRepository, UsuarioRepository usuarioRepository,
             PasswordEncoder passwordEncoder, Clock clock) {
-<span class="fc" id="L77">        this(doctorRepository, especialidadRepository, horarioRepository, citaRepository, recepcionistaRepository,</span>
+<span class="nc" id="L77">        this(doctorRepository, especialidadRepository, horarioRepository, citaRepository, recepcionistaRepository,</span>
                 usuarioRepository, null, passwordEncoder, clock);
-<span class="fc" id="L79">    }</span>
+<span class="nc" id="L79">    }</span>
 
     @Transactional(readOnly = true)
     public List&lt;DoctorAdminResponse&gt; listarDoctores() {

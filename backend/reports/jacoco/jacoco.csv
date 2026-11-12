@@ -15,9 +15,9 @@ sigesmed-api,com.sigesmed.api,SigesmedApiApplication,5,3,0,0,2,1,1,1,1,1
 sigesmed-api,com.sigesmed.api.security,UsuarioPrincipal,46,0,0,0,15,0,11,0,11,0
 sigesmed-api,com.sigesmed.api.service,CuentaService,0,240,1,19,0,47,1,16,0,7
 sigesmed-api,com.sigesmed.api.service,CitaManagementService,137,606,36,54,18,104,40,40,8,26
-sigesmed-api,com.sigesmed.api.service,AdministracionService,221,807,29,59,28,139,28,58,6,36
-sigesmed-api,com.sigesmed.api.service,CitaService,19,302,9,31,1,57,9,24,1,12
-sigesmed-api,com.sigesmed.api.service,DisponibilidadService,12,305,4,18,0,51,3,27,0,19
+sigesmed-api,com.sigesmed.api.service,AdministracionService,233,795,29,59,30,137,29,57,7,35
+sigesmed-api,com.sigesmed.api.service,CitaService,28,293,9,31,3,55,10,23,2,11
+sigesmed-api,com.sigesmed.api.service,DisponibilidadService,21,296,4,18,2,49,4,26,1,18
 sigesmed-api,com.sigesmed.api.domain.entity,Horario,26,92,0,0,10,20,2,12,2,12
 sigesmed-api,com.sigesmed.api.domain.entity,HorarioRegla,3,3,0,0,1,1,1,1,1,1
 sigesmed-api,com.sigesmed.api.domain.entity,Recepcionista,3,85,0,0,1,24,1,14,1,14
