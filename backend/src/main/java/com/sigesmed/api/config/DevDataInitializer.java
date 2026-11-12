@@ -76,10 +76,22 @@ public class DevDataInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         seedDemoAccountsIfConfigured();
 
-        List<String> names = List.of("Pediatría", "Medicina General", "Odontología",
-                "Medicina Interna", "Traumatología");
-        List<String> doctorNames = List.of("Dra. Ana Demo", "Dr. Luis Demo", "Dra. María Demo",
-                "Dr. Carlos Demo", "Dra. Elena Demo");
+        List<String> names = List.of(
+                "Pediatría general",
+                "Medicina familiar",
+                "Nutrición",
+                "Psicología infantil",
+                "Odontología pediátrica",
+                "Otorrinolaringología"
+        );
+        List<String> doctorNames = List.of(
+                "Dra. Ana Demo",
+                "Dr. Luis Demo",
+                "Dra. María Demo",
+                "Dr. Carlos Demo",
+                "Dra. Elena Demo",
+                "Dr. Roberto Demo"
+        );
         List<Especialidad> specialties = names.stream().map(this::asegurarEspecialidad).toList();
         List<Doctor> doctors = new ArrayList<>();
         for (int i = 0; i < specialties.size(); i++) {
@@ -91,12 +103,22 @@ public class DevDataInitializer implements ApplicationRunner {
             doctors.add(doctorRepository.save(doctor));
         }
 
-        especialidadRepository.findByNombreIgnoreCase("Cardiología").ifPresent(oldSpecialty -> {
-            if (!doctorRepository.existsByEspecialidades_Id(oldSpecialty.getId())
-                    && !citaRepository.existsByEspecialidad_Id(oldSpecialty.getId())) {
-                especialidadRepository.delete(oldSpecialty);
-            }
-        });
+        List<String> legacySpecialties = List.of(
+                "Cardiología",
+                "Pediatría",
+                "Medicina General",
+                "Odontología",
+                "Medicina Interna",
+                "Traumatología"
+        );
+        for (String legacy : legacySpecialties) {
+            especialidadRepository.findByNombreIgnoreCase(legacy).ifPresent(oldSpecialty -> {
+                if (!doctorRepository.existsByEspecialidades_Id(oldSpecialty.getId())
+                        && !citaRepository.existsByEspecialidad_Id(oldSpecialty.getId())) {
+                    especialidadRepository.delete(oldSpecialty);
+                }
+            });
+        }
 
         LocalDate firstDay = LocalDate.now(clock).plusDays(1);
         List<ServicioComplementario> services = servicioRepository.findAllByOrderByNombreAsc();
@@ -152,7 +174,14 @@ public class DevDataInitializer implements ApplicationRunner {
 
     private Usuario asegurarCuenta(String dni, RolUsuario rol, String password, String variable) {
         Optional<Usuario> existing = usuarioRepository.findByDni(dni);
-        if (existing.isPresent()) return existing.get();
+        if (existing.isPresent()) {
+            if (password != null && !password.isBlank()) {
+                Usuario u = existing.get();
+                u.setPasswordHash(passwordEncoder.encode(password));
+                return usuarioRepository.save(u);
+            }
+            return existing.get();
+        }
         requirePassword(password, variable);
         return usuarioRepository.save(new Usuario(dni, passwordEncoder.encode(password), rol));
     }
