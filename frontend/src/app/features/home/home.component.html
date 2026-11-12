@@ -1,76 +1,152 @@
 <div class="public-home">
-  <section class="home-hero" id="inicio" aria-label="Presentación del Policlínico" aria-roledescription="carrusel"
+  <!-- HERO CARRUSEL INTERACTIVO (3 DIAPOSITIVAS) -->
+  <section class="home-hero hero-carousel" id="inicio" aria-label="Presentación del Policlínico" aria-roledescription="carrusel"
            (mouseenter)="onHeroMouseEnter()" (mouseleave)="onHeroMouseLeave()"
            (focusin)="onHeroFocusIn()" (focusout)="onHeroFocusOut($event)">
     <div class="home-hero__media" aria-hidden="true">
       <div *ngFor="let slide of heroSlides; let index = index"
            class="home-hero__image scene-photo"
            [ngClass]="slide.imageClass"
-           [class.is-active]="activeHeroSlide === index"></div>
+           [class.is-active]="activeHeroSlide === index"
+           [style.background-image]="'url(' + slide.imageUrl + ')'"></div>
     </div>
     <div class="home-hero__shade" aria-hidden="true"></div>
+    <div class="home-hero__glow" aria-hidden="true"></div>
 
-    <div class="home-hero__content" aria-live="polite" aria-atomic="true">
-      <p class="home-hero__eyebrow">Policlínico Infantil Nuestra Señora del Sagrado Corazón</p>
-      <h1>{{ heroSlides[activeHeroSlide].title }}</h1>
-      <p class="home-hero__lead">{{ heroSlides[activeHeroSlide].description }}</p>
-      <div class="home-hero__actions">
-        <a class="btn hero-button hero-button--light" href="#especialidades">Ver especialidades</a>
-        <a class="btn hero-button hero-button--outline" href="#contacto">Contáctanos</a>
+    <div class="hero-carousel__inner">
+      <div class="home-hero__content" aria-live="polite" aria-atomic="true">
+        <div class="hero-tag-badge">
+          <span class="hero-tag-badge__dot" aria-hidden="true"></span>
+          <span class="home-hero__eyebrow">{{ heroSlides[activeHeroSlide].tag }}</span>
+        </div>
+
+        <h1>{{ heroSlides[activeHeroSlide].title }}</h1>
+        <p class="home-hero__lead">{{ heroSlides[activeHeroSlide].description }}</p>
+
+        <div class="home-hero__actions">
+          <a class="btn hero-button hero-button--gold" routerLink="/reservar">Reservar cita ahora <span aria-hidden="true">→</span></a>
+          <a class="btn hero-button hero-button--light" href="#especialidades">Ver especialidades</a>
+          <a class="btn hero-button hero-button--outline" href="#contacto">Contáctanos</a>
+        </div>
+
+        <div class="hero-carousel-controls" aria-label="Seleccionar diapositiva">
+          <div class="hero-slide-counter">
+            <strong>{{ heroSlides[activeHeroSlide].number }}</strong> <span>/ 03</span>
+          </div>
+          <div class="hero-pagination__dots">
+            <button *ngFor="let slide of heroSlides; let index = index" type="button"
+                    class="hero-progress-pill"
+                    [class.is-active]="activeHeroSlide === index"
+                    [attr.aria-current]="activeHeroSlide === index ? 'true' : null"
+                    [attr.aria-label]="'Mostrar diapositiva ' + (index + 1)"
+                    (click)="showHeroSlide(index)">
+              <span></span>
+            </button>
+          </div>
+          <div class="hero-arrows-group">
+            <button class="hero-arrow hero-arrow--previous" type="button" aria-label="Mostrar diapositiva anterior"
+                    (click)="previousHeroSlide()">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+            </button>
+            <button class="hero-arrow hero-arrow--next" type="button" aria-label="Mostrar diapositiva siguiente"
+                    (click)="nextHeroSlide()">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <button class="hero-arrow hero-arrow--previous" type="button" aria-label="Mostrar diapositiva anterior"
-            (click)="previousHeroSlide()">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
-    </button>
-    <button class="hero-arrow hero-arrow--next" type="button" aria-label="Mostrar diapositiva siguiente"
-            (click)="nextHeroSlide()">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
-    </button>
-    <div class="hero-pagination" aria-label="Seleccionar diapositiva">
-      <div class="hero-pagination__dots">
-        <button *ngFor="let slide of heroSlides; let index = index" type="button"
+      <!-- TARJETAS INTERACTIVAS DE DIAPOSITIVAS DEL CARRUSEL -->
+      <div class="carousel-deck" aria-label="Vista previa de diapositivas">
+        <button *ngFor="let slide of heroSlides; let index = index"
+                type="button"
+                class="deck-slide"
                 [class.is-active]="activeHeroSlide === index"
-                [attr.aria-current]="activeHeroSlide === index ? 'true' : null"
-                [attr.aria-label]="'Mostrar diapositiva ' + (index + 1)"
-                (click)="showHeroSlide(index)"></button>
+                (click)="showHeroSlide(index)">
+          <img class="deck-thumb" [src]="slide.imageUrl" [alt]="slide.deckTitle">
+          <div class="deck-info">
+            <small>{{ slide.deckCategory }}</small>
+            <strong>{{ slide.deckTitle }}</strong>
+            <span>{{ slide.deckSubtitle }}</span>
+          </div>
+          <span class="deck-num" aria-hidden="true">{{ slide.number }}</span>
+        </button>
       </div>
     </div>
   </section>
 
+  <!-- BUSCADOR FLOTANTE DE CITAS RÁPIDAS -->
+  <div class="floating-booking-dock" aria-label="Acceso rápido a reserva y recepción">
+    <div class="dock-card">
+      <div class="dock-field">
+        <span class="dock-field__label">Especialidad o Servicio</span>
+        <strong class="dock-field__val">Pediatría general · 6 áreas</strong>
+      </div>
+      <div class="dock-field">
+        <span class="dock-field__label">Modalidad de Atención</span>
+        <strong class="dock-field__val">Consulta Médica / Diagnóstico</strong>
+      </div>
+      <div class="dock-field">
+        <span class="dock-field__label">Sede y Horario Oficial</span>
+        <strong class="dock-field__val">San Gregorio, Ate · Lun–Sáb 8am–8pm</strong>
+      </div>
+      <div class="dock-field">
+        <span class="dock-field__label">Central Telefónica</span>
+        <strong class="dock-field__val">(01) 351-6775 / (01) 352-0695</strong>
+      </div>
+      <a class="dock-cta" routerLink="/reservar">Buscar horarios disponibles <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+
+  <!-- 6 ESPECIALIDADES CON FOTOGRAFÍA REAL -->
   <section class="landing-section specialties-section" id="especialidades" aria-labelledby="specialties-title">
     <div class="content-width">
-      <div class="section-heading">
-        <p class="eyebrow">Atención integral</p>
-        <h2 id="specialties-title">Áreas de atención</h2>
+      <div class="section-heading section-heading--split">
+        <div>
+          <p class="eyebrow">Atención integral</p>
+          <h2 id="specialties-title">Áreas de atención</h2>
+        </div>
         <p>Conoce las áreas de atención del Policlínico y el enfoque de cada servicio. Revisa cuál responde mejor a la necesidad de salud de tu familia y consulta en recepción la disponibilidad.</p>
       </div>
 
       <div class="service-grid" aria-label="Especialidades">
         <article class="service-card" *ngFor="let specialty of specialties">
-          <div class="service-card__photo scene-photo" [ngClass]="specialty.imageClass" aria-hidden="true"></div>
+          <div class="service-card__photo scene-photo" [ngClass]="specialty.imageClass">
+            <img [src]="specialty.imageUrl" [alt]="specialty.name" loading="lazy">
+            <div class="service-card__photo-overlay" aria-hidden="true"></div>
+            <span class="service-card__badge">{{ specialty.code }}</span>
+            <span class="service-card__schedule">{{ specialty.schedule }}</span>
+          </div>
           <div class="service-card__body">
             <h3>{{ specialty.name }}</h3>
             <p>{{ specialty.description }}</p>
-            <a class="service-card__link" href="/login">Ver especialidad <span aria-hidden="true">→</span></a>
+            <div class="service-card__footer">
+              <span class="service-card__location">San Gregorio, Ate</span>
+              <a class="service-card__link" routerLink="/login">Ver especialidad <span aria-hidden="true">→</span></a>
+            </div>
           </div>
         </article>
       </div>
 
+      <!-- SERVICIOS COMPLEMENTARIOS PANORÁMICOS -->
       <div class="complementary-services" aria-labelledby="complementary-title">
-        <div class="complementary-heading">
-          <p class="eyebrow">Apoyo diagnóstico</p>
-          <h3 id="complementary-title">Servicios complementarios</h3>
+        <div class="complementary-heading section-heading--split">
+          <div>
+            <p class="eyebrow">Apoyo diagnóstico</p>
+            <h3 id="complementary-title">Servicios complementarios</h3>
+          </div>
           <p class="complementary-heading__description">El laboratorio clínico y las ecografías complementan la evaluación médica, de acuerdo con la indicación del profesional tratante.</p>
         </div>
         <div class="complementary-grid">
           <article class="service-card service-card--complementary" *ngFor="let service of complementaryServices">
-            <div class="service-card__photo scene-photo" [ngClass]="service.imageClass" aria-hidden="true"></div>
+            <div class="service-card__photo scene-photo" [ngClass]="service.imageClass">
+              <img [src]="service.imageUrl" [alt]="service.name" loading="lazy">
+            </div>
             <div class="service-card__body">
+              <span class="service-card__sub-badge">{{ service.badge }}</span>
               <h3>{{ service.name }}</h3>
               <p>{{ service.description }}</p>
-              <a class="service-card__link" href="/login">Ver servicio <span aria-hidden="true">→</span></a>
+              <a class="service-card__link" routerLink="/login">Ver servicio <span aria-hidden="true">→</span></a>
             </div>
           </article>
         </div>
@@ -78,17 +154,40 @@
     </div>
   </section>
 
+  <!-- HISTORIA Y MISIÓN DIOCESANA -->
   <section class="mission-section" id="nosotros" aria-labelledby="mission-title">
-    <div class="content-width mission-section__content">
-      <div class="mission-copy">
-        <p class="eyebrow">Historia y misión</p>
-        <h2 id="mission-title">Una obra al servicio de la comunidad</h2>
-        <p>El Policlínico Infantil Nuestra Señora del Sagrado Corazón es una obra social de la Diócesis de Chosica. Su misión es brindar atención preventiva, promocional, recuperativa y de rehabilitación especializada, especialmente a la población de bajos recursos, con calidad y calidez humana.</p>
+    <div class="content-width">
+      <div class="mission-showcase">
+        <div class="mission-photo scene-photo">
+          <img src="/assets/rediseno/clinic-bg.jpg" alt="Atención médica familiar en el Policlínico Infantil Sagrado Corazón" loading="lazy">
+          <div class="mission-photo__badge">
+            <img src="/assets/LogoEmpresa.png" alt="">
+            <div>
+              <strong>Diócesis de Chosica</strong>
+              <span>Obra social al servicio de las familias de Ate, Lima</span>
+            </div>
+          </div>
+        </div>
+        <div class="mission-copy">
+          <p class="eyebrow">Historia y misión</p>
+          <h2 id="mission-title">Una obra al servicio de la comunidad</h2>
+          <p>El Policlínico Infantil Nuestra Señora del Sagrado Corazón es una obra social de la Diócesis de Chosica. Su misión es brindar atención preventiva, promocional, recuperativa y de rehabilitación especializada, especialmente a la población de bajos recursos, con calidad y calidez humana.</p>
+          <div class="mission-pillars">
+            <div class="mission-pillar">
+              <strong>Preventiva y Promocional</strong>
+              <span>Control de crecimiento, nutrición y salud bucal infantil.</span>
+            </div>
+            <div class="mission-pillar">
+              <strong>Recuperativa y Especializada</strong>
+              <span>6 especialidades médicas y apoyo diagnóstico oportuno.</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="mission-photo scene-photo" aria-hidden="true"></div>
     </div>
   </section>
 
+  <!-- PREGUNTAS FRECUENTES -->
   <section class="landing-section faq-section" id="preguntas" aria-labelledby="faq-title">
     <div class="content-width faq-layout">
       <div class="faq-intro">
@@ -102,7 +201,7 @@
       </div>
 
       <div class="faq-list">
-        <details class="faq-item">
+        <details class="faq-item" open>
           <summary>¿Cómo puedo reservar una cita?</summary>
           <div class="faq-item__answer">
             <p>Regístrate como paciente o inicia sesión. Luego elige una especialidad, un médico, una fecha y un horario disponible para confirmar la reserva.</p>
@@ -136,11 +235,14 @@
     </div>
   </section>
 
+  <!-- CONTACTO Y UBICACIÓN -->
   <section class="landing-section contact-section" id="contacto" aria-labelledby="contact-title">
     <div class="content-width">
-      <div class="section-heading contact-section__heading">
-        <p class="eyebrow">Estamos para orientarte</p>
-        <h2 id="contact-title">Visítanos y comunícate con recepción</h2>
+      <div class="section-heading contact-section__heading section-heading--split">
+        <div>
+          <p class="eyebrow">Estamos para orientarte</p>
+          <h2 id="contact-title">Visítanos y comunícate con recepción</h2>
+        </div>
         <p>Revisa dónde encontrarnos, nuestro horario y los canales telefónicos y de correo para comunicarte con recepción.</p>
       </div>
 

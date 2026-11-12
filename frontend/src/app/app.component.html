@@ -22,7 +22,9 @@
   <nav class="navbar navbar-expand-lg container"
        [attr.aria-label]="session?.rol === 'PACIENTE' ? 'Navegación del portal del paciente' : 'Navegación principal'">
     <a class="brand" routerLink="/" aria-label="Inicio del Policlínico Sagrado Corazón">
-      <img class="brand-logo" src="/assets/LogoEmpresa.png" alt="">
+      <span class="brand-logo-wrap" aria-hidden="true">
+        <img class="brand-logo" src="/assets/LogoEmpresa.png" alt="">
+      </span>
       <span class="brand-divider" aria-hidden="true"></span>
       <span class="brand-copy">
         <strong>Policlínico Infantil</strong>
