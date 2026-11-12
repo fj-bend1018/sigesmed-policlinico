@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.webapplication.PoliclinicoSagradoCorazon.dao.PacienteDAO;
 import com.webapplication.PoliclinicoSagradoCorazon.dao.UsuarioDAO;
 import com.webapplication.PoliclinicoSagradoCorazon.dto.PacienteDTO;
+import com.webapplication.PoliclinicoSagradoCorazon.model.Paciente1;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Usuario;
 
 @Service

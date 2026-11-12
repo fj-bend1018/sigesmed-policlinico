@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.webapplication.PoliclinicoSagradoCorazon.dto.PacienteDTO;
+import com.webapplication.PoliclinicoSagradoCorazon.model.Paciente1;
 
 @Repository
 public class PacienteDAO {

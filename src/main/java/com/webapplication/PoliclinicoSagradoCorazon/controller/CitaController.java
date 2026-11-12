@@ -19,7 +19,6 @@ import com.webapplication.PoliclinicoSagradoCorazon.model.Cita;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Horario;
 import com.webapplication.PoliclinicoSagradoCorazon.service.CitaService;
 import com.webapplication.PoliclinicoSagradoCorazon.service.DoctorService;
-import com.webapplication.PoliclinicoSagradoCorazon.service.EmailService;
 import com.webapplication.PoliclinicoSagradoCorazon.service.HorarioService;
 import com.webapplication.PoliclinicoSagradoCorazon.service.PacienteService;
 
@@ -39,9 +38,6 @@ public class CitaController {
 
     @Autowired
     private DoctorService doctorService;
-
-    @Autowired
-    private EmailService emailService;
 
     @PostMapping("/confirmar-cita")
     public String confirmarCita() {
