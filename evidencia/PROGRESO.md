@@ -97,5 +97,11 @@ Fecha de actualización: 2026-11-12
   - Cero errores en consola del navegador (`consoleErrors: 0`).
   - Total de 24 capturas fotográficas en 360px y 1440px generadas en `evidencia/capturas_finales/`.
 - **Informe Consolidado:** Generado en `evidencia/RESUMEN_FINAL.md` con desglose técnico completo y sección honesta de limitaciones.
+- **Saneamiento de Diagnósticos y Terminal:**
+  - Corrección de sintaxis en `UsuarioDAO.java` (eliminación de llave de cierre redundante).
+  - Remoción de `@SuppressWarnings("null")` en los 10 DAOs y configuración de `java.compile.nullAnalysis.mode: "disabled"` en `.vscode/settings.json` y `.settings/org.eclipse.jdt.core.prefs`, eliminando las advertencias `Java(1102)`.
+  - Migración a métodos varargs modernos de `JdbcTemplate` sin métodos deprecados en `AdministradorDAO`, `CitaDAO`, `DoctorDAO`, `HorarioDAO`, `PacienteDAO` y `RecepcionistaDAO`.
+  - Compilación limpia con 0 errores y 0 warnings en `mvn clean compile`, `mvn test` (36/36) y `npm test` (2/2).
+
 
 
