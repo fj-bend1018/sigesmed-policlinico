@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sigesmed.api.domain.entity.Administrador;
+import com.sigesmed.api.domain.entity.Cita;
 import com.sigesmed.api.domain.entity.Doctor;
 import com.sigesmed.api.domain.entity.Especialidad;
 import com.sigesmed.api.domain.entity.Horario;
