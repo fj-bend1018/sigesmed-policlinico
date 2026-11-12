@@ -2,6 +2,7 @@
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-<span class="nc" id="L6">public record RecuperacionRequest(@NotBlank @Email String correo) { }</span>
+<span class="nc" id="L7">public record RecuperacionRequest(@NotBlank @Email @Size(max = 254) String correo) { }</span>
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

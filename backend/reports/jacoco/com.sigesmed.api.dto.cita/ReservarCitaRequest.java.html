@@ -2,6 +2,13 @@
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.AssertTrue;
 
-<span class="nc" id="L6">public record ReservarCitaRequest(@NotNull @Positive Long horarioId) { }</span>
+<span class="nc" id="L7">public record ReservarCitaRequest(@NotNull @Positive Long horarioId,</span>
+        @Positive Long especialidadId, @Positive Long servicioId) {
+    @AssertTrue(message = &quot;Selecciona una especialidad o un servicio complementario&quot;)
+    public boolean isAtencionValida() {
+<span class="nc bnc" id="L11" title="All 6 branches missed.">        return (especialidadId == null) != (servicioId == null);</span>
+    }
+}
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

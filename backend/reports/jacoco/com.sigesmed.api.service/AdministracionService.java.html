@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AdministracionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sigesmed-api</a> &gt; <a href="index.source.html" class="el_package">com.sigesmed.api.service</a> &gt; <span class="el_source">AdministracionService.java</span></div><h1>AdministracionService.java</h1><pre class="source lang-java linenums">package com.sigesmed.api.service;
+
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sigesmed.api.domain.entity.Doctor;
+import com.sigesmed.api.domain.entity.Especialidad;
+import com.sigesmed.api.domain.entity.Horario;
+import com.sigesmed.api.domain.entity.Recepcionista;
+import com.sigesmed.api.domain.entity.ServicioComplementario;
+import com.sigesmed.api.domain.entity.Usuario;
+import com.sigesmed.api.domain.enums.RolUsuario;
+import com.sigesmed.api.domain.enums.EstadoCita;
+import com.sigesmed.api.dto.administracion.CambiarEstadoRequest;
+import com.sigesmed.api.dto.administracion.DoctorAdminRequest;
+import com.sigesmed.api.dto.administracion.DoctorAdminResponse;
+import com.sigesmed.api.dto.administracion.HorarioAdminRequest;
+import com.sigesmed.api.dto.administracion.HorarioAdminResponse;
+import com.sigesmed.api.dto.administracion.RecepcionistaActualizarRequest;
+import com.sigesmed.api.dto.administracion.RecepcionistaAdminResponse;
+import com.sigesmed.api.dto.administracion.RecepcionistaCrearRequest;
+import com.sigesmed.api.exception.ApiException;
+import com.sigesmed.api.repository.CitaRepository;
+import com.sigesmed.api.repository.DoctorRepository;
+import com.sigesmed.api.repository.EspecialidadRepository;
+import com.sigesmed.api.repository.HorarioRepository;
+import com.sigesmed.api.repository.RecepcionistaRepository;
+import com.sigesmed.api.repository.UsuarioRepository;
+import com.sigesmed.api.repository.ServicioComplementarioRepository;
+
+@Service
+public class AdministracionService {
+<span class="fc" id="L46">    private static final ZoneId LIMA = ZoneId.of(&quot;America/Lima&quot;);</span>
+    private final DoctorRepository doctorRepository;
+    private final EspecialidadRepository especialidadRepository;
+    private final HorarioRepository horarioRepository;
+    private final CitaRepository citaRepository;
+    private final RecepcionistaRepository recepcionistaRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final Clock clock;
+    private final ServicioComplementarioRepository servicioRepository;
+
+    @Autowired
+    public AdministracionService(DoctorRepository doctorRepository, EspecialidadRepository especialidadRepository,
+            HorarioRepository horarioRepository, CitaRepository citaRepository,
+            RecepcionistaRepository recepcionistaRepository, UsuarioRepository usuarioRepository,
+<span class="fc" id="L61">            ServicioComplementarioRepository servicioRepository, PasswordEncoder passwordEncoder, Clock clock) {</span>
+<span class="fc" id="L62">        this.doctorRepository = doctorRepository;</span>
+<span class="fc" id="L63">        this.especialidadRepository = especialidadRepository;</span>
+<span class="fc" id="L64">        this.horarioRepository = horarioRepository;</span>
+<span class="fc" id="L65">        this.citaRepository = citaRepository;</span>
+<span class="fc" id="L66">        this.recepcionistaRepository = recepcionistaRepository;</span>
+<span class="fc" id="L67">        this.usuarioRepository = usuarioRepository;</span>
+<span class="fc" id="L68">        this.passwordEncoder = passwordEncoder;</span>
+<span class="fc" id="L69">        this.clock = clock;</span>
+<span class="fc" id="L70">        this.servicioRepository = servicioRepository;</span>
+<span class="fc" id="L71">    }</span>
+
+    public AdministracionService(DoctorRepository doctorRepository, EspecialidadRepository especialidadRepository,
+            HorarioRepository horarioRepository, CitaRepository citaRepository,
+            RecepcionistaRepository recepcionistaRepository, UsuarioRepository usuarioRepository,
+            PasswordEncoder passwordEncoder, Clock clock) {
+<span class="fc" id="L77">        this(doctorRepository, especialidadRepository, horarioRepository, citaRepository, recepcionistaRepository,</span>
+                usuarioRepository, null, passwordEncoder, clock);
+<span class="fc" id="L79">    }</span>
+
+    @Transactional(readOnly = true)
+    public List&lt;DoctorAdminResponse&gt; listarDoctores() {
+<span class="nc" id="L83">        return doctorRepository.findAllByOrderByNombreAsc().stream().map(this::doctorResponse).toList();</span>
+    }
+
+    @Transactional(readOnly = true)
+    public DoctorAdminResponse obtenerDoctor(Long id) {
+<span class="nc" id="L88">        return doctorResponse(doctorRepository.findById(id)</span>
+<span class="nc" id="L89">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Médico no encontrado&quot;)));</span>
+    }
+
+    @Transactional
+    public DoctorAdminResponse crearDoctor(DoctorAdminRequest request) {
+<span class="nc" id="L94">        String cmp = request.cmp().trim().toUpperCase(Locale.ROOT);</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        if (doctorRepository.existsByCmpIgnoreCase(cmp)) {</span>
+<span class="nc" id="L96">            throw new ApiException(HttpStatus.CONFLICT, &quot;El CMP ya está registrado&quot;);</span>
+        }
+<span class="nc" id="L98">        Doctor doctor = new Doctor(request.nombre().trim(), cmp, especialidades(request.especialidadIds()));</span>
+        try {
+<span class="nc" id="L100">            return doctorResponse(doctorRepository.saveAndFlush(doctor));</span>
+<span class="nc" id="L101">        } catch (DataIntegrityViolationException exception) {</span>
+<span class="nc" id="L102">            throw new ApiException(HttpStatus.CONFLICT, &quot;El médico o CMP ya está registrado&quot;);</span>
+        }
+    }
+
+    @Transactional
+    public DoctorAdminResponse actualizarDoctor(Long id, DoctorAdminRequest request) {
+<span class="nc" id="L108">        Doctor doctor = doctorRepository.findById(id)</span>
+<span class="nc" id="L109">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Médico no encontrado&quot;));</span>
+<span class="nc" id="L110">        String cmp = request.cmp().trim().toUpperCase(Locale.ROOT);</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        if (doctorRepository.existsByCmpIgnoreCaseAndIdNot(cmp, id)) {</span>
+<span class="nc" id="L112">            throw new ApiException(HttpStatus.CONFLICT, &quot;El CMP ya está registrado&quot;);</span>
+        }
+<span class="nc" id="L114">        doctor.actualizar(request.nombre().trim(), cmp, especialidades(request.especialidadIds()));</span>
+        try {
+<span class="nc" id="L116">            return doctorResponse(doctorRepository.saveAndFlush(doctor));</span>
+<span class="nc" id="L117">        } catch (DataIntegrityViolationException exception) {</span>
+<span class="nc" id="L118">            throw new ApiException(HttpStatus.CONFLICT, &quot;El médico o CMP ya está registrado&quot;);</span>
+        }
+    }
+
+    @Transactional
+    public DoctorAdminResponse cambiarEstadoDoctor(Long id, String estado) {
+<span class="nc" id="L124">        Doctor doctor = doctorRepository.findById(id)</span>
+<span class="nc" id="L125">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Médico no encontrado&quot;));</span>
+<span class="nc" id="L126">        doctor.cambiarEstado(estado);</span>
+<span class="nc" id="L127">        return doctorResponse(doctorRepository.save(doctor));</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;HorarioAdminResponse&gt; listarHorarios(Long doctorId, LocalDate desde, LocalDate hasta) {
+<span class="nc" id="L132">        return listarHorarios(doctorId, null, desde, hasta);</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;HorarioAdminResponse&gt; listarHorarios(Long doctorId, Long servicioId, LocalDate desde, LocalDate hasta) {
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        LocalDate start = desde == null ? LocalDate.now(clock) : desde;</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        LocalDate end = hasta == null ? start.plusDays(30) : hasta;</span>
+<span class="nc bnc" id="L139" title="All 4 branches missed.">        if (end.isBefore(start) || end.isAfter(start.plusDays(366))) {</span>
+<span class="nc" id="L140">            throw new ApiException(HttpStatus.BAD_REQUEST, &quot;El rango de fechas no es válido (máximo 366 días)&quot;);</span>
+        }
+<span class="nc bnc" id="L142" title="All 4 branches missed.">        if (doctorId != null &amp;&amp; servicioId != null) {</span>
+<span class="nc" id="L143">            throw new ApiException(HttpStatus.BAD_REQUEST, &quot;Filtra los horarios por un solo recurso&quot;);</span>
+        }
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        List&lt;Horario&gt; items = doctorId != null</span>
+<span class="nc" id="L146">                ? horarioRepository.findByDoctor_IdAndFechaBetweenOrderByFechaAscHoraAsc(doctorId, start, end)</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">                : servicioId != null</span>
+<span class="nc" id="L148">                    ? horarioRepository.findByServicioComplementario_IdAndFechaBetweenOrderByFechaAscHoraAsc(servicioId, start, end)</span>
+<span class="nc" id="L149">                    : horarioRepository.findAllByFechaBetweenOrderByFechaAscHoraAsc(start, end);</span>
+<span class="nc" id="L150">        return items.stream().map(this::horarioResponse).toList();</span>
+    }
+
+    @Transactional(readOnly = true)
+    public HorarioAdminResponse obtenerHorario(Long id) {
+<span class="nc" id="L155">        return horarioResponse(horarioRepository.findById(id)</span>
+<span class="nc" id="L156">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Horario no encontrado&quot;)));</span>
+    }
+
+    @Transactional
+    public HorarioAdminResponse crearHorario(HorarioAdminRequest request) {
+<span class="nc" id="L161">        validarRecurso(request);</span>
+<span class="nc" id="L162">        validarFechaHora(request.fecha(), request.hora());</span>
+<span class="nc" id="L163">        validarHorarioNoDuplicado(request, null);</span>
+<span class="nc" id="L164">        Horario horario = nuevoHorario(request);</span>
+        try {
+<span class="nc" id="L166">            return horarioResponse(horarioRepository.saveAndFlush(horario));</span>
+<span class="nc" id="L167">        } catch (DataIntegrityViolationException exception) {</span>
+<span class="nc" id="L168">            throw new ApiException(HttpStatus.CONFLICT, &quot;Ya existe un horario para ese recurso y momento&quot;);</span>
+        }
+    }
+
+    @Transactional
+    public HorarioAdminResponse actualizarHorario(Long id, HorarioAdminRequest request) {
+<span class="nc" id="L174">        validarRecurso(request);</span>
+<span class="nc" id="L175">        validarFechaHora(request.fecha(), request.hora());</span>
+<span class="nc" id="L176">        Horario horario = horarioRepository.findByIdForUpdate(id)</span>
+<span class="nc" id="L177">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Horario no encontrado&quot;));</span>
+<span class="nc bnc" id="L178" title="All 4 branches missed.">        if (!horario.isDisponible() || citaRepository.existsByHorario_Id(id)) {</span>
+<span class="nc" id="L179">            throw new ApiException(HttpStatus.CONFLICT, &quot;No se puede modificar un horario reservado o con historial&quot;);</span>
+        }
+<span class="nc" id="L181">        validarHorarioNoDuplicado(request, id);</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        Doctor doctor = request.doctorId() == null ? null : doctorActivo(request.doctorId());</span>
+<span class="nc" id="L183">        ServicioComplementario servicio = servicioComplementario(request.servicioId());</span>
+<span class="nc bnc" id="L184" title="All 2 branches missed.">        if (doctor != null) horario.actualizar(doctor, request.fecha(), request.hora());</span>
+<span class="nc" id="L185">        else horario.actualizar(servicio, request.fecha(), request.hora());</span>
+        try {
+<span class="nc" id="L187">            return horarioResponse(horarioRepository.saveAndFlush(horario));</span>
+<span class="nc" id="L188">        } catch (DataIntegrityViolationException exception) {</span>
+<span class="nc" id="L189">            throw new ApiException(HttpStatus.CONFLICT, &quot;Ya existe un horario para ese recurso y momento&quot;);</span>
+        }
+    }
+
+    @Transactional
+    public void eliminarHorario(Long id) {
+<span class="fc" id="L195">        Horario horario = horarioRepository.findByIdForUpdate(id)</span>
+<span class="pc" id="L196">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Horario no encontrado&quot;));</span>
+<span class="pc bpc" id="L197" title="1 of 2 branches missed.">        if (citaRepository.existsByHorario_IdAndEstadoIn(id, EstadoCita.ACTIVAS)) {</span>
+<span class="fc" id="L198">            throw new ApiException(HttpStatus.CONFLICT,</span>
+                    &quot;No se puede eliminar el horario porque tiene una cita reservada o confirmada&quot;);
+        }
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        if (!horario.isDisponible()) {</span>
+<span class="nc" id="L202">            throw new ApiException(HttpStatus.CONFLICT,</span>
+                    &quot;No se puede eliminar el horario mientras figure como ocupado&quot;);
+        }
+<span class="nc bnc" id="L205" title="All 2 branches missed.">        if (citaRepository.existsByHorario_Id(id)) {</span>
+<span class="nc" id="L206">            throw new ApiException(HttpStatus.CONFLICT,</span>
+                    &quot;No se puede eliminar el horario porque conserva citas históricas vinculadas&quot;);
+        }
+<span class="nc" id="L209">        horarioRepository.delete(horario);</span>
+<span class="nc" id="L210">    }</span>
+
+    @Transactional(readOnly = true)
+    public List&lt;RecepcionistaAdminResponse&gt; listarRecepcionistas() {
+<span class="nc" id="L214">        return recepcionistaRepository.findAllByOrderByApellidoPaternoAscNombreAsc().stream()</span>
+<span class="nc" id="L215">                .map(this::recepcionistaResponse).toList();</span>
+    }
+
+    @Transactional(readOnly = true)
+    public RecepcionistaAdminResponse obtenerRecepcionista(Long id) {
+<span class="nc" id="L220">        return recepcionistaResponse(recepcionistaRepository.findById(id)</span>
+<span class="nc" id="L221">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Recepcionista no encontrado&quot;)));</span>
+    }
+
+    @Transactional
+    public RecepcionistaAdminResponse crearRecepcionista(RecepcionistaCrearRequest request) {
+<span class="nc" id="L226">        String dni = request.dni().trim();</span>
+<span class="nc" id="L227">        String correo = request.correo().trim().toLowerCase(Locale.ROOT);</span>
+<span class="nc bnc" id="L228" title="All 4 branches missed.">        if (usuarioRepository.existsByDni(dni) || recepcionistaRepository.existsByDni(dni)) {</span>
+<span class="nc" id="L229">            throw new ApiException(HttpStatus.CONFLICT, &quot;El DNI ya está registrado&quot;);</span>
+        }
+<span class="nc bnc" id="L231" title="All 4 branches missed.">        if (!usuarioRepository.findByIdentifier(correo).isEmpty() || recepcionistaRepository.existsByCorreoIgnoreCase(correo)) {</span>
+<span class="nc" id="L232">            throw new ApiException(HttpStatus.CONFLICT, &quot;El correo ya está asociado a otra cuenta&quot;);</span>
+        }
+<span class="nc" id="L234">        Usuario usuario = usuarioRepository.save(new Usuario(dni, passwordEncoder.encode(request.claveTemporal()),</span>
+                RolUsuario.RECEPCIONISTA));
+<span class="nc" id="L236">        Recepcionista persona = new Recepcionista(usuario, request.nombre().trim(), request.apellidoPaterno().trim(),</span>
+<span class="nc" id="L237">                blankToNull(request.apellidoMaterno()), dni, correo);</span>
+        try {
+<span class="nc" id="L239">            persona.actualizar(persona.getNombre(), persona.getApellidoPaterno(), persona.getApellidoMaterno(), correo,</span>
+<span class="nc" id="L240">                    blankToNull(request.celular()), blankToNull(request.direccion()));</span>
+<span class="nc" id="L241">            return recepcionistaResponse(recepcionistaRepository.saveAndFlush(persona));</span>
+<span class="nc" id="L242">        } catch (DataIntegrityViolationException exception) {</span>
+<span class="nc" id="L243">            throw new ApiException(HttpStatus.CONFLICT, &quot;El DNI o correo ya está registrado&quot;);</span>
+        }
+    }
+
+    @Transactional
+    public RecepcionistaAdminResponse actualizarRecepcionista(Long id, RecepcionistaActualizarRequest request) {
+<span class="nc" id="L249">        Recepcionista persona = recepcionistaRepository.findById(id)</span>
+<span class="nc" id="L250">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Recepcionista no encontrado&quot;));</span>
+<span class="nc" id="L251">        String correo = request.correo().trim().toLowerCase(Locale.ROOT);</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">        if (recepcionistaRepository.existsByCorreoIgnoreCaseAndIdNot(correo, id)</span>
+<span class="nc" id="L253">                || usuarioRepository.findByIdentifier(correo).stream()</span>
+<span class="nc bnc" id="L254" title="All 4 branches missed.">                        .anyMatch(usuario -&gt; !usuario.getId().equals(persona.getUsuario().getId()))) {</span>
+<span class="nc" id="L255">            throw new ApiException(HttpStatus.CONFLICT, &quot;El correo ya está asociado a otra cuenta&quot;);</span>
+        }
+<span class="nc" id="L257">        persona.actualizar(request.nombre().trim(), request.apellidoPaterno().trim(),</span>
+<span class="nc" id="L258">                blankToNull(request.apellidoMaterno()), correo, blankToNull(request.celular()),</span>
+<span class="nc" id="L259">                blankToNull(request.direccion()));</span>
+        try {
+<span class="nc" id="L261">            return recepcionistaResponse(recepcionistaRepository.saveAndFlush(persona));</span>
+<span class="nc" id="L262">        } catch (DataIntegrityViolationException exception) {</span>
+<span class="nc" id="L263">            throw new ApiException(HttpStatus.CONFLICT, &quot;El correo ya está registrado&quot;);</span>
+        }
+    }
+
+    @Transactional
+    public RecepcionistaAdminResponse cambiarEstadoRecepcionista(Long id, String estado) {
+<span class="nc" id="L269">        Recepcionista persona = recepcionistaRepository.findById(id)</span>
+<span class="nc" id="L270">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Recepcionista no encontrado&quot;));</span>
+<span class="nc" id="L271">        persona.cambiarEstado(estado);</span>
+<span class="nc" id="L272">        return recepcionistaResponse(recepcionistaRepository.save(persona));</span>
+    }
+
+    private Set&lt;Especialidad&gt; especialidades(List&lt;Long&gt; ids) {
+<span class="nc" id="L276">        Set&lt;Long&gt; uniqueIds = new HashSet&lt;&gt;(ids);</span>
+<span class="nc" id="L277">        List&lt;Especialidad&gt; items = especialidadRepository.findAllById(uniqueIds);</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        if (items.size() != uniqueIds.size()) {</span>
+<span class="nc" id="L279">            throw new ApiException(HttpStatus.BAD_REQUEST, &quot;Una o más especialidades no existen&quot;);</span>
+        }
+<span class="nc" id="L281">        return new HashSet&lt;&gt;(items);</span>
+    }
+
+    private Doctor doctorActivo(Long id) {
+<span class="nc" id="L285">        return doctorRepository.findByIdAndEstado(id, &quot;ACTIVO&quot;)</span>
+<span class="nc" id="L286">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Médico no encontrado o inactivo&quot;));</span>
+    }
+
+    private ServicioComplementario servicioComplementario(Long id) {
+<span class="nc bnc" id="L290" title="All 2 branches missed.">        if (id == null) return null;</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        if (servicioRepository == null) {</span>
+<span class="nc" id="L292">            throw new ApiException(HttpStatus.NOT_FOUND, &quot;Servicio complementario no encontrado&quot;);</span>
+        }
+<span class="nc" id="L294">        return servicioRepository.findById(id)</span>
+<span class="nc" id="L295">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Servicio complementario no encontrado&quot;));</span>
+    }
+
+    private Horario nuevoHorario(HorarioAdminRequest request) {
+<span class="nc bnc" id="L299" title="All 2 branches missed.">        if (request.doctorId() != null) {</span>
+<span class="nc" id="L300">            return new Horario(doctorActivo(request.doctorId()), request.fecha(), request.hora());</span>
+        }
+<span class="nc" id="L302">        return new Horario(servicioComplementario(request.servicioId()), request.fecha(), request.hora());</span>
+    }
+
+    private void validarRecurso(HorarioAdminRequest request) {
+<span class="nc bnc" id="L306" title="All 6 branches missed.">        if ((request.doctorId() == null) == (request.servicioId() == null)) {</span>
+<span class="nc" id="L307">            throw new ApiException(HttpStatus.BAD_REQUEST,</span>
+                    &quot;Selecciona un médico o un servicio complementario, no ambos&quot;);
+        }
+<span class="nc" id="L310">    }</span>
+
+    private void validarHorarioNoDuplicado(HorarioAdminRequest request, Long exceptoId) {
+        boolean duplicate;
+<span class="nc bnc" id="L314" title="All 2 branches missed.">        if (request.doctorId() != null) {</span>
+<span class="nc" id="L315">            Doctor doctor = doctorActivo(request.doctorId());</span>
+<span class="nc bnc" id="L316" title="All 2 branches missed.">            duplicate = exceptoId == null</span>
+<span class="nc" id="L317">                    ? horarioRepository.existsByDoctor_IdAndFechaAndHora(doctor.getId(), request.fecha(), request.hora())</span>
+<span class="nc" id="L318">                    : horarioRepository.existsByDoctor_IdAndFechaAndHoraAndIdNot(doctor.getId(), request.fecha(), request.hora(), exceptoId);</span>
+<span class="nc" id="L319">        } else {</span>
+<span class="nc" id="L320">            ServicioComplementario servicio = servicioComplementario(request.servicioId());</span>
+<span class="nc bnc" id="L321" title="All 2 branches missed.">            duplicate = exceptoId == null</span>
+<span class="nc" id="L322">                    ? horarioRepository.existsByServicioComplementario_IdAndFechaAndHora(servicio.getId(), request.fecha(), request.hora())</span>
+<span class="nc" id="L323">                    : horarioRepository.existsByServicioComplementario_IdAndFechaAndHoraAndIdNot(servicio.getId(), request.fecha(), request.hora(), exceptoId);</span>
+        }
+<span class="nc bnc" id="L325" title="All 2 branches missed.">        if (duplicate) throw new ApiException(HttpStatus.CONFLICT, &quot;Ya existe un horario para ese recurso y momento&quot;);</span>
+<span class="nc" id="L326">    }</span>
+
+    private void validarFechaHora(LocalDate fecha, LocalTime hora) {
+<span class="nc" id="L329">        LocalDate today = LocalDate.now(clock.withZone(LIMA));</span>
+<span class="nc bnc" id="L330" title="All 6 branches missed.">        if (fecha.isBefore(today) || (fecha.equals(today) &amp;&amp; !hora.isAfter(LocalTime.now(clock.withZone(LIMA))))) {</span>
+<span class="nc" id="L331">            throw new ApiException(HttpStatus.BAD_REQUEST, &quot;El horario debe ser futuro&quot;);</span>
+        }
+<span class="nc" id="L333">    }</span>
+
+    private DoctorAdminResponse doctorResponse(Doctor doctor) {
+<span class="nc" id="L336">        List&lt;Especialidad&gt; specialties = doctor.getEspecialidades().stream()</span>
+<span class="nc" id="L337">                .sorted(java.util.Comparator.comparing(Especialidad::getNombre)).toList();</span>
+<span class="nc" id="L338">        return new DoctorAdminResponse(doctor.getId(), doctor.getNombre(), doctor.getCmp(), doctor.getEstado(),</span>
+<span class="nc" id="L339">                specialties.stream().map(Especialidad::getId).toList(),</span>
+<span class="nc" id="L340">                specialties.stream().map(Especialidad::getNombre).toList());</span>
+    }
+
+    private HorarioAdminResponse horarioResponse(Horario horario) {
+<span class="nc" id="L344">        Doctor doctor = horario.getDoctor();</span>
+<span class="nc" id="L345">        ServicioComplementario servicio = horario.getServicioComplementario();</span>
+<span class="nc bnc" id="L346" title="All 2 branches missed.">        return new HorarioAdminResponse(horario.getId(), doctor == null ? null : doctor.getId(),</span>
+<span class="nc bnc" id="L347" title="All 4 branches missed.">                doctor == null ? null : doctor.getNombre(), servicio == null ? null : servicio.getId(),</span>
+<span class="nc bnc" id="L348" title="All 2 branches missed.">                servicio == null ? null : servicio.getNombre(), horario.getFecha(), horario.getHora(),</span>
+<span class="nc" id="L349">                horario.isDisponible(), horario.getEstado());</span>
+    }
+
+    private RecepcionistaAdminResponse recepcionistaResponse(Recepcionista persona) {
+<span class="nc" id="L353">        return new RecepcionistaAdminResponse(persona.getId(), persona.getNombre(), persona.getApellidoPaterno(),</span>
+<span class="nc" id="L354">                persona.getApellidoMaterno(), persona.getDni(), persona.getCorreo(), persona.getCelular(),</span>
+<span class="nc" id="L355">                persona.getDireccion(), persona.getEstado());</span>
+    }
+
+    private String blankToNull(String value) {
+<span class="nc bnc" id="L359" title="All 4 branches missed.">        return value == null || value.isBlank() ? null : value.trim();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

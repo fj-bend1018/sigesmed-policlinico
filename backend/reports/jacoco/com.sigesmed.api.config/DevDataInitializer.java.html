@@ -2,8 +2,11 @@
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.Clock;
 import java.util.List;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
@@ -14,20 +17,24 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sigesmed.api.domain.entity.Administrador;
+import com.sigesmed.api.domain.entity.Cita;
 import com.sigesmed.api.domain.entity.Doctor;
 import com.sigesmed.api.domain.entity.Especialidad;
 import com.sigesmed.api.domain.entity.Horario;
 import com.sigesmed.api.domain.entity.Paciente;
 import com.sigesmed.api.domain.entity.Recepcionista;
+import com.sigesmed.api.domain.entity.ServicioComplementario;
 import com.sigesmed.api.domain.entity.Usuario;
 import com.sigesmed.api.domain.enums.RolUsuario;
 import com.sigesmed.api.repository.AdministradorRepository;
+import com.sigesmed.api.repository.CitaRepository;
 import com.sigesmed.api.repository.DoctorRepository;
 import com.sigesmed.api.repository.EspecialidadRepository;
 import com.sigesmed.api.repository.HorarioRepository;
 import com.sigesmed.api.repository.PacienteRepository;
 import com.sigesmed.api.repository.RecepcionistaRepository;
 import com.sigesmed.api.repository.UsuarioRepository;
+import com.sigesmed.api.repository.ServicioComplementarioRepository;
 
 @Component
 @Profile(&quot;dev&quot;)
@@ -38,8 +45,11 @@ public class DevDataInitializer implements ApplicationRunner {
     private final AdministradorRepository administradorRepository;
     private final EspecialidadRepository especialidadRepository;
     private final DoctorRepository doctorRepository;
+    private final CitaRepository citaRepository;
     private final HorarioRepository horarioRepository;
+    private final ServicioComplementarioRepository servicioRepository;
     private final PasswordEncoder passwordEncoder;
+    private final Clock clock;
     private final String adminPassword;
     private final String receptionistPassword;
     private final String patientPassword;
@@ -47,61 +57,163 @@ public class DevDataInitializer implements ApplicationRunner {
     public DevDataInitializer(UsuarioRepository usuarioRepository, PacienteRepository pacienteRepository,
             RecepcionistaRepository recepcionistaRepository, AdministradorRepository administradorRepository,
             EspecialidadRepository especialidadRepository, DoctorRepository doctorRepository,
-            HorarioRepository horarioRepository, PasswordEncoder passwordEncoder,
-            @Value(&quot;${SIGESMED_DEV_ADMIN_PASSWORD}&quot;) String adminPassword,
-            @Value(&quot;${SIGESMED_DEV_RECEPCIONISTA_PASSWORD}&quot;) String receptionistPassword,
-<span class="nc" id="L53">            @Value(&quot;${SIGESMED_DEV_PACIENTE_PASSWORD}&quot;) String patientPassword) {</span>
-<span class="nc" id="L54">        this.usuarioRepository = usuarioRepository; this.pacienteRepository = pacienteRepository;</span>
-<span class="nc" id="L55">        this.recepcionistaRepository = recepcionistaRepository; this.administradorRepository = administradorRepository;</span>
-<span class="nc" id="L56">        this.especialidadRepository = especialidadRepository; this.doctorRepository = doctorRepository;</span>
-<span class="nc" id="L57">        this.horarioRepository = horarioRepository; this.passwordEncoder = passwordEncoder;</span>
-<span class="nc" id="L58">        this.adminPassword = adminPassword; this.receptionistPassword = receptionistPassword;</span>
-<span class="nc" id="L59">        this.patientPassword = patientPassword;</span>
-<span class="nc" id="L60">    }</span>
+            CitaRepository citaRepository, HorarioRepository horarioRepository,
+            ServicioComplementarioRepository servicioRepository, PasswordEncoder passwordEncoder, Clock clock,
+            @Value(&quot;${SIGESMED_DEV_ADMIN_PASSWORD:}&quot;) String adminPassword,
+            @Value(&quot;${SIGESMED_DEV_RECEPCIONISTA_PASSWORD:}&quot;) String receptionistPassword,
+<span class="nc" id="L64">            @Value(&quot;${SIGESMED_DEV_PACIENTE_PASSWORD:}&quot;) String patientPassword) {</span>
+<span class="nc" id="L65">        this.usuarioRepository = usuarioRepository; this.pacienteRepository = pacienteRepository;</span>
+<span class="nc" id="L66">        this.recepcionistaRepository = recepcionistaRepository; this.administradorRepository = administradorRepository;</span>
+<span class="nc" id="L67">        this.especialidadRepository = especialidadRepository; this.doctorRepository = doctorRepository;</span>
+<span class="nc" id="L68">        this.citaRepository = citaRepository; this.horarioRepository = horarioRepository;</span>
+<span class="nc" id="L69">        this.servicioRepository = servicioRepository;</span>
+<span class="nc" id="L70">        this.passwordEncoder = passwordEncoder; this.clock = clock;</span>
+<span class="nc" id="L71">        this.adminPassword = adminPassword; this.receptionistPassword = receptionistPassword;</span>
+<span class="nc" id="L72">        this.patientPassword = patientPassword;</span>
+<span class="nc" id="L73">    }</span>
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (usuarioRepository.existsByDni(&quot;90000001&quot;)) return;</span>
-<span class="nc" id="L66">        requirePassword(adminPassword, &quot;SIGESMED_DEV_ADMIN_PASSWORD&quot;);</span>
-<span class="nc" id="L67">        requirePassword(receptionistPassword, &quot;SIGESMED_DEV_RECEPCIONISTA_PASSWORD&quot;);</span>
-<span class="nc" id="L68">        requirePassword(patientPassword, &quot;SIGESMED_DEV_PACIENTE_PASSWORD&quot;);</span>
+<span class="nc" id="L78">        seedDemoAccountsIfConfigured();</span>
 
-<span class="nc" id="L70">        Usuario admin = usuarioRepository.save(new Usuario(&quot;90000001&quot;,</span>
-<span class="nc" id="L71">                passwordEncoder.encode(adminPassword), RolUsuario.ADMINISTRADOR));</span>
-<span class="nc" id="L72">        administradorRepository.save(new Administrador(admin, &quot;90000001&quot;, &quot;admin@example.test&quot;));</span>
-
-<span class="nc" id="L74">        Usuario receptionist = usuarioRepository.save(new Usuario(&quot;90000002&quot;,</span>
-<span class="nc" id="L75">                passwordEncoder.encode(receptionistPassword), RolUsuario.RECEPCIONISTA));</span>
-<span class="nc" id="L76">        recepcionistaRepository.save(new Recepcionista(receptionist, &quot;Rosa&quot;, &quot;Recepción&quot;, &quot;Demo&quot;,</span>
-                &quot;90000002&quot;, &quot;recepcion@example.test&quot;));
-
-<span class="nc" id="L79">        Usuario patientUser = usuarioRepository.save(new Usuario(&quot;90000003&quot;,</span>
-<span class="nc" id="L80">                passwordEncoder.encode(patientPassword), RolUsuario.PACIENTE));</span>
-<span class="nc" id="L81">        pacienteRepository.save(new Paciente(patientUser, &quot;Paciente&quot;, &quot;Prueba&quot;, &quot;Demo&quot;, &quot;90000003&quot;,</span>
-<span class="nc" id="L82">                LocalDate.of(2000, 1, 1), &quot;paciente@example.test&quot;));</span>
-
-<span class="nc" id="L84">        Especialidad pediatria = especialidadRepository.save(new Especialidad(&quot;Pediatría&quot;));</span>
-<span class="nc" id="L85">        Especialidad cardiologia = especialidadRepository.save(new Especialidad(&quot;Cardiología&quot;));</span>
-<span class="nc" id="L86">        List&lt;Doctor&gt; doctors = doctorRepository.saveAll(List.of(</span>
-<span class="nc" id="L87">                new Doctor(&quot;Dra. Ana Demo&quot;, &quot;DEV-CMP-0001&quot;, Set.of(pediatria)),</span>
-<span class="nc" id="L88">                new Doctor(&quot;Dr. Luis Demo&quot;, &quot;DEV-CMP-0002&quot;, Set.of(cardiologia)),</span>
-<span class="nc" id="L89">                new Doctor(&quot;Dra. María Demo&quot;, &quot;DEV-CMP-0003&quot;, Set.of(pediatria, cardiologia))));</span>
-
-<span class="nc" id="L91">        LocalDate firstDay = LocalDate.now().plusDays(1);</span>
-<span class="nc bnc" id="L92" title="All 2 branches missed.">        for (int day = 0; day &lt; 7; day++) {</span>
-<span class="nc" id="L93">            LocalDate date = firstDay.plusDays(day);</span>
-<span class="nc bnc" id="L94" title="All 2 branches missed.">            for (Doctor doctor : doctors) {</span>
-<span class="nc" id="L95">                horarioRepository.save(new Horario(doctor, date, LocalTime.of(9, 0)));</span>
-<span class="nc" id="L96">                horarioRepository.save(new Horario(doctor, date, LocalTime.of(10, 0)));</span>
-<span class="nc" id="L97">            }</span>
+<span class="nc" id="L80">        List&lt;String&gt; names = List.of(</span>
+                &quot;Pediatría general&quot;,
+                &quot;Medicina familiar&quot;,
+                &quot;Nutrición&quot;,
+                &quot;Psicología infantil&quot;,
+                &quot;Odontología pediátrica&quot;,
+                &quot;Otorrinolaringología&quot;
+        );
+<span class="nc" id="L88">        List&lt;String&gt; doctorNames = List.of(</span>
+                &quot;Dra. Ana Demo&quot;,
+                &quot;Dr. Luis Demo&quot;,
+                &quot;Dra. María Demo&quot;,
+                &quot;Dr. Carlos Demo&quot;,
+                &quot;Dra. Elena Demo&quot;,
+                &quot;Dr. Roberto Demo&quot;
+        );
+<span class="nc" id="L96">        List&lt;Especialidad&gt; specialties = names.stream().map(this::asegurarEspecialidad).toList();</span>
+<span class="nc" id="L97">        List&lt;Doctor&gt; doctors = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        for (int i = 0; i &lt; specialties.size(); i++) {</span>
+<span class="nc" id="L99">            int index = i;</span>
+<span class="nc" id="L100">            String cmp = &quot;DEV-CMP-%04d&quot;.formatted(index + 1);</span>
+<span class="nc" id="L101">            Doctor doctor = doctorRepository.findByCmpIgnoreCase(cmp)</span>
+<span class="nc" id="L102">                    .orElseGet(() -&gt; new Doctor(doctorNames.get(index), cmp, Set.of(specialties.get(index))));</span>
+<span class="nc" id="L103">            doctor.actualizar(doctorNames.get(index), cmp, Set.of(specialties.get(index)));</span>
+<span class="nc" id="L104">            doctors.add(doctorRepository.save(doctor));</span>
         }
-<span class="nc" id="L99">    }</span>
+
+<span class="nc" id="L107">        remapLegacySpecialties();</span>
+
+<span class="nc" id="L109">        LocalDate firstDay = LocalDate.now(clock).plusDays(1);</span>
+<span class="nc" id="L110">        List&lt;ServicioComplementario&gt; services = servicioRepository.findAllByOrderByNombreAsc();</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">        for (int day = 0; day &lt; 7; day++) {</span>
+<span class="nc" id="L112">            LocalDate date = firstDay.plusDays(day);</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">            for (Doctor doctor : doctors) {</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">                for (LocalTime time : List.of(LocalTime.of(9, 0), LocalTime.of(10, 0))) {</span>
+<span class="nc bnc" id="L115" title="All 2 branches missed.">                    if (!horarioRepository.existsByDoctor_IdAndFechaAndHora(doctor.getId(), date, time)) {</span>
+<span class="nc" id="L116">                        horarioRepository.save(new Horario(doctor, date, time));</span>
+                    }
+<span class="nc" id="L118">                }</span>
+<span class="nc" id="L119">            }</span>
+<span class="nc bnc" id="L120" title="All 2 branches missed.">            for (ServicioComplementario service : services) {</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">                for (LocalTime time : List.of(LocalTime.of(9, 0), LocalTime.of(10, 0))) {</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">                    if (!horarioRepository.existsByServicioComplementario_IdAndFechaAndHora(</span>
+<span class="nc" id="L123">                            service.getId(), date, time)) {</span>
+<span class="nc" id="L124">                        horarioRepository.save(new Horario(service, date, time));</span>
+                    }
+<span class="nc" id="L126">                }</span>
+<span class="nc" id="L127">            }</span>
+        }
+<span class="nc" id="L129">    }</span>
+
+    private void seedDemoAccountsIfConfigured() {
+<span class="nc bnc" id="L132" title="All 6 branches missed.">        boolean anyPassword = !adminPassword.isBlank() || !receptionistPassword.isBlank() || !patientPassword.isBlank();</span>
+<span class="nc bnc" id="L133" title="All 6 branches missed.">        boolean allPasswords = !adminPassword.isBlank() &amp;&amp; !receptionistPassword.isBlank() &amp;&amp; !patientPassword.isBlank();</span>
+<span class="nc bnc" id="L134" title="All 4 branches missed.">        if (anyPassword &amp;&amp; !allPasswords) {</span>
+<span class="nc" id="L135">            throw new IllegalStateException(&quot;Defina las tres variables SIGESMED_DEV_*_PASSWORD o ninguna.&quot;);</span>
+        }
+
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        boolean allAccountsExist = usuarioRepository.findByDni(&quot;90000001&quot;).isPresent()</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">                &amp;&amp; usuarioRepository.findByDni(&quot;90000002&quot;).isPresent()</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">                &amp;&amp; usuarioRepository.findByDni(&quot;90000003&quot;).isPresent();</span>
+<span class="nc bnc" id="L141" title="All 4 branches missed.">        if (!allPasswords &amp;&amp; !allAccountsExist) return;</span>
+
+<span class="nc" id="L143">        asegurarCuenta(&quot;90000001&quot;, RolUsuario.ADMINISTRADOR, adminPassword, &quot;SIGESMED_DEV_ADMIN_PASSWORD&quot;);</span>
+<span class="nc" id="L144">        asegurarCuenta(&quot;90000002&quot;, RolUsuario.RECEPCIONISTA, receptionistPassword,</span>
+                &quot;SIGESMED_DEV_RECEPCIONISTA_PASSWORD&quot;);
+<span class="nc" id="L146">        asegurarCuenta(&quot;90000003&quot;, RolUsuario.PACIENTE, patientPassword, &quot;SIGESMED_DEV_PACIENTE_PASSWORD&quot;);</span>
+
+<span class="nc" id="L148">        Usuario admin = usuarioRepository.findByDni(&quot;90000001&quot;).orElseThrow();</span>
+<span class="nc" id="L149">        administradorRepository.findByUsuario_Id(admin.getId())</span>
+<span class="nc" id="L150">                .orElseGet(() -&gt; administradorRepository.save(new Administrador(admin, &quot;90000001&quot;, &quot;admin@example.test&quot;)));</span>
+<span class="nc" id="L151">        Usuario receptionist = usuarioRepository.findByDni(&quot;90000002&quot;).orElseThrow();</span>
+<span class="nc" id="L152">        recepcionistaRepository.findByUsuario_Id(receptionist.getId())</span>
+<span class="nc" id="L153">                .orElseGet(() -&gt; recepcionistaRepository.save(new Recepcionista(receptionist, &quot;Rosa&quot;, &quot;Recepción&quot;, &quot;Demo&quot;,</span>
+                        &quot;90000002&quot;, &quot;recepcion@example.test&quot;)));
+<span class="nc" id="L155">        Usuario patientUser = usuarioRepository.findByDni(&quot;90000003&quot;).orElseThrow();</span>
+<span class="nc" id="L156">        pacienteRepository.findByUsuario_Id(patientUser.getId())</span>
+<span class="nc" id="L157">                .orElseGet(() -&gt; pacienteRepository.save(new Paciente(patientUser, &quot;Paciente&quot;, &quot;Prueba&quot;, &quot;Demo&quot;, &quot;90000003&quot;,</span>
+<span class="nc" id="L158">                        LocalDate.of(2000, 1, 1), &quot;paciente@example.test&quot;)));</span>
+<span class="nc" id="L159">    }</span>
+
+    private Usuario asegurarCuenta(String dni, RolUsuario rol, String password, String variable) {
+<span class="nc" id="L162">        Optional&lt;Usuario&gt; existing = usuarioRepository.findByDni(dni);</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (existing.isPresent()) {</span>
+<span class="nc bnc" id="L164" title="All 4 branches missed.">            if (password != null &amp;&amp; !password.isBlank()) {</span>
+<span class="nc" id="L165">                Usuario u = existing.get();</span>
+<span class="nc" id="L166">                u.setPasswordHash(passwordEncoder.encode(password));</span>
+<span class="nc" id="L167">                return usuarioRepository.save(u);</span>
+            }
+<span class="nc" id="L169">            return existing.get();</span>
+        }
+<span class="nc" id="L171">        requirePassword(password, variable);</span>
+<span class="nc" id="L172">        return usuarioRepository.save(new Usuario(dni, passwordEncoder.encode(password), rol));</span>
+    }
+
+    private Especialidad asegurarEspecialidad(String nombre) {
+<span class="nc" id="L176">        return especialidadRepository.findByNombreIgnoreCase(nombre)</span>
+<span class="nc" id="L177">                .orElseGet(() -&gt; especialidadRepository.save(new Especialidad(nombre)));</span>
+    }
+
+    private void remapLegacySpecialties() {
+<span class="nc" id="L181">        remapLegacySpecialty(&quot;Pediatría&quot;, &quot;Pediatría general&quot;);</span>
+<span class="nc" id="L182">        remapLegacySpecialty(&quot;Medicina General&quot;, &quot;Medicina familiar&quot;);</span>
+<span class="nc" id="L183">        remapLegacySpecialty(&quot;Odontología&quot;, &quot;Odontología pediátrica&quot;);</span>
+
+<span class="nc" id="L185">        List&lt;String&gt; toClean = List.of(&quot;Cardiología&quot;, &quot;Medicina Interna&quot;, &quot;Traumatología&quot;,</span>
+                &quot;Pediatría&quot;, &quot;Medicina General&quot;, &quot;Odontología&quot;);
+<span class="nc bnc" id="L187" title="All 2 branches missed.">        for (String legacy : toClean) {</span>
+<span class="nc" id="L188">            especialidadRepository.findByNombreIgnoreCase(legacy).ifPresent(oldSpecialty -&gt; {</span>
+<span class="nc bnc" id="L189" title="All 2 branches missed.">                if (!doctorRepository.existsByEspecialidades_Id(oldSpecialty.getId())</span>
+<span class="nc bnc" id="L190" title="All 2 branches missed.">                        &amp;&amp; !citaRepository.existsByEspecialidad_Id(oldSpecialty.getId())) {</span>
+<span class="nc" id="L191">                    especialidadRepository.delete(oldSpecialty);</span>
+                }
+<span class="nc" id="L193">            });</span>
+<span class="nc" id="L194">        }</span>
+<span class="nc" id="L195">    }</span>
+
+    private void remapLegacySpecialty(String legacyName, String officialName) {
+<span class="nc" id="L198">        especialidadRepository.findByNombreIgnoreCase(legacyName).ifPresent(oldSpecialty -&gt; {</span>
+<span class="nc" id="L199">            Especialidad target = asegurarEspecialidad(officialName);</span>
+<span class="nc" id="L200">            List&lt;Cita&gt; citas = citaRepository.findAll().stream()</span>
+<span class="nc bnc" id="L201" title="All 4 branches missed.">                    .filter(c -&gt; c.getEspecialidad() != null &amp;&amp; c.getEspecialidad().getId().equals(oldSpecialty.getId()))</span>
+<span class="nc" id="L202">                    .toList();</span>
+<span class="nc bnc" id="L203" title="All 2 branches missed.">            for (Cita c : citas) {</span>
+<span class="nc" id="L204">                c.setEspecialidad(target);</span>
+<span class="nc" id="L205">                citaRepository.save(c);</span>
+<span class="nc" id="L206">            }</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">            if (!doctorRepository.existsByEspecialidades_Id(oldSpecialty.getId())) {</span>
+<span class="nc" id="L208">                especialidadRepository.delete(oldSpecialty);</span>
+            }
+<span class="nc" id="L210">        });</span>
+<span class="nc" id="L211">    }</span>
 
     private void requirePassword(String password, String variable) {
-<span class="nc bnc" id="L102" title="All 4 branches missed.">        if (password == null || password.isBlank()) {</span>
-<span class="nc" id="L103">            throw new IllegalStateException(&quot;Defina &quot; + variable + &quot; para activar datos de desarrollo&quot;);</span>
+<span class="nc bnc" id="L214" title="All 4 branches missed.">        if (password == null || password.isBlank()) {</span>
+<span class="nc" id="L215">            throw new IllegalStateException(&quot;Defina &quot; + variable + &quot; para activar datos de desarrollo&quot;);</span>
         }
-<span class="nc" id="L105">    }</span>
+<span class="nc" id="L217">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

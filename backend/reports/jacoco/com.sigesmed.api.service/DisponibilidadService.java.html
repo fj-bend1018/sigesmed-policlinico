@@ -3,73 +3,123 @@
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sigesmed.api.domain.entity.Doctor;
 import com.sigesmed.api.domain.entity.Especialidad;
+import com.sigesmed.api.domain.entity.ServicioComplementario;
 import com.sigesmed.api.domain.enums.EstadoHorario;
+import com.sigesmed.api.domain.enums.EstadoCita;
 import com.sigesmed.api.dto.disponibilidad.DoctorResponse;
 import com.sigesmed.api.dto.disponibilidad.EspecialidadResponse;
 import com.sigesmed.api.dto.disponibilidad.HorarioResponse;
+import com.sigesmed.api.dto.disponibilidad.ServicioComplementarioResponse;
 import com.sigesmed.api.exception.ApiException;
 import com.sigesmed.api.repository.DoctorRepository;
+import com.sigesmed.api.repository.CitaRepository;
 import com.sigesmed.api.repository.EspecialidadRepository;
 import com.sigesmed.api.repository.HorarioRepository;
+import com.sigesmed.api.repository.ServicioComplementarioRepository;
 
 @Service
 public class DisponibilidadService {
+<span class="fc" id="L32">    private static final ZoneId LIMA = ZoneId.of(&quot;America/Lima&quot;);</span>
     private final EspecialidadRepository especialidadRepository;
     private final DoctorRepository doctorRepository;
     private final HorarioRepository horarioRepository;
+    private final CitaRepository citaRepository;
     private final Clock clock;
+    private final ServicioComplementarioRepository servicioRepository;
+
+    @Autowired
+    public DisponibilidadService(EspecialidadRepository especialidadRepository,
+            DoctorRepository doctorRepository, HorarioRepository horarioRepository,
+<span class="fc" id="L43">            CitaRepository citaRepository, ServicioComplementarioRepository servicioRepository, Clock clock) {</span>
+<span class="fc" id="L44">        this.especialidadRepository = especialidadRepository;</span>
+<span class="fc" id="L45">        this.doctorRepository = doctorRepository;</span>
+<span class="fc" id="L46">        this.horarioRepository = horarioRepository;</span>
+<span class="fc" id="L47">        this.citaRepository = citaRepository;</span>
+<span class="fc" id="L48">        this.servicioRepository = servicioRepository;</span>
+<span class="fc" id="L49">        this.clock = clock;</span>
+<span class="fc" id="L50">    }</span>
 
     public DisponibilidadService(EspecialidadRepository especialidadRepository,
-<span class="nc" id="L31">            DoctorRepository doctorRepository, HorarioRepository horarioRepository, Clock clock) {</span>
-<span class="nc" id="L32">        this.especialidadRepository = especialidadRepository;</span>
-<span class="nc" id="L33">        this.doctorRepository = doctorRepository;</span>
-<span class="nc" id="L34">        this.horarioRepository = horarioRepository;</span>
-<span class="nc" id="L35">        this.clock = clock;</span>
-<span class="nc" id="L36">    }</span>
+            DoctorRepository doctorRepository, HorarioRepository horarioRepository,
+            CitaRepository citaRepository, Clock clock) {
+<span class="fc" id="L55">        this(especialidadRepository, doctorRepository, horarioRepository, citaRepository, null, clock);</span>
+<span class="fc" id="L56">    }</span>
 
     @Transactional(readOnly = true)
     public List&lt;EspecialidadResponse&gt; especialidades() {
-<span class="nc" id="L40">        return especialidadRepository.findAllByOrderByNombreAsc().stream()</span>
-<span class="nc" id="L41">                .map(item -&gt; new EspecialidadResponse(item.getId(), item.getNombre())).toList();</span>
+<span class="nc" id="L60">        return especialidadRepository.findAllByOrderByNombreAsc().stream()</span>
+<span class="nc" id="L61">                .map(item -&gt; new EspecialidadResponse(item.getId(), item.getNombre())).toList();</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;ServicioComplementarioResponse&gt; serviciosComplementarios() {
+<span class="nc" id="L66">        return servicioRepository.findAllByOrderByNombreAsc().stream()</span>
+<span class="nc" id="L67">                .map(item -&gt; new ServicioComplementarioResponse(item.getId(), item.getNombre())).toList();</span>
     }
 
     @Transactional(readOnly = true)
     public List&lt;DoctorResponse&gt; medicos(Long especialidadId) {
-<span class="nc bnc" id="L46" title="All 2 branches missed.">        if (!especialidadRepository.existsById(especialidadId)) {</span>
-<span class="nc" id="L47">            throw new ApiException(HttpStatus.NOT_FOUND, &quot;Especialidad no encontrada&quot;);</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (!especialidadRepository.existsById(especialidadId)) {</span>
+<span class="nc" id="L73">            throw new ApiException(HttpStatus.NOT_FOUND, &quot;Especialidad no encontrada&quot;);</span>
         }
-<span class="nc" id="L49">        return doctorRepository.findActiveBySpecialty(especialidadId).stream().map(this::doctorDto).toList();</span>
+<span class="nc" id="L75">        return doctorRepository.findActiveBySpecialty(especialidadId).stream().map(this::doctorDto).toList();</span>
     }
 
     @Transactional(readOnly = true)
-    public List&lt;HorarioResponse&gt; horarios(Long doctorId, LocalDate fecha) {
-<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (fecha.isBefore(LocalDate.now(clock))) {</span>
-<span class="nc" id="L55">            throw new ApiException(HttpStatus.BAD_REQUEST, &quot;La fecha debe ser hoy o futura&quot;);</span>
+    public List&lt;HorarioResponse&gt; horarios(Long doctorId, LocalDate fecha, Long usuarioId) {
+<span class="fc" id="L80">        LocalDate today = LocalDate.now(clock.withZone(LIMA));</span>
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">        if (fecha.isBefore(today)) {</span>
+<span class="nc" id="L82">            throw new ApiException(HttpStatus.BAD_REQUEST, &quot;La fecha debe ser hoy o futura&quot;);</span>
         }
-<span class="nc" id="L57">        Doctor doctor = doctorRepository.findByIdAndEstado(doctorId, &quot;ACTIVO&quot;)</span>
-<span class="nc" id="L58">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Médico no encontrado o inactivo&quot;));</span>
-<span class="nc" id="L59">        List&lt;HorarioResponse&gt; slots = horarioRepository</span>
-<span class="nc" id="L60">                .findAvailableByDoctorAndDate(doctorId, fecha, EstadoHorario.DISPONIBLE)</span>
-<span class="nc" id="L61">                .stream()</span>
-<span class="nc bnc" id="L62" title="All 4 branches missed.">                .filter(slot -&gt; !fecha.equals(LocalDate.now(clock)) || slot.getHora().isAfter(LocalTime.now(clock)))</span>
-<span class="nc" id="L63">                .map(slot -&gt; new HorarioResponse(slot.getId(), doctor.getId(), doctor.getNombre(),</span>
-<span class="nc" id="L64">                        slot.getFecha(), slot.getHora()))</span>
-<span class="nc" id="L65">                .toList();</span>
-<span class="nc" id="L66">        return slots;</span>
+<span class="fc" id="L84">        Doctor doctor = doctorRepository.findByIdAndEstado(doctorId, &quot;ACTIVO&quot;)</span>
+<span class="pc" id="L85">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Médico no encontrado o inactivo&quot;));</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        List&lt;LocalTime&gt; patientActiveTimes = usuarioId == null ? List.of()</span>
+<span class="fc" id="L87">                : citaRepository.findActiveTimesForUserAndDate(usuarioId, fecha, EstadoCita.ACTIVAS);</span>
+<span class="fc" id="L88">        List&lt;HorarioResponse&gt; slots = horarioRepository</span>
+<span class="fc" id="L89">                .findAvailableByDoctorAndDate(doctorId, fecha, EstadoHorario.DISPONIBLE, EstadoCita.ACTIVAS)</span>
+<span class="fc" id="L90">                .stream()</span>
+<span class="pc bpc" id="L91" title="3 of 4 branches missed.">                .filter(slot -&gt; !fecha.equals(today) || slot.getHora().isAfter(LocalTime.now(clock.withZone(LIMA))))</span>
+<span class="fc bfc" id="L92" title="All 2 branches covered.">                .filter(slot -&gt; !patientActiveTimes.contains(slot.getHora()))</span>
+<span class="fc" id="L93">                .map(slot -&gt; new HorarioResponse(slot.getId(), doctor.getId(), doctor.getNombre(),</span>
+<span class="fc" id="L94">                        null, null, slot.getFecha(), slot.getHora()))</span>
+<span class="fc" id="L95">                .toList();</span>
+<span class="fc" id="L96">        return slots;</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;HorarioResponse&gt; horariosServicio(Long servicioId, LocalDate fecha, Long usuarioId) {
+<span class="nc" id="L101">        LocalDate today = LocalDate.now(clock.withZone(LIMA));</span>
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (fecha.isBefore(today)) {</span>
+<span class="nc" id="L103">            throw new ApiException(HttpStatus.BAD_REQUEST, &quot;La fecha debe ser hoy o futura&quot;);</span>
+        }
+<span class="nc" id="L105">        ServicioComplementario servicio = servicioRepository.findById(servicioId)</span>
+<span class="nc" id="L106">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Servicio complementario no encontrado&quot;));</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        List&lt;LocalTime&gt; patientActiveTimes = usuarioId == null ? List.of()</span>
+<span class="nc" id="L108">                : citaRepository.findActiveTimesForUserAndDate(usuarioId, fecha, EstadoCita.ACTIVAS);</span>
+<span class="nc" id="L109">        return horarioRepository.findAvailableByServiceAndDate(servicioId, fecha,</span>
+                        EstadoHorario.DISPONIBLE, EstadoCita.ACTIVAS)
+<span class="nc" id="L111">                .stream()</span>
+<span class="nc bnc" id="L112" title="All 4 branches missed.">                .filter(slot -&gt; !fecha.equals(today) || slot.getHora().isAfter(LocalTime.now(clock.withZone(LIMA))))</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">                .filter(slot -&gt; !patientActiveTimes.contains(slot.getHora()))</span>
+<span class="nc" id="L114">                .map(slot -&gt; new HorarioResponse(slot.getId(), null, null, servicio.getId(), servicio.getNombre(),</span>
+<span class="nc" id="L115">                        slot.getFecha(), slot.getHora()))</span>
+<span class="nc" id="L116">                .toList();</span>
     }
 
     private DoctorResponse doctorDto(Doctor doctor) {
-<span class="nc" id="L70">        List&lt;String&gt; specialties = doctor.getEspecialidades().stream()</span>
-<span class="nc" id="L71">                .map(Especialidad::getNombre).sorted().toList();</span>
-<span class="nc" id="L72">        return new DoctorResponse(doctor.getId(), doctor.getNombre(), doctor.getCmp(), specialties);</span>
+<span class="nc" id="L120">        List&lt;String&gt; specialties = doctor.getEspecialidades().stream()</span>
+<span class="nc" id="L121">                .map(Especialidad::getNombre).sorted().toList();</span>
+<span class="nc" id="L122">        return new DoctorResponse(doctor.getId(), doctor.getNombre(), doctor.getCmp(), specialties);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

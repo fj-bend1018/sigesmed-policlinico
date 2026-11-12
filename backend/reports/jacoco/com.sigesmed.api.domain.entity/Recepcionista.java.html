@@ -35,6 +35,24 @@ public class Recepcionista {
 <span class="nc" id="L35">    }</span>
 <span class="nc" id="L36">    public Long getId() { return id; }</span>
 <span class="nc" id="L37">    public Usuario getUsuario() { return usuario; }</span>
-<span class="nc" id="L38">    public String getCorreo() { return correo; }</span>
+<span class="nc" id="L38">    public String getNombre() { return nombre; }</span>
+<span class="nc" id="L39">    public String getApellidoPaterno() { return apellidoPaterno; }</span>
+<span class="nc" id="L40">    public String getApellidoMaterno() { return apellidoMaterno; }</span>
+<span class="nc" id="L41">    public String getDni() { return dni; }</span>
+<span class="nc" id="L42">    public String getCorreo() { return correo; }</span>
+<span class="nc" id="L43">    public String getCelular() { return celular; }</span>
+<span class="nc" id="L44">    public String getDireccion() { return direccion; }</span>
+<span class="nc" id="L45">    public String getEstado() { return estado; }</span>
+    public void actualizar(String nombre, String apellidoPaterno, String apellidoMaterno,
+            String correo, String celular, String direccion) {
+<span class="nc" id="L48">        this.nombre = nombre;</span>
+<span class="nc" id="L49">        this.apellidoPaterno = apellidoPaterno;</span>
+<span class="nc" id="L50">        this.apellidoMaterno = apellidoMaterno;</span>
+<span class="nc" id="L51">        this.correo = correo;</span>
+<span class="nc" id="L52">        this.celular = celular;</span>
+<span class="nc" id="L53">        this.direccion = direccion;</span>
+<span class="nc" id="L54">    }</span>
+<span class="nc" id="L55">    public void cambiarEstado(String estado) { this.estado = estado; }</span>
+<span class="nc" id="L56">    public boolean estaActivo() { return &quot;ACTIVO&quot;.equals(estado); }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

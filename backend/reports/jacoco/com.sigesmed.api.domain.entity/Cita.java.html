@@ -24,23 +24,50 @@ public class Cita {
     private Paciente paciente;
     @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = &quot;horario_id&quot;, nullable = false)
     private Horario horario;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;especialidad_id&quot;)
+    private Especialidad especialidad;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = &quot;servicio_complementario_id&quot;)
+    private ServicioComplementario servicioComplementario;
     @OneToOne(fetch = FetchType.LAZY) @JoinColumn(name = &quot;pago_id&quot;, unique = true)
     private Pago pago;
     @Enumerated(EnumType.STRING) @Column(nullable = false, length = 30)
     private EstadoCita estado;
     @Column(name = &quot;motivo_cancelacion&quot;, length = 500) private String motivoCancelacion;
     @Column(name = &quot;creado_en&quot;, nullable = false) private OffsetDateTime creadoEn;
-<span class="nc" id="L33">    protected Cita() { }</span>
-<span class="fc" id="L34">    public Cita(Paciente paciente, Horario horario, EstadoCita estado) {</span>
-<span class="fc" id="L35">        this.paciente = paciente; this.horario = horario; this.estado = estado;</span>
-<span class="fc" id="L36">        this.creadoEn = OffsetDateTime.now();</span>
-<span class="fc" id="L37">    }</span>
-<span class="fc" id="L38">    public Long getId() { return id; }</span>
-<span class="fc" id="L39">    public Paciente getPaciente() { return paciente; }</span>
-<span class="fc" id="L40">    public Horario getHorario() { return horario; }</span>
-<span class="nc" id="L41">    public Pago getPago() { return pago; }</span>
-<span class="fc" id="L42">    public EstadoCita getEstado() { return estado; }</span>
-<span class="nc" id="L43">    public void setEstado(EstadoCita estado) { this.estado = estado; }</span>
-<span class="nc" id="L44">    public OffsetDateTime getCreadoEn() { return creadoEn; }</span>
+<span class="nc" id="L39">    protected Cita() { }</span>
+    public Cita(Paciente paciente, Horario horario, Especialidad especialidad,
+<span class="fc" id="L41">            EstadoCita estado, OffsetDateTime creadoEn) {</span>
+<span class="fc" id="L42">        this.paciente = paciente;</span>
+<span class="fc" id="L43">        this.horario = horario;</span>
+<span class="fc" id="L44">        this.especialidad = especialidad;</span>
+<span class="fc" id="L45">        this.estado = estado;</span>
+<span class="fc" id="L46">        this.creadoEn = creadoEn;</span>
+<span class="fc" id="L47">    }</span>
+    public Cita(Paciente paciente, Horario horario, ServicioComplementario servicioComplementario,
+<span class="nc" id="L49">            EstadoCita estado, OffsetDateTime creadoEn) {</span>
+<span class="nc" id="L50">        this.paciente = paciente;</span>
+<span class="nc" id="L51">        this.horario = horario;</span>
+<span class="nc" id="L52">        this.servicioComplementario = servicioComplementario;</span>
+<span class="nc" id="L53">        this.estado = estado;</span>
+<span class="nc" id="L54">        this.creadoEn = creadoEn;</span>
+<span class="nc" id="L55">    }</span>
+<span class="fc" id="L56">    public Long getId() { return id; }</span>
+<span class="fc" id="L57">    public Paciente getPaciente() { return paciente; }</span>
+<span class="fc" id="L58">    public Horario getHorario() { return horario; }</span>
+<span class="fc" id="L59">    public Especialidad getEspecialidad() { return especialidad; }</span>
+<span class="fc" id="L60">    public ServicioComplementario getServicioComplementario() { return servicioComplementario; }</span>
+<span class="nc" id="L61">    public Pago getPago() { return pago; }</span>
+<span class="fc" id="L62">    public EstadoCita getEstado() { return estado; }</span>
+<span class="nc" id="L63">    public void setEstado(EstadoCita estado) { this.estado = estado; }</span>
+<span class="nc" id="L64">    public OffsetDateTime getCreadoEn() { return creadoEn; }</span>
+<span class="fc" id="L65">    public String getMotivoCancelacion() { return motivoCancelacion; }</span>
+<span class="fc" id="L66">    public void setHorario(Horario horario) { this.horario = horario; }</span>
+<span class="nc" id="L67">    public void setEspecialidad(Especialidad especialidad) { this.especialidad = especialidad; }</span>
+    public void cancelar(String motivo) {
+<span class="fc" id="L69">        this.estado = EstadoCita.CANCELADA;</span>
+<span class="fc" id="L70">        this.motivoCancelacion = motivo;</span>
+<span class="fc" id="L71">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

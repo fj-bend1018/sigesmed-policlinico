@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AdministracionController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sigesmed-api</a> &gt; <a href="index.source.html" class="el_package">com.sigesmed.api.controller</a> &gt; <span class="el_source">AdministracionController.java</span></div><h1>AdministracionController.java</h1><pre class="source lang-java linenums">package com.sigesmed.api.controller;
+
+import java.time.LocalDate;
+import java.util.List;
+
+import com.sigesmed.api.dto.administracion.CambiarEstadoRequest;
+import com.sigesmed.api.dto.administracion.DoctorAdminRequest;
+import com.sigesmed.api.dto.administracion.DoctorAdminResponse;
+import com.sigesmed.api.dto.administracion.HorarioAdminRequest;
+import com.sigesmed.api.dto.administracion.HorarioAdminResponse;
+import com.sigesmed.api.dto.administracion.RecepcionistaActualizarRequest;
+import com.sigesmed.api.dto.administracion.RecepcionistaAdminResponse;
+import com.sigesmed.api.dto.administracion.RecepcionistaCrearRequest;
+import com.sigesmed.api.service.AdministracionService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+@Validated
+@RestController
+@RequestMapping(&quot;/api/v1/administrador&quot;)
+public class AdministracionController {
+    private final AdministracionService service;
+
+<span class="nc" id="L38">    public AdministracionController(AdministracionService service) { this.service = service; }</span>
+
+    @GetMapping(&quot;/doctores&quot;)
+<span class="nc" id="L41">    public List&lt;DoctorAdminResponse&gt; doctores() { return service.listarDoctores(); }</span>
+
+    @GetMapping(&quot;/doctores/{id}&quot;)
+<span class="nc" id="L44">    public DoctorAdminResponse doctor(@PathVariable @Positive Long id) { return service.obtenerDoctor(id); }</span>
+
+    @PostMapping(&quot;/doctores&quot;)
+    public ResponseEntity&lt;DoctorAdminResponse&gt; crearDoctor(@Valid @RequestBody DoctorAdminRequest request) {
+<span class="nc" id="L48">        return ResponseEntity.status(HttpStatus.CREATED).body(service.crearDoctor(request));</span>
+    }
+
+    @PutMapping(&quot;/doctores/{id}&quot;)
+    public DoctorAdminResponse actualizarDoctor(@PathVariable @Positive Long id,
+            @Valid @RequestBody DoctorAdminRequest request) {
+<span class="nc" id="L54">        return service.actualizarDoctor(id, request);</span>
+    }
+
+    @PatchMapping(&quot;/doctores/{id}/estado&quot;)
+    public DoctorAdminResponse estadoDoctor(@PathVariable @Positive Long id,
+            @Valid @RequestBody CambiarEstadoRequest request) {
+<span class="nc" id="L60">        return service.cambiarEstadoDoctor(id, request.estado());</span>
+    }
+
+    @GetMapping(&quot;/horarios&quot;)
+    public List&lt;HorarioAdminResponse&gt; horarios(@RequestParam(required = false) @Positive Long doctorId,
+            @RequestParam(required = false) @Positive Long servicioId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+<span class="nc" id="L68">        return service.listarHorarios(doctorId, servicioId, desde, hasta);</span>
+    }
+
+    @GetMapping(&quot;/horarios/{id}&quot;)
+<span class="nc" id="L72">    public HorarioAdminResponse horario(@PathVariable @Positive Long id) { return service.obtenerHorario(id); }</span>
+
+    @PostMapping(&quot;/horarios&quot;)
+    public ResponseEntity&lt;HorarioAdminResponse&gt; crearHorario(@Valid @RequestBody HorarioAdminRequest request) {
+<span class="nc" id="L76">        return ResponseEntity.status(HttpStatus.CREATED).body(service.crearHorario(request));</span>
+    }
+
+    @PutMapping(&quot;/horarios/{id}&quot;)
+    public HorarioAdminResponse actualizarHorario(@PathVariable @Positive Long id,
+            @Valid @RequestBody HorarioAdminRequest request) {
+<span class="nc" id="L82">        return service.actualizarHorario(id, request);</span>
+    }
+
+    @DeleteMapping(&quot;/horarios/{id}&quot;)
+    public ResponseEntity&lt;Void&gt; eliminarHorario(@PathVariable @Positive Long id) {
+<span class="nc" id="L87">        service.eliminarHorario(id);</span>
+<span class="nc" id="L88">        return ResponseEntity.noContent().build();</span>
+    }
+
+    @GetMapping(&quot;/recepcionistas&quot;)
+<span class="nc" id="L92">    public List&lt;RecepcionistaAdminResponse&gt; recepcionistas() { return service.listarRecepcionistas(); }</span>
+
+    @GetMapping(&quot;/recepcionistas/{id}&quot;)
+    public RecepcionistaAdminResponse recepcionista(@PathVariable @Positive Long id) {
+<span class="nc" id="L96">        return service.obtenerRecepcionista(id);</span>
+    }
+
+    @PostMapping(&quot;/recepcionistas&quot;)
+    public ResponseEntity&lt;RecepcionistaAdminResponse&gt; crearRecepcionista(
+            @Valid @RequestBody RecepcionistaCrearRequest request) {
+<span class="nc" id="L102">        return ResponseEntity.status(HttpStatus.CREATED).body(service.crearRecepcionista(request));</span>
+    }
+
+    @PutMapping(&quot;/recepcionistas/{id}&quot;)
+    public RecepcionistaAdminResponse actualizarRecepcionista(@PathVariable @Positive Long id,
+            @Valid @RequestBody RecepcionistaActualizarRequest request) {
+<span class="nc" id="L108">        return service.actualizarRecepcionista(id, request);</span>
+    }
+
+    @PatchMapping(&quot;/recepcionistas/{id}/estado&quot;)
+    public RecepcionistaAdminResponse estadoRecepcionista(@PathVariable @Positive Long id,
+            @Valid @RequestBody CambiarEstadoRequest request) {
+<span class="nc" id="L114">        return service.cambiarEstadoRecepcionista(id, request.estado());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -3,36 +3,65 @@
 import java.net.URI;
 
 import com.sigesmed.api.dto.cita.CitaResponse;
+import com.sigesmed.api.dto.cita.CancelarCitaRequest;
+import com.sigesmed.api.dto.cita.ReprogramarCitaRequest;
 import com.sigesmed.api.dto.cita.ReservarCitaRequest;
 import com.sigesmed.api.security.UsuarioPrincipal;
 import com.sigesmed.api.service.CitaService;
+import com.sigesmed.api.service.CitaManagementService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import java.util.List;
 
 @RestController
 @RequestMapping(&quot;/api/v1/citas&quot;)
 public class CitaController {
     private final CitaService citaService;
+    private final CitaManagementService managementService;
 
-<span class="nc" id="L24">    public CitaController(CitaService citaService) { this.citaService = citaService; }</span>
+<span class="fc" id="L31">    public CitaController(CitaService citaService, CitaManagementService managementService) {</span>
+<span class="fc" id="L32">        this.citaService = citaService;</span>
+<span class="fc" id="L33">        this.managementService = managementService;</span>
+<span class="fc" id="L34">    }</span>
 
     @PostMapping
     public ResponseEntity&lt;CitaResponse&gt; reservar(@AuthenticationPrincipal UsuarioPrincipal usuario,
             @Valid @RequestBody ReservarCitaRequest request) {
-<span class="nc" id="L29">        CitaResponse cita = citaService.reservar(usuario.getId(), request.horarioId());</span>
-<span class="nc" id="L30">        return ResponseEntity.created(URI.create(&quot;/api/v1/citas/&quot; + cita.id())).body(cita);</span>
+<span class="nc" id="L39">        CitaResponse cita = citaService.reservar(usuario.getId(), request.horarioId(),</span>
+<span class="nc" id="L40">                request.especialidadId(), request.servicioId());</span>
+<span class="nc" id="L41">        return ResponseEntity.created(URI.create(&quot;/api/v1/citas/&quot; + cita.id())).body(cita);</span>
     }
 
     @GetMapping(&quot;/{id}&quot;)
     public CitaResponse obtener(@AuthenticationPrincipal UsuarioPrincipal usuario, @PathVariable Long id) {
-<span class="nc" id="L35">        return citaService.obtenerPropia(usuario.getId(), id);</span>
+<span class="nc" id="L46">        return citaService.obtenerPropia(usuario.getId(), id);</span>
+    }
+
+    @GetMapping(&quot;/mias&quot;)
+    public List&lt;CitaResponse&gt; mias(@AuthenticationPrincipal UsuarioPrincipal usuario,
+            @RequestParam(defaultValue = &quot;PROXIMAS&quot;) String vista) {
+<span class="nc" id="L52">        return managementService.listarPropias(usuario.getId(), vista);</span>
+    }
+
+    @PostMapping(&quot;/{id}/cancelacion&quot;)
+    public CitaResponse cancelar(@AuthenticationPrincipal UsuarioPrincipal usuario, @PathVariable Long id,
+            @Valid @RequestBody(required = false) CancelarCitaRequest request) {
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        return managementService.cancelarPropia(usuario.getId(), id, request == null ? null : request.motivo());</span>
+    }
+
+    @PutMapping(&quot;/{id}/horario&quot;)
+    public CitaResponse reprogramar(@AuthenticationPrincipal UsuarioPrincipal usuario, @PathVariable Long id,
+            @Valid @RequestBody ReprogramarCitaRequest request) {
+<span class="nc" id="L64">        return managementService.reprogramarPropia(usuario.getId(), id, request.horarioId());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -6,7 +6,10 @@ import java.util.List;
 import com.sigesmed.api.dto.disponibilidad.DoctorResponse;
 import com.sigesmed.api.dto.disponibilidad.EspecialidadResponse;
 import com.sigesmed.api.dto.disponibilidad.HorarioResponse;
+import com.sigesmed.api.dto.disponibilidad.ServicioComplementarioResponse;
+import com.sigesmed.api.security.UsuarioPrincipal;
 import com.sigesmed.api.service.DisponibilidadService;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,24 +22,38 @@ import org.springframework.web.bind.annotation.RestController;
 public class DisponibilidadController {
     private final DisponibilidadService disponibilidadService;
 
-<span class="nc" id="L22">    public DisponibilidadController(DisponibilidadService disponibilidadService) {</span>
-<span class="nc" id="L23">        this.disponibilidadService = disponibilidadService;</span>
-<span class="nc" id="L24">    }</span>
+<span class="nc" id="L25">    public DisponibilidadController(DisponibilidadService disponibilidadService) {</span>
+<span class="nc" id="L26">        this.disponibilidadService = disponibilidadService;</span>
+<span class="nc" id="L27">    }</span>
 
     @GetMapping(&quot;/especialidades&quot;)
     public List&lt;EspecialidadResponse&gt; especialidades() {
-<span class="nc" id="L28">        return disponibilidadService.especialidades();</span>
+<span class="nc" id="L31">        return disponibilidadService.especialidades();</span>
+    }
+
+    @GetMapping(&quot;/servicios-complementarios&quot;)
+    public List&lt;ServicioComplementarioResponse&gt; serviciosComplementarios() {
+<span class="nc" id="L36">        return disponibilidadService.serviciosComplementarios();</span>
+    }
+
+    @GetMapping(&quot;/servicios-complementarios/{id}/horarios&quot;)
+    public List&lt;HorarioResponse&gt; horariosServicio(@PathVariable Long id,
+            @AuthenticationPrincipal UsuarioPrincipal usuario,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+<span class="nc bnc" id="L43" title="All 4 branches missed.">        Long pacienteUsuarioId = usuario != null &amp;&amp; &quot;PACIENTE&quot;.equals(usuario.getRole()) ? usuario.getId() : null;</span>
+<span class="nc" id="L44">        return disponibilidadService.horariosServicio(id, fecha, pacienteUsuarioId);</span>
     }
 
     @GetMapping(&quot;/especialidades/{id}/medicos&quot;)
     public List&lt;DoctorResponse&gt; medicos(@PathVariable Long id) {
-<span class="nc" id="L33">        return disponibilidadService.medicos(id);</span>
+<span class="nc" id="L49">        return disponibilidadService.medicos(id);</span>
     }
 
     @GetMapping(&quot;/medicos/{id}/horarios&quot;)
-    public List&lt;HorarioResponse&gt; horarios(@PathVariable Long id,
+    public List&lt;HorarioResponse&gt; horarios(@PathVariable Long id, @AuthenticationPrincipal UsuarioPrincipal usuario,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
-<span class="nc" id="L39">        return disponibilidadService.horarios(id, fecha);</span>
+<span class="nc bnc" id="L55" title="All 4 branches missed.">        Long pacienteUsuarioId = usuario != null &amp;&amp; &quot;PACIENTE&quot;.equals(usuario.getRole()) ? usuario.getId() : null;</span>
+<span class="nc" id="L56">        return disponibilidadService.horarios(id, fecha, pacienteUsuarioId);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

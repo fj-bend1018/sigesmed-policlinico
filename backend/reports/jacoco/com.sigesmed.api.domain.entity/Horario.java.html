@@ -21,26 +21,45 @@ import jakarta.persistence.UniqueConstraint;
 @Table(name = &quot;horario&quot;, uniqueConstraints = @UniqueConstraint(columnNames = { &quot;doctor_id&quot;, &quot;fecha&quot;, &quot;hora&quot; }))
 public class Horario {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @ManyToOne(fetch = FetchType.LAZY, optional = false) @JoinColumn(name = &quot;doctor_id&quot;, nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = &quot;doctor_id&quot;)
     private Doctor doctor;
+    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = &quot;servicio_complementario_id&quot;)
+    private ServicioComplementario servicioComplementario;
     @Column(nullable = false) private LocalDate fecha;
     @Column(nullable = false) private LocalTime hora;
-<span class="pc" id="L28">    @Column(nullable = false) private boolean disponible = true;</span>
-<span class="pc" id="L29">    @Enumerated(EnumType.STRING) @Column(nullable = false, length = 20)</span>
+<span class="pc" id="L30">    @Column(nullable = false) private boolean disponible = true;</span>
+<span class="pc" id="L31">    @Enumerated(EnumType.STRING) @Column(nullable = false, length = 20)</span>
     private EstadoHorario estado = EstadoHorario.DISPONIBLE;
 
-<span class="nc" id="L32">    protected Horario() { }</span>
-<span class="fc" id="L33">    public Horario(Doctor doctor, LocalDate fecha, LocalTime hora) {</span>
-<span class="fc" id="L34">        this.doctor = doctor; this.fecha = fecha; this.hora = hora;</span>
-<span class="fc" id="L35">        this.disponible = true; this.estado = EstadoHorario.DISPONIBLE;</span>
-<span class="fc" id="L36">    }</span>
-<span class="nc" id="L37">    public Long getId() { return id; }</span>
-<span class="fc" id="L38">    public Doctor getDoctor() { return doctor; }</span>
-<span class="fc" id="L39">    public LocalDate getFecha() { return fecha; }</span>
-<span class="fc" id="L40">    public LocalTime getHora() { return hora; }</span>
-<span class="fc" id="L41">    public boolean isDisponible() { return disponible; }</span>
-<span class="fc" id="L42">    public EstadoHorario getEstado() { return estado; }</span>
-<span class="fc" id="L43">    public void ocupar() { this.disponible = false; this.estado = EstadoHorario.OCUPADO; }</span>
-<span class="nc" id="L44">    public void liberar() { this.disponible = true; this.estado = EstadoHorario.DISPONIBLE; }</span>
+<span class="nc" id="L34">    protected Horario() { }</span>
+<span class="fc" id="L35">    public Horario(Doctor doctor, LocalDate fecha, LocalTime hora) {</span>
+<span class="fc" id="L36">        this.doctor = doctor; this.fecha = fecha; this.hora = hora;</span>
+<span class="fc" id="L37">        this.disponible = true; this.estado = EstadoHorario.DISPONIBLE;</span>
+<span class="fc" id="L38">    }</span>
+<span class="nc" id="L39">    public Horario(ServicioComplementario servicioComplementario, LocalDate fecha, LocalTime hora) {</span>
+<span class="nc" id="L40">        this.servicioComplementario = servicioComplementario; this.fecha = fecha; this.hora = hora;</span>
+<span class="nc" id="L41">        this.disponible = true; this.estado = EstadoHorario.DISPONIBLE;</span>
+<span class="nc" id="L42">    }</span>
+<span class="fc" id="L43">    public Long getId() { return id; }</span>
+<span class="fc" id="L44">    public Doctor getDoctor() { return doctor; }</span>
+<span class="fc" id="L45">    public ServicioComplementario getServicioComplementario() { return servicioComplementario; }</span>
+<span class="fc" id="L46">    public LocalDate getFecha() { return fecha; }</span>
+<span class="fc" id="L47">    public LocalTime getHora() { return hora; }</span>
+<span class="fc" id="L48">    public boolean isDisponible() { return disponible; }</span>
+<span class="fc" id="L49">    public EstadoHorario getEstado() { return estado; }</span>
+<span class="fc" id="L50">    public void ocupar() { this.disponible = false; this.estado = EstadoHorario.OCUPADO; }</span>
+<span class="fc" id="L51">    public void liberar() { this.disponible = true; this.estado = EstadoHorario.DISPONIBLE; }</span>
+    public void actualizar(Doctor doctor, LocalDate fecha, LocalTime hora) {
+<span class="nc" id="L53">        this.doctor = doctor;</span>
+<span class="nc" id="L54">        this.servicioComplementario = null;</span>
+<span class="nc" id="L55">        this.fecha = fecha;</span>
+<span class="nc" id="L56">        this.hora = hora;</span>
+<span class="nc" id="L57">    }</span>
+    public void actualizar(ServicioComplementario servicioComplementario, LocalDate fecha, LocalTime hora) {
+<span class="nc" id="L59">        this.doctor = null;</span>
+<span class="nc" id="L60">        this.servicioComplementario = servicioComplementario;</span>
+<span class="nc" id="L61">        this.fecha = fecha;</span>
+<span class="nc" id="L62">        this.hora = hora;</span>
+<span class="nc" id="L63">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

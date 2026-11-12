@@ -4,8 +4,26 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import com.sigesmed.api.domain.entity.Cita;
+import com.sigesmed.api.domain.entity.Doctor;
+import com.sigesmed.api.domain.entity.Especialidad;
 import com.sigesmed.api.domain.enums.EstadoCita;
 
-<span class="fc" id="L9">public record CitaResponse(Long id, EstadoCita estado, String paciente, List&lt;String&gt; especialidades,</span>
-        String doctor, LocalDate fecha, LocalTime hora) { }
+<span class="fc" id="L12">public record CitaResponse(Long id, Long horarioId, Long doctorId, EstadoCita estado, String paciente, String pacienteDni,</span>
+        String correoPaciente, List&lt;String&gt; especialidades, String doctor, LocalDate fecha, LocalTime hora,
+        String motivoCancelacion, Long servicioId, String servicio) {
+    public static CitaResponse from(Cita cita) {
+<span class="fc" id="L16">        Doctor doctor = cita.getHorario().getDoctor();</span>
+<span class="pc bpc" id="L17" title="1 of 2 branches missed.">        boolean complementaryService = cita.getServicioComplementario() != null;</span>
+<span class="pc bpc" id="L18" title="2 of 4 branches missed.">        List&lt;String&gt; specialties = complementaryService ? List.of() : cita.getEspecialidad() == null</span>
+<span class="nc" id="L19">                ? doctor.getEspecialidades().stream().map(Especialidad::getNombre).sorted().toList()</span>
+<span class="fc" id="L20">                : List.of(cita.getEspecialidad().getNombre());</span>
+<span class="fc" id="L21">        String patientName = cita.getPaciente().getNombre() + &quot; &quot; + cita.getPaciente().getApellidoPaterno();</span>
+<span class="pc bpc" id="L22" title="1 of 2 branches missed.">        return new CitaResponse(cita.getId(), cita.getHorario().getId(), doctor == null ? null : doctor.getId(),</span>
+<span class="fc" id="L23">                cita.getEstado(), patientName, cita.getPaciente().getDni(), cita.getPaciente().getCorreo(), specialties,</span>
+<span class="pc bpc" id="L24" title="1 of 2 branches missed.">                doctor == null ? null : doctor.getNombre(), cita.getHorario().getFecha(), cita.getHorario().getHora(),</span>
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">                cita.getMotivoCancelacion(), complementaryService ? cita.getServicioComplementario().getId() : null,</span>
+<span class="pc bpc" id="L26" title="1 of 2 branches missed.">                complementaryService ? cita.getServicioComplementario().getNombre() : null);</span>
+    }
+}
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

@@ -3,85 +3,129 @@
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sigesmed.api.domain.entity.Cita;
-import com.sigesmed.api.domain.entity.Doctor;
+import com.sigesmed.api.domain.entity.Especialidad;
 import com.sigesmed.api.domain.entity.Horario;
 import com.sigesmed.api.domain.entity.Paciente;
+import com.sigesmed.api.domain.entity.ServicioComplementario;
 import com.sigesmed.api.domain.enums.EstadoCita;
 import com.sigesmed.api.domain.enums.EstadoHorario;
 import com.sigesmed.api.dto.cita.CitaResponse;
 import com.sigesmed.api.exception.ApiException;
 import com.sigesmed.api.repository.CitaRepository;
+import com.sigesmed.api.repository.EspecialidadRepository;
 import com.sigesmed.api.repository.HorarioRepository;
 import com.sigesmed.api.repository.PacienteRepository;
+import com.sigesmed.api.repository.ServicioComplementarioRepository;
 
 @Service
 public class CitaService {
     private final PacienteRepository pacienteRepository;
     private final HorarioRepository horarioRepository;
     private final CitaRepository citaRepository;
+    private final EspecialidadRepository especialidadRepository;
+    private final ServicioComplementarioRepository servicioRepository;
     private final Clock clock;
 
+    @Autowired
     public CitaService(PacienteRepository pacienteRepository, HorarioRepository horarioRepository,
-<span class="fc" id="L33">            CitaRepository citaRepository, Clock clock) {</span>
-<span class="fc" id="L34">        this.pacienteRepository = pacienteRepository;</span>
-<span class="fc" id="L35">        this.horarioRepository = horarioRepository;</span>
-<span class="fc" id="L36">        this.citaRepository = citaRepository;</span>
-<span class="fc" id="L37">        this.clock = clock;</span>
-<span class="fc" id="L38">    }</span>
+            CitaRepository citaRepository, EspecialidadRepository especialidadRepository,
+<span class="fc" id="L42">            ServicioComplementarioRepository servicioRepository, Clock clock) {</span>
+<span class="fc" id="L43">        this.pacienteRepository = pacienteRepository;</span>
+<span class="fc" id="L44">        this.horarioRepository = horarioRepository;</span>
+<span class="fc" id="L45">        this.citaRepository = citaRepository;</span>
+<span class="fc" id="L46">        this.especialidadRepository = especialidadRepository;</span>
+<span class="fc" id="L47">        this.servicioRepository = servicioRepository;</span>
+<span class="fc" id="L48">        this.clock = clock;</span>
+<span class="fc" id="L49">    }</span>
+
+    public CitaService(PacienteRepository pacienteRepository, HorarioRepository horarioRepository,
+            CitaRepository citaRepository, EspecialidadRepository especialidadRepository, Clock clock) {
+<span class="fc" id="L53">        this(pacienteRepository, horarioRepository, citaRepository, especialidadRepository, null, clock);</span>
+<span class="fc" id="L54">    }</span>
 
     @Transactional
-    public CitaResponse reservar(Long usuarioId, Long horarioId) {
-<span class="fc" id="L42">        Paciente paciente = pacienteRepository.findByUsuarioIdForUpdate(usuarioId)</span>
-<span class="fc" id="L43">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Perfil de paciente no encontrado&quot;));</span>
-<span class="fc" id="L44">        Horario horario = horarioRepository.findByIdForUpdate(horarioId)</span>
-<span class="fc" id="L45">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Horario no encontrado&quot;));</span>
-<span class="pc bpc" id="L46" title="1 of 4 branches missed.">        if (!horario.isDisponible() || horario.getEstado() != EstadoHorario.DISPONIBLE) {</span>
-<span class="fc" id="L47">            throw new ApiException(HttpStatus.CONFLICT, &quot;El horario ya no está disponible&quot;);</span>
+    public CitaResponse reservar(Long usuarioId, Long horarioId, Long especialidadId) {
+<span class="fc" id="L58">        return reservar(usuarioId, horarioId, especialidadId, null);</span>
+    }
+
+    @Transactional
+    public CitaResponse reservar(Long usuarioId, Long horarioId, Long especialidadId, Long servicioId) {
+<span class="pc bpc" id="L63" title="3 of 6 branches missed.">        if ((especialidadId == null) == (servicioId == null)) {</span>
+<span class="nc" id="L64">            throw new ApiException(HttpStatus.BAD_REQUEST, &quot;Selecciona una especialidad o un servicio complementario&quot;);</span>
         }
-<span class="fc" id="L49">        LocalDate today = LocalDate.now(clock);</span>
-<span class="pc bpc" id="L50" title="1 of 2 branches missed.">        if (horario.getFecha().isBefore(today)</span>
-<span class="pc bpc" id="L51" title="3 of 4 branches missed.">                || (horario.getFecha().equals(today) &amp;&amp; !horario.getHora().isAfter(LocalTime.now(clock)))) {</span>
-<span class="nc" id="L52">            throw new ApiException(HttpStatus.CONFLICT, &quot;El horario ya no está disponible&quot;);</span>
+<span class="fc" id="L66">        Paciente paciente = pacienteRepository.findByUsuarioIdForUpdate(usuarioId)</span>
+<span class="fc" id="L67">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Perfil de paciente no encontrado&quot;));</span>
+<span class="fc" id="L68">        Horario horario = horarioRepository.findByIdForUpdate(horarioId)</span>
+<span class="fc" id="L69">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Horario no encontrado&quot;));</span>
+<span class="pc bpc" id="L70" title="1 of 4 branches missed.">        if (!horario.isDisponible() || horario.getEstado() != EstadoHorario.DISPONIBLE</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">                || citaRepository.existsByHorario_IdAndEstadoIn(horarioId, EstadoCita.ACTIVAS)) {</span>
+<span class="fc" id="L72">            throw new ApiException(HttpStatus.CONFLICT, &quot;El horario ya no está disponible&quot;);</span>
         }
-<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (citaRepository.existsActiveForPatientAt(paciente.getId(), horario.getFecha(), horario.getHora(),</span>
+<span class="fc" id="L74">        Especialidad especialidad = null;</span>
+<span class="fc" id="L75">        ServicioComplementario servicio = null;</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        if (especialidadId != null) {</span>
+<span class="fc" id="L77">            especialidad = especialidadRepository.findById(especialidadId)</span>
+<span class="pc" id="L78">                    .orElseThrow(() -&gt; new ApiException(HttpStatus.BAD_REQUEST, &quot;La especialidad no existe&quot;));</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">            boolean doctorOffersSpecialty = horario.getDoctor() != null &amp;&amp; horario.getDoctor().getEspecialidades().stream()</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">                    .anyMatch(item -&gt; item.getId().equals(especialidadId));</span>
+<span class="pc bpc" id="L81" title="1 of 4 branches missed.">            if (!doctorOffersSpecialty || horario.getServicioComplementario() != null) {</span>
+<span class="fc" id="L82">                throw new ApiException(HttpStatus.BAD_REQUEST, &quot;El médico no atiende la especialidad seleccionada&quot;);</span>
+            }
+<span class="fc" id="L84">        } else {</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">            if (servicioRepository == null) {</span>
+<span class="nc" id="L86">                throw new ApiException(HttpStatus.BAD_REQUEST, &quot;El servicio complementario no está disponible&quot;);</span>
+            }
+<span class="nc" id="L88">            servicio = servicioRepository.findById(servicioId)</span>
+<span class="nc" id="L89">                    .orElseThrow(() -&gt; new ApiException(HttpStatus.BAD_REQUEST, &quot;El servicio complementario no existe&quot;));</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">            if (horario.getServicioComplementario() == null</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">                    || !horario.getServicioComplementario().getId().equals(servicioId)</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">                    || horario.getDoctor() != null) {</span>
+<span class="nc" id="L93">                throw new ApiException(HttpStatus.BAD_REQUEST, &quot;El horario no corresponde al servicio seleccionado&quot;);</span>
+            }
+        }
+<span class="fc" id="L96">        LocalDate today = LocalDate.now(clock);</span>
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">        if (horario.getFecha().isBefore(today)</span>
+<span class="pc bpc" id="L98" title="3 of 4 branches missed.">                || (horario.getFecha().equals(today) &amp;&amp; !horario.getHora().isAfter(LocalTime.now(clock)))) {</span>
+<span class="nc" id="L99">            throw new ApiException(HttpStatus.CONFLICT, &quot;El horario ya no está disponible&quot;);</span>
+        }
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        if (citaRepository.existsActiveForPatientAt(paciente.getId(), horario.getFecha(), horario.getHora(),</span>
                 EstadoCita.ACTIVAS)) {
-<span class="fc" id="L56">            throw new ApiException(HttpStatus.CONFLICT, &quot;Ya tienes una cita activa en esa fecha y hora&quot;);</span>
+<span class="fc" id="L103">            throw new ApiException(HttpStatus.CONFLICT, &quot;Ya tienes una cita activa en esa fecha y hora&quot;);</span>
         }
 
-<span class="fc" id="L59">        horario.ocupar();</span>
-<span class="fc" id="L60">        horarioRepository.save(horario);</span>
-<span class="fc" id="L61">        Cita cita = new Cita(paciente, horario, EstadoCita.RESERVADA);</span>
+<span class="fc" id="L106">        horario.ocupar();</span>
+<span class="fc" id="L107">        horarioRepository.save(horario);</span>
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">        Cita cita = especialidad != null</span>
+<span class="fc" id="L109">                ? new Cita(paciente, horario, especialidad, EstadoCita.RESERVADA, OffsetDateTime.now(clock))</span>
+<span class="pc" id="L110">                : new Cita(paciente, horario, servicio, EstadoCita.RESERVADA, OffsetDateTime.now(clock));</span>
         try {
-<span class="fc" id="L63">            return toResponse(citaRepository.saveAndFlush(cita));</span>
-<span class="nc" id="L64">        } catch (DataIntegrityViolationException exception) {</span>
-<span class="nc" id="L65">            throw new ApiException(HttpStatus.CONFLICT, &quot;El horario acaba de ser reservado&quot;);</span>
+<span class="fc" id="L112">            return toResponse(citaRepository.saveAndFlush(cita));</span>
+<span class="nc" id="L113">        } catch (DataIntegrityViolationException exception) {</span>
+<span class="nc" id="L114">            throw new ApiException(HttpStatus.CONFLICT, &quot;El horario acaba de ser reservado&quot;);</span>
         }
     }
 
     @Transactional(readOnly = true)
     public CitaResponse obtenerPropia(Long usuarioId, Long citaId) {
-<span class="nc" id="L71">        Paciente paciente = pacienteRepository.findByUsuario_Id(usuarioId)</span>
-<span class="nc" id="L72">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Perfil de paciente no encontrado&quot;));</span>
-<span class="nc" id="L73">        Cita cita = citaRepository.findByIdAndPaciente_Id(citaId, paciente.getId())</span>
-<span class="nc" id="L74">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
-<span class="nc" id="L75">        return toResponse(cita);</span>
+<span class="fc" id="L120">        Paciente paciente = pacienteRepository.findByUsuario_Id(usuarioId)</span>
+<span class="pc" id="L121">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Perfil de paciente no encontrado&quot;));</span>
+<span class="fc" id="L122">        Cita cita = citaRepository.findByIdAndPaciente_Id(citaId, paciente.getId())</span>
+<span class="pc" id="L123">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
+<span class="nc" id="L124">        return toResponse(cita);</span>
     }
 
     private CitaResponse toResponse(Cita cita) {
-<span class="fc" id="L79">        Doctor doctor = cita.getHorario().getDoctor();</span>
-<span class="fc" id="L80">        List&lt;String&gt; specialties = doctor.getEspecialidades().stream()</span>
-<span class="fc" id="L81">                .map(item -&gt; item.getNombre()).sorted().toList();</span>
-<span class="fc" id="L82">        return new CitaResponse(cita.getId(), cita.getEstado(),</span>
-<span class="fc" id="L83">                cita.getPaciente().getNombre() + &quot; &quot; + cita.getPaciente().getApellidoPaterno(),</span>
-<span class="fc" id="L84">                specialties, doctor.getNombre(), cita.getHorario().getFecha(), cita.getHorario().getHora());</span>
+<span class="fc" id="L128">        return CitaResponse.from(cita);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

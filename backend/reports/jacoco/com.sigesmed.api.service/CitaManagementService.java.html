@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CitaManagementService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sigesmed-api</a> &gt; <a href="index.source.html" class="el_package">com.sigesmed.api.service</a> &gt; <span class="el_source">CitaManagementService.java</span></div><h1>CitaManagementService.java</h1><pre class="source lang-java linenums">package com.sigesmed.api.service;
+
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.sigesmed.api.domain.entity.Cita;
+import com.sigesmed.api.domain.entity.Horario;
+import com.sigesmed.api.domain.entity.Paciente;
+import com.sigesmed.api.domain.enums.EstadoCita;
+import com.sigesmed.api.domain.enums.EstadoHorario;
+import com.sigesmed.api.dto.cita.CitaResponse;
+import com.sigesmed.api.exception.ApiException;
+import com.sigesmed.api.repository.CitaRepository;
+import com.sigesmed.api.repository.HorarioRepository;
+import com.sigesmed.api.repository.PacienteRepository;
+
+@Service
+public class CitaManagementService {
+<span class="fc" id="L32">    private static final Set&lt;EstadoCita&gt; PATIENT_ACTIVE = Set.of(EstadoCita.RESERVADA, EstadoCita.CONFIRMADA);</span>
+<span class="fc" id="L33">    private static final Set&lt;EstadoCita&gt; HISTORY = Set.of(EstadoCita.ATENDIDA, EstadoCita.NO_ASISTIO);</span>
+<span class="fc" id="L34">    private static final Set&lt;EstadoCita&gt; CANCELLED = Set.of(EstadoCita.CANCELADA);</span>
+
+    private final PacienteRepository pacienteRepository;
+    private final CitaRepository citaRepository;
+    private final HorarioRepository horarioRepository;
+    private final Clock clock;
+    private final Duration plazoCancelacion;
+
+    public CitaManagementService(PacienteRepository pacienteRepository, CitaRepository citaRepository,
+            HorarioRepository horarioRepository, Clock clock,
+<span class="fc" id="L44">            @Value(&quot;${sigesmed.cita.plazo-cancelacion:PT2H}&quot;) Duration plazoCancelacion) {</span>
+<span class="pc bpc" id="L45" title="3 of 6 branches missed.">        if (plazoCancelacion == null || plazoCancelacion.isNegative() || plazoCancelacion.isZero()) {</span>
+<span class="nc" id="L46">            throw new IllegalArgumentException(&quot;sigesmed.cita.plazo-cancelacion debe ser positivo&quot;);</span>
+        }
+<span class="fc" id="L48">        this.pacienteRepository = pacienteRepository;</span>
+<span class="fc" id="L49">        this.citaRepository = citaRepository;</span>
+<span class="fc" id="L50">        this.horarioRepository = horarioRepository;</span>
+<span class="fc" id="L51">        this.clock = clock;</span>
+<span class="fc" id="L52">        this.plazoCancelacion = plazoCancelacion;</span>
+<span class="fc" id="L53">    }</span>
+
+    @Transactional(readOnly = true)
+    public List&lt;CitaResponse&gt; listarPropias(Long usuarioId, String vista) {
+<span class="nc" id="L57">        Paciente paciente = pacienteRepository.findByUsuario_Id(usuarioId)</span>
+<span class="nc" id="L58">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Perfil de paciente no encontrado&quot;));</span>
+<span class="nc bnc" id="L59" title="All 6 branches missed.">        Collection&lt;EstadoCita&gt; estados = switch (vista == null ? &quot;PROXIMAS&quot; : vista.toUpperCase(Locale.ROOT)) {</span>
+<span class="nc" id="L60">            case &quot;PROXIMAS&quot; -&gt; PATIENT_ACTIVE;</span>
+<span class="nc" id="L61">            case &quot;HISTORIAL&quot; -&gt; HISTORY;</span>
+<span class="nc" id="L62">            case &quot;CANCELADAS&quot; -&gt; CANCELLED;</span>
+<span class="nc" id="L63">            default -&gt; throw new ApiException(HttpStatus.BAD_REQUEST, &quot;La vista de citas no es válida&quot;);</span>
+        };
+<span class="nc" id="L65">        return citaRepository.findPatientCitas(paciente.getId(), estados).stream().map(CitaResponse::from).toList();</span>
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;CitaResponse&gt; listarAgenda(EstadoCita estado, LocalDate fecha, String busqueda) {
+<span class="nc" id="L70">        List&lt;Cita&gt; citas = citaRepository.findAgenda(estado, fecha);</span>
+<span class="nc bnc" id="L71" title="All 4 branches missed.">        if (busqueda == null || busqueda.isBlank()) return citas.stream().map(CitaResponse::from).toList();</span>
+<span class="nc" id="L72">        String query = busqueda.trim().toLowerCase(Locale.ROOT);</span>
+<span class="nc" id="L73">        return citas.stream().filter(cita -&gt; matches(cita, query)).map(CitaResponse::from).toList();</span>
+    }
+
+    @Transactional(readOnly = true)
+    public CitaResponse obtenerParaRecepcion(Long citaId) {
+<span class="nc" id="L78">        Cita cita = citaRepository.findById(citaId)</span>
+<span class="nc" id="L79">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
+<span class="nc" id="L80">        return CitaResponse.from(cita);</span>
+    }
+
+    @Transactional
+    public CitaResponse cancelarPropia(Long usuarioId, Long citaId, String motivo) {
+<span class="fc" id="L85">        Paciente paciente = pacienteRepository.findByUsuario_Id(usuarioId)</span>
+<span class="pc" id="L86">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Perfil de paciente no encontrado&quot;));</span>
+<span class="fc" id="L87">        Cita cita = citaRepository.findByIdAndPaciente_IdForUpdate(citaId, paciente.getId())</span>
+<span class="pc" id="L88">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
+<span class="fc" id="L89">        verificarAnticipacion(cita);</span>
+<span class="fc" id="L90">        return cancelarBloqueada(cita, motivo);</span>
+    }
+
+    @Transactional
+    public CitaResponse cancelarPorRecepcion(Long citaId, String motivo) {
+<span class="nc" id="L95">        return cancelar(citaId, motivo, true);</span>
+    }
+
+    @Transactional
+    public CitaResponse reprogramarPropia(Long usuarioId, Long citaId, Long horarioId) {
+<span class="fc" id="L100">        Paciente paciente = pacienteRepository.findByUsuario_Id(usuarioId)</span>
+<span class="pc" id="L101">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Perfil de paciente no encontrado&quot;));</span>
+<span class="fc" id="L102">        Cita cita = citaRepository.findByIdAndPaciente_IdForUpdate(citaId, paciente.getId())</span>
+<span class="fc" id="L103">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
+<span class="fc" id="L104">        return reprogramar(cita, horarioId);</span>
+    }
+
+    @Transactional
+    public CitaResponse reprogramarPorRecepcion(Long citaId, Long horarioId) {
+<span class="nc" id="L109">        return reprogramar(citaId, horarioId);</span>
+    }
+
+    @Transactional
+    public CitaResponse cambiarEstadoPorRecepcion(Long citaId, EstadoCita nuevoEstado) {
+<span class="nc" id="L114">        Cita cita = citaRepository.findByIdForUpdate(citaId)</span>
+<span class="nc" id="L115">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
+<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (nuevoEstado == EstadoCita.CANCELADA) {</span>
+<span class="nc" id="L117">            verificarAnticipacion(cita);</span>
+<span class="nc" id="L118">            return cancelarBloqueada(cita, null);</span>
+        }
+<span class="nc bnc" id="L120" title="All 4 branches missed.">        if (nuevoEstado != EstadoCita.ATENDIDA &amp;&amp; nuevoEstado != EstadoCita.NO_ASISTIO) {</span>
+<span class="nc" id="L121">            throw new ApiException(HttpStatus.BAD_REQUEST,</span>
+                    &quot;Recepción solo puede marcar una cita como atendida, inasistencia o cancelada&quot;);
+        }
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (!PATIENT_ACTIVE.contains(cita.getEstado())) {</span>
+<span class="nc" id="L125">            throw new ApiException(HttpStatus.CONFLICT, &quot;La cita ya no está activa&quot;);</span>
+        }
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (instante(cita.getHorario()).isAfter(clock.instant())) {</span>
+<span class="nc" id="L128">            throw new ApiException(HttpStatus.CONFLICT, &quot;No se puede cerrar una cita antes de su horario&quot;);</span>
+        }
+<span class="nc" id="L130">        cita.setEstado(nuevoEstado);</span>
+<span class="nc" id="L131">        return CitaResponse.from(citaRepository.save(cita));</span>
+    }
+
+    private CitaResponse cancelar(Long citaId, String motivo, boolean validarAnticipacion) {
+<span class="nc" id="L135">        Cita cita = citaRepository.findByIdForUpdate(citaId)</span>
+<span class="nc" id="L136">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        if (validarAnticipacion) verificarAnticipacion(cita);</span>
+<span class="nc" id="L138">        return cancelarBloqueada(cita, motivo);</span>
+    }
+
+    private CitaResponse cancelarBloqueada(Cita cita, String motivo) {
+<span class="pc bpc" id="L142" title="1 of 2 branches missed.">        if (cita.getEstado() != EstadoCita.RESERVADA) {</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">            if (cita.getEstado() == EstadoCita.CONFIRMADA) {</span>
+<span class="nc" id="L144">                throw new ApiException(HttpStatus.CONFLICT,</span>
+                        &quot;La cita está confirmada con pago; la cancelación requiere una política de devolución&quot;);
+            }
+<span class="nc" id="L147">            throw new ApiException(HttpStatus.CONFLICT, &quot;La cita ya no se puede cancelar&quot;);</span>
+        }
+<span class="fc" id="L149">        Horario horario = horarioRepository.findByIdForUpdate(cita.getHorario().getId())</span>
+<span class="pc" id="L150">                .orElseThrow(() -&gt; new ApiException(HttpStatus.CONFLICT, &quot;El horario asociado ya no existe&quot;));</span>
+<span class="fc" id="L151">        horario.liberar();</span>
+<span class="fc" id="L152">        cita.cancelar(blankToNull(motivo));</span>
+<span class="fc" id="L153">        horarioRepository.save(horario);</span>
+<span class="fc" id="L154">        return CitaResponse.from(citaRepository.save(cita));</span>
+    }
+
+    private CitaResponse reprogramar(Long citaId, Long horarioId) {
+<span class="nc" id="L158">        Cita cita = citaRepository.findByIdForUpdate(citaId)</span>
+<span class="nc" id="L159">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
+<span class="nc" id="L160">        return reprogramar(cita, horarioId);</span>
+    }
+
+    private CitaResponse reprogramar(Cita cita, Long horarioId) {
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">        if (cita.getEstado() != EstadoCita.RESERVADA) {</span>
+<span class="nc" id="L165">            throw new ApiException(HttpStatus.CONFLICT,</span>
+                    &quot;Solo se pueden reprogramar citas reservadas sin pago confirmado&quot;);
+        }
+<span class="fc" id="L168">        verificarAnticipacion(cita);</span>
+<span class="pc bpc" id="L169" title="1 of 2 branches missed.">        if (cita.getHorario().getId().equals(horarioId)) {</span>
+<span class="nc" id="L170">            throw new ApiException(HttpStatus.BAD_REQUEST, &quot;Selecciona un horario distinto al actual&quot;);</span>
+        }
+<span class="fc" id="L172">        Horario nuevo = horarioRepository.findByIdForUpdate(horarioId)</span>
+<span class="pc" id="L173">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Horario nuevo no encontrado&quot;));</span>
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">        if (cita.getServicioComplementario() != null) {</span>
+<span class="nc bnc" id="L175" title="All 2 branches missed.">            if (nuevo.getServicioComplementario() == null</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">                    || !nuevo.getServicioComplementario().getId().equals(cita.getServicioComplementario().getId())</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">                    || nuevo.getDoctor() != null) {</span>
+<span class="nc" id="L178">                throw new ApiException(HttpStatus.CONFLICT,</span>
+                        &quot;La reprogramación debe conservar el servicio complementario de la cita&quot;);
+            }
+        } else {
+<span class="pc bpc" id="L182" title="2 of 4 branches missed.">            if (cita.getEspecialidad() == null || nuevo.getDoctor() == null) {</span>
+<span class="nc" id="L183">                throw new ApiException(HttpStatus.CONFLICT,</span>
+                        &quot;La cita no tiene una especialidad confirmada; no se puede reprogramar&quot;);
+            }
+<span class="fc" id="L186">            boolean mismaEspecialidad = nuevo.getDoctor().getEspecialidades().stream()</span>
+<span class="fc" id="L187">                    .anyMatch(especialidad -&gt; especialidad.getId().equals(cita.getEspecialidad().getId()));</span>
+<span class="pc bpc" id="L188" title="1 of 4 branches missed.">            if (!mismaEspecialidad || nuevo.getServicioComplementario() != null) {</span>
+<span class="fc" id="L189">                throw new ApiException(HttpStatus.CONFLICT,</span>
+                        &quot;La reprogramación debe conservar la especialidad de la cita&quot;);
+            }
+        }
+<span class="pc bpc" id="L193" title="1 of 4 branches missed.">        if (!nuevo.isDisponible() || nuevo.getEstado() != EstadoHorario.DISPONIBLE) {</span>
+<span class="fc" id="L194">            throw new ApiException(HttpStatus.CONFLICT, &quot;El horario elegido ya no está disponible&quot;);</span>
+        }
+<span class="fc bfc" id="L196" title="All 2 branches covered.">        if (!instante(nuevo).isAfter(clock.instant())) {</span>
+<span class="fc" id="L197">            throw new ApiException(HttpStatus.CONFLICT, &quot;El nuevo horario debe estar en el futuro&quot;);</span>
+        }
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">        if (citaRepository.existsActiveForPatientAt(cita.getPaciente().getId(), nuevo.getFecha(), nuevo.getHora(),</span>
+                PATIENT_ACTIVE)) {
+<span class="nc" id="L201">            throw new ApiException(HttpStatus.CONFLICT, &quot;El paciente ya tiene una cita activa en esa fecha y hora&quot;);</span>
+        }
+
+<span class="fc" id="L204">        Horario anterior = horarioRepository.findByIdForUpdate(cita.getHorario().getId())</span>
+<span class="pc" id="L205">                .orElseThrow(() -&gt; new ApiException(HttpStatus.CONFLICT, &quot;El horario actual ya no existe&quot;));</span>
+<span class="fc" id="L206">        anterior.liberar();</span>
+<span class="fc" id="L207">        nuevo.ocupar();</span>
+<span class="fc" id="L208">        cita.setHorario(nuevo);</span>
+<span class="fc" id="L209">        horarioRepository.save(anterior);</span>
+<span class="fc" id="L210">        horarioRepository.save(nuevo);</span>
+        try {
+<span class="fc" id="L212">            return CitaResponse.from(citaRepository.saveAndFlush(cita));</span>
+<span class="nc" id="L213">        } catch (DataIntegrityViolationException exception) {</span>
+<span class="nc" id="L214">            throw new ApiException(HttpStatus.CONFLICT, &quot;No se pudo reservar el nuevo horario&quot;);</span>
+        }
+    }
+
+    private void verificarAnticipacion(Cita cita) {
+<span class="fc bfc" id="L219" title="All 2 branches covered.">        if (instante(cita.getHorario()).isBefore(clock.instant().plus(plazoCancelacion))) {</span>
+<span class="fc" id="L220">            throw new ApiException(HttpStatus.CONFLICT,</span>
+<span class="fc" id="L221">                    &quot;Solo puedes cancelar o reprogramar con al menos &quot; + plazoCancelacion.toHours()</span>
+                            + &quot; horas de anticipación&quot;);
+        }
+<span class="fc" id="L224">    }</span>
+
+    private Instant instante(Horario horario) {
+<span class="fc" id="L227">        return LocalDateTime.of(horario.getFecha(), horario.getHora()).atZone(clock.getZone()).toInstant();</span>
+    }
+
+    private boolean matches(Cita cita, String query) {
+<span class="nc" id="L231">        String name = cita.getPaciente().getNombre() + &quot; &quot; + cita.getPaciente().getApellidoPaterno()</span>
+<span class="nc" id="L232">                + &quot; &quot; + String.valueOf(cita.getPaciente().getApellidoMaterno());</span>
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (cita.getServicioComplementario() != null) {</span>
+<span class="nc bnc" id="L234" title="All 4 branches missed.">            return contains(name, query) || contains(cita.getPaciente().getDni(), query)</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">                    || contains(cita.getPaciente().getCorreo(), query)</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">                    || contains(cita.getServicioComplementario().getNombre(), query);</span>
+        }
+<span class="nc bnc" id="L238" title="All 4 branches missed.">        return contains(name, query) || contains(cita.getPaciente().getDni(), query)</span>
+<span class="nc bnc" id="L239" title="All 2 branches missed.">                || contains(cita.getPaciente().getCorreo(), query)</span>
+<span class="nc bnc" id="L240" title="All 2 branches missed.">                || contains(cita.getHorario().getDoctor().getNombre(), query)</span>
+<span class="nc" id="L241">                || cita.getHorario().getDoctor().getEspecialidades().stream()</span>
+<span class="nc bnc" id="L242" title="All 2 branches missed.">                        .anyMatch(especialidad -&gt; contains(especialidad.getNombre(), query));</span>
+    }
+
+    private boolean contains(String value, String query) {
+<span class="nc bnc" id="L246" title="All 4 branches missed.">        return value != null &amp;&amp; value.toLowerCase(Locale.ROOT).contains(query);</span>
+    }
+
+    private String blankToNull(String value) {
+<span class="pc bpc" id="L250" title="2 of 4 branches missed.">        return value == null || value.isBlank() ? null : value.trim();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

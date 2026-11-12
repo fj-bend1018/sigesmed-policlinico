@@ -2,6 +2,7 @@
 
 import java.time.Clock;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sigesmed.api.exception.ApiError;
@@ -9,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,91 +28,103 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
-<span class="nc" id="L29">public class SecurityConfiguration {</span>
+<span class="fc" id="L31">public class SecurityConfiguration {</span>
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper mapper,
-            CookieCsrfTokenRepository csrfRepository, CorsConfigurationSource corsConfigurationSource)
+            CookieCsrfTokenRepository csrfRepository, CorsConfigurationSource corsConfigurationSource,
+            Clock applicationClock)
             throws Exception {
-<span class="nc" id="L34">        return http</span>
-<span class="nc" id="L35">                .cors(cors -&gt; cors.configurationSource(corsConfigurationSource))</span>
-<span class="nc" id="L36">                .csrf(csrf -&gt; csrf</span>
-<span class="nc" id="L37">                        .csrfTokenRepository(csrfRepository)</span>
-<span class="nc" id="L38">                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))</span>
-<span class="nc" id="L39">                .authorizeHttpRequests(authorize -&gt; authorize</span>
-<span class="nc" id="L40">                        .requestMatchers(&quot;/api/v1/health&quot;, &quot;/api/v1/csrf&quot;,</span>
+<span class="fc" id="L37">        return http</span>
+<span class="fc" id="L38">                .cors(cors -&gt; cors.configurationSource(corsConfigurationSource))</span>
+<span class="fc" id="L39">                .csrf(csrf -&gt; csrf</span>
+<span class="fc" id="L40">                        .csrfTokenRepository(csrfRepository)</span>
+<span class="fc" id="L41">                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))</span>
+<span class="fc" id="L42">                .authorizeHttpRequests(authorize -&gt; authorize</span>
+                        // Catálogo necesario para reservar sin iniciar sesión. Las escrituras siguen protegidas abajo.
+<span class="fc" id="L44">                        .requestMatchers(HttpMethod.GET,</span>
+                                &quot;/api/v1/especialidades&quot;,
+                                &quot;/api/v1/especialidades/*/medicos&quot;,
+                                &quot;/api/v1/medicos/*/horarios&quot;,
+                                &quot;/api/v1/servicios-complementarios&quot;,
+<span class="fc" id="L49">                                &quot;/api/v1/servicios-complementarios/*/horarios&quot;).permitAll()</span>
+<span class="fc" id="L50">                        .requestMatchers(&quot;/api/v1/health&quot;, &quot;/api/v1/csrf&quot;,</span>
                                 &quot;/api/v1/auth/registro&quot;, &quot;/api/v1/auth/login&quot;,
-<span class="nc" id="L42">                                &quot;/api/v1/auth/recuperar&quot;, &quot;/api/v1/auth/restablecer&quot;).permitAll()</span>
-<span class="nc" id="L43">                        .requestMatchers(&quot;/api/v1/auth/logout&quot;).authenticated()</span>
-<span class="nc" id="L44">                        .requestMatchers(&quot;/api/v1/especialidades/**&quot;, &quot;/api/v1/medicos/**&quot;,</span>
-<span class="nc" id="L45">                                &quot;/api/v1/citas/**&quot;).hasRole(&quot;PACIENTE&quot;)</span>
-<span class="nc" id="L46">                        .anyRequest().denyAll())</span>
-<span class="nc" id="L47">                .sessionManagement(session -&gt; session</span>
-<span class="nc" id="L48">                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)</span>
-<span class="nc" id="L49">                        .sessionFixation(fixation -&gt; fixation.changeSessionId()))</span>
-<span class="nc" id="L50">                .exceptionHandling(errors -&gt; errors</span>
-<span class="nc" id="L51">                        .authenticationEntryPoint((request, response, exception) -&gt; writeError(</span>
-                                mapper, response, HttpStatus.UNAUTHORIZED, &quot;Autenticación requerida&quot;,
-<span class="nc" id="L53">                                request.getRequestURI()))</span>
-<span class="nc" id="L54">                        .accessDeniedHandler((request, response, exception) -&gt; writeError(</span>
-                                mapper, response, HttpStatus.FORBIDDEN, &quot;Acceso denegado&quot;,
-<span class="nc" id="L56">                                request.getRequestURI())))</span>
-<span class="nc" id="L57">                .formLogin(form -&gt; form.disable())</span>
-<span class="nc" id="L58">                .httpBasic(basic -&gt; basic.disable())</span>
-<span class="nc" id="L59">                .logout(logout -&gt; logout.disable())</span>
-<span class="nc" id="L60">                .build();</span>
+<span class="fc" id="L52">                                &quot;/api/v1/auth/recuperar&quot;, &quot;/api/v1/auth/restablecer&quot;).permitAll()</span>
+<span class="fc" id="L53">                        .requestMatchers(&quot;/api/v1/auth/logout&quot;).authenticated()</span>
+<span class="fc" id="L54">                        .requestMatchers(&quot;/api/v1/cuenta/**&quot;).hasAnyRole(&quot;PACIENTE&quot;, &quot;RECEPCIONISTA&quot;, &quot;ADMINISTRADOR&quot;)</span>
+<span class="fc" id="L55">                        .requestMatchers(&quot;/api/v1/pacientes/**&quot;, &quot;/api/v1/citas/**&quot;).hasRole(&quot;PACIENTE&quot;)</span>
+<span class="fc" id="L56">                        .requestMatchers(&quot;/api/v1/recepcionista/**&quot;).hasRole(&quot;RECEPCIONISTA&quot;)</span>
+<span class="fc" id="L57">                        .requestMatchers(&quot;/api/v1/administrador/**&quot;).hasRole(&quot;ADMINISTRADOR&quot;)</span>
+<span class="fc" id="L58">                        .requestMatchers(&quot;/api/v1/especialidades/**&quot;, &quot;/api/v1/medicos/**&quot;)</span>
+<span class="fc" id="L59">                                .hasAnyRole(&quot;PACIENTE&quot;, &quot;RECEPCIONISTA&quot;, &quot;ADMINISTRADOR&quot;)</span>
+<span class="fc" id="L60">                        .anyRequest().denyAll())</span>
+<span class="fc" id="L61">                .sessionManagement(session -&gt; session</span>
+<span class="fc" id="L62">                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)</span>
+<span class="fc" id="L63">                        .sessionFixation(fixation -&gt; fixation.changeSessionId()))</span>
+<span class="fc" id="L64">                .exceptionHandling(errors -&gt; errors</span>
+<span class="pc" id="L65">                        .authenticationEntryPoint((request, response, exception) -&gt; writeError(</span>
+                                mapper, response, applicationClock, HttpStatus.UNAUTHORIZED, &quot;Autenticación requerida&quot;,
+<span class="nc" id="L67">                                request.getRequestURI()))</span>
+<span class="fc" id="L68">                        .accessDeniedHandler((request, response, exception) -&gt; writeError(</span>
+                                mapper, response, applicationClock, HttpStatus.FORBIDDEN, &quot;Acceso denegado&quot;,
+<span class="fc" id="L70">                                request.getRequestURI())))</span>
+<span class="fc" id="L71">                .formLogin(form -&gt; form.disable())</span>
+<span class="fc" id="L72">                .httpBasic(basic -&gt; basic.disable())</span>
+<span class="fc" id="L73">                .logout(logout -&gt; logout.disable())</span>
+<span class="fc" id="L74">                .build();</span>
     }
 
     @Bean
     CookieCsrfTokenRepository csrfTokenRepository() {
-<span class="nc" id="L65">        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();</span>
-<span class="nc" id="L66">        repository.setCookieName(&quot;XSRF-TOKEN&quot;);</span>
-<span class="nc" id="L67">        repository.setHeaderName(&quot;X-XSRF-TOKEN&quot;);</span>
-<span class="nc" id="L68">        repository.setCookiePath(&quot;/&quot;);</span>
-<span class="nc" id="L69">        return repository;</span>
+<span class="fc" id="L79">        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();</span>
+<span class="fc" id="L80">        repository.setCookieName(&quot;XSRF-TOKEN&quot;);</span>
+<span class="fc" id="L81">        repository.setHeaderName(&quot;X-XSRF-TOKEN&quot;);</span>
+<span class="fc" id="L82">        repository.setCookiePath(&quot;/&quot;);</span>
+<span class="fc" id="L83">        return repository;</span>
     }
 
     @Bean
     CorsConfigurationSource corsConfigurationSource(
             @Value(&quot;${sigesmed.frontend-origin:http://localhost:4200}&quot;) String frontendOrigin) {
-<span class="nc" id="L75">        CorsConfiguration configuration = new CorsConfiguration();</span>
-<span class="nc" id="L76">        configuration.setAllowedOrigins(java.util.List.of(frontendOrigin));</span>
-<span class="nc" id="L77">        configuration.setAllowedMethods(java.util.List.of(&quot;GET&quot;, &quot;POST&quot;, &quot;OPTIONS&quot;));</span>
-<span class="nc" id="L78">        configuration.setAllowedHeaders(java.util.List.of(&quot;Content-Type&quot;, &quot;X-XSRF-TOKEN&quot;));</span>
-<span class="nc" id="L79">        configuration.setAllowCredentials(true);</span>
-<span class="nc" id="L80">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
-<span class="nc" id="L81">        source.registerCorsConfiguration(&quot;/api/**&quot;, configuration);</span>
-<span class="nc" id="L82">        return source;</span>
+<span class="fc" id="L89">        CorsConfiguration configuration = new CorsConfiguration();</span>
+<span class="fc" id="L90">        configuration.setAllowedOrigins(java.util.List.of(frontendOrigin));</span>
+<span class="fc" id="L91">        configuration.setAllowedMethods(java.util.List.of(&quot;GET&quot;, &quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;, &quot;OPTIONS&quot;));</span>
+<span class="fc" id="L92">        configuration.setAllowedHeaders(java.util.List.of(&quot;Content-Type&quot;, &quot;X-XSRF-TOKEN&quot;));</span>
+<span class="fc" id="L93">        configuration.setAllowCredentials(true);</span>
+<span class="fc" id="L94">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
+<span class="fc" id="L95">        source.registerCorsConfiguration(&quot;/api/**&quot;, configuration);</span>
+<span class="fc" id="L96">        return source;</span>
     }
 
     @Bean
     SecurityContextRepository securityContextRepository() {
-<span class="nc" id="L87">        return new HttpSessionSecurityContextRepository();</span>
+<span class="fc" id="L101">        return new HttpSessionSecurityContextRepository();</span>
     }
 
     @Bean
     Clock applicationClock() {
-<span class="nc" id="L92">        return Clock.systemUTC();</span>
+<span class="fc" id="L106">        return Clock.system(ZoneId.of(&quot;America/Lima&quot;));</span>
     }
 
     @Bean
     PasswordEncoder passwordEncoder() {
-<span class="nc" id="L97">        return new BCryptPasswordEncoder();</span>
+<span class="fc" id="L111">        return new BCryptPasswordEncoder();</span>
     }
 
     @Bean
     UserDetailsService noAccountsUntilDataExists() {
-<span class="nc" id="L102">        return username -&gt; {</span>
-<span class="nc" id="L103">            throw new UsernameNotFoundException(&quot;La autenticación se realiza mediante AuthService&quot;);</span>
+<span class="fc" id="L116">        return username -&gt; {</span>
+<span class="nc" id="L117">            throw new UsernameNotFoundException(&quot;La autenticación se realiza mediante AuthService&quot;);</span>
         };
     }
 
-    private static void writeError(ObjectMapper mapper, HttpServletResponse response,
+    private static void writeError(ObjectMapper mapper, HttpServletResponse response, Clock clock,
             HttpStatus status, String message, String path) throws java.io.IOException {
-<span class="nc" id="L109">        response.setStatus(status.value());</span>
-<span class="nc" id="L110">        response.setContentType(&quot;application/json&quot;);</span>
-<span class="nc" id="L111">        mapper.writeValue(response.getOutputStream(),</span>
-<span class="nc" id="L112">                new ApiError(OffsetDateTime.now(Clock.systemUTC()), status.value(),</span>
-<span class="nc" id="L113">                        status.getReasonPhrase(), message, path));</span>
-<span class="nc" id="L114">    }</span>
+<span class="fc" id="L123">        response.setStatus(status.value());</span>
+<span class="fc" id="L124">        response.setContentType(&quot;application/json&quot;);</span>
+<span class="fc" id="L125">        mapper.writeValue(response.getOutputStream(),</span>
+<span class="fc" id="L126">                new ApiError(OffsetDateTime.now(clock), status.value(),</span>
+<span class="fc" id="L127">                        status.getReasonPhrase(), message, path));</span>
+<span class="fc" id="L128">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>
