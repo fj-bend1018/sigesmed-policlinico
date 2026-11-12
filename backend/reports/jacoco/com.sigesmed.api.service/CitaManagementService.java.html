@@ -54,30 +54,30 @@ public class CitaManagementService {
 
     @Transactional(readOnly = true)
     public List&lt;CitaResponse&gt; listarPropias(Long usuarioId, String vista) {
-<span class="nc" id="L57">        Paciente paciente = pacienteRepository.findByUsuario_Id(usuarioId)</span>
-<span class="nc" id="L58">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Perfil de paciente no encontrado&quot;));</span>
-<span class="nc bnc" id="L59" title="All 6 branches missed.">        Collection&lt;EstadoCita&gt; estados = switch (vista == null ? &quot;PROXIMAS&quot; : vista.toUpperCase(Locale.ROOT)) {</span>
-<span class="nc" id="L60">            case &quot;PROXIMAS&quot; -&gt; PATIENT_ACTIVE;</span>
+<span class="fc" id="L57">        Paciente paciente = pacienteRepository.findByUsuario_Id(usuarioId)</span>
+<span class="fc" id="L58">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Perfil de paciente no encontrado&quot;));</span>
+<span class="pc bpc" id="L59" title="3 of 6 branches missed.">        Collection&lt;EstadoCita&gt; estados = switch (vista == null ? &quot;PROXIMAS&quot; : vista.toUpperCase(Locale.ROOT)) {</span>
+<span class="fc" id="L60">            case &quot;PROXIMAS&quot; -&gt; PATIENT_ACTIVE;</span>
 <span class="nc" id="L61">            case &quot;HISTORIAL&quot; -&gt; HISTORY;</span>
 <span class="nc" id="L62">            case &quot;CANCELADAS&quot; -&gt; CANCELLED;</span>
-<span class="nc" id="L63">            default -&gt; throw new ApiException(HttpStatus.BAD_REQUEST, &quot;La vista de citas no es válida&quot;);</span>
+<span class="fc" id="L63">            default -&gt; throw new ApiException(HttpStatus.BAD_REQUEST, &quot;La vista de citas no es válida&quot;);</span>
         };
-<span class="nc" id="L65">        return citaRepository.findPatientCitas(paciente.getId(), estados).stream().map(CitaResponse::from).toList();</span>
+<span class="fc" id="L65">        return citaRepository.findPatientCitas(paciente.getId(), estados).stream().map(CitaResponse::from).toList();</span>
     }
 
     @Transactional(readOnly = true)
     public List&lt;CitaResponse&gt; listarAgenda(EstadoCita estado, LocalDate fecha, String busqueda) {
-<span class="nc" id="L70">        List&lt;Cita&gt; citas = citaRepository.findAgenda(estado, fecha);</span>
-<span class="nc bnc" id="L71" title="All 4 branches missed.">        if (busqueda == null || busqueda.isBlank()) return citas.stream().map(CitaResponse::from).toList();</span>
-<span class="nc" id="L72">        String query = busqueda.trim().toLowerCase(Locale.ROOT);</span>
-<span class="nc" id="L73">        return citas.stream().filter(cita -&gt; matches(cita, query)).map(CitaResponse::from).toList();</span>
+<span class="fc" id="L70">        List&lt;Cita&gt; citas = citaRepository.findAgenda(estado, fecha);</span>
+<span class="pc bpc" id="L71" title="1 of 4 branches missed.">        if (busqueda == null || busqueda.isBlank()) return citas.stream().map(CitaResponse::from).toList();</span>
+<span class="fc" id="L72">        String query = busqueda.trim().toLowerCase(Locale.ROOT);</span>
+<span class="fc" id="L73">        return citas.stream().filter(cita -&gt; matches(cita, query)).map(CitaResponse::from).toList();</span>
     }
 
     @Transactional(readOnly = true)
     public CitaResponse obtenerParaRecepcion(Long citaId) {
-<span class="nc" id="L78">        Cita cita = citaRepository.findById(citaId)</span>
-<span class="nc" id="L79">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
-<span class="nc" id="L80">        return CitaResponse.from(cita);</span>
+<span class="fc" id="L78">        Cita cita = citaRepository.findById(citaId)</span>
+<span class="fc" id="L79">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
+<span class="fc" id="L80">        return CitaResponse.from(cita);</span>
     }
 
     @Transactional
@@ -92,7 +92,7 @@ public class CitaManagementService {
 
     @Transactional
     public CitaResponse cancelarPorRecepcion(Long citaId, String motivo) {
-<span class="nc" id="L95">        return cancelar(citaId, motivo, true);</span>
+<span class="fc" id="L95">        return cancelar(citaId, motivo, true);</span>
     }
 
     @Transactional
@@ -106,36 +106,36 @@ public class CitaManagementService {
 
     @Transactional
     public CitaResponse reprogramarPorRecepcion(Long citaId, Long horarioId) {
-<span class="nc" id="L109">        return reprogramar(citaId, horarioId);</span>
+<span class="fc" id="L109">        return reprogramar(citaId, horarioId);</span>
     }
 
     @Transactional
     public CitaResponse cambiarEstadoPorRecepcion(Long citaId, EstadoCita nuevoEstado) {
-<span class="nc" id="L114">        Cita cita = citaRepository.findByIdForUpdate(citaId)</span>
-<span class="nc" id="L115">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
-<span class="nc bnc" id="L116" title="All 2 branches missed.">        if (nuevoEstado == EstadoCita.CANCELADA) {</span>
+<span class="fc" id="L114">        Cita cita = citaRepository.findByIdForUpdate(citaId)</span>
+<span class="fc" id="L115">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">        if (nuevoEstado == EstadoCita.CANCELADA) {</span>
 <span class="nc" id="L117">            verificarAnticipacion(cita);</span>
 <span class="nc" id="L118">            return cancelarBloqueada(cita, null);</span>
         }
-<span class="nc bnc" id="L120" title="All 4 branches missed.">        if (nuevoEstado != EstadoCita.ATENDIDA &amp;&amp; nuevoEstado != EstadoCita.NO_ASISTIO) {</span>
-<span class="nc" id="L121">            throw new ApiException(HttpStatus.BAD_REQUEST,</span>
+<span class="fc bfc" id="L120" title="All 4 branches covered.">        if (nuevoEstado != EstadoCita.ATENDIDA &amp;&amp; nuevoEstado != EstadoCita.NO_ASISTIO) {</span>
+<span class="fc" id="L121">            throw new ApiException(HttpStatus.BAD_REQUEST,</span>
                     &quot;Recepción solo puede marcar una cita como atendida, inasistencia o cancelada&quot;);
         }
-<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (!PATIENT_ACTIVE.contains(cita.getEstado())) {</span>
-<span class="nc" id="L125">            throw new ApiException(HttpStatus.CONFLICT, &quot;La cita ya no está activa&quot;);</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">        if (!PATIENT_ACTIVE.contains(cita.getEstado())) {</span>
+<span class="fc" id="L125">            throw new ApiException(HttpStatus.CONFLICT, &quot;La cita ya no está activa&quot;);</span>
         }
-<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (instante(cita.getHorario()).isAfter(clock.instant())) {</span>
-<span class="nc" id="L128">            throw new ApiException(HttpStatus.CONFLICT, &quot;No se puede cerrar una cita antes de su horario&quot;);</span>
+<span class="fc bfc" id="L127" title="All 2 branches covered.">        if (instante(cita.getHorario()).isAfter(clock.instant())) {</span>
+<span class="fc" id="L128">            throw new ApiException(HttpStatus.CONFLICT, &quot;No se puede cerrar una cita antes de su horario&quot;);</span>
         }
-<span class="nc" id="L130">        cita.setEstado(nuevoEstado);</span>
-<span class="nc" id="L131">        return CitaResponse.from(citaRepository.save(cita));</span>
+<span class="fc" id="L130">        cita.setEstado(nuevoEstado);</span>
+<span class="fc" id="L131">        return CitaResponse.from(citaRepository.save(cita));</span>
     }
 
     private CitaResponse cancelar(Long citaId, String motivo, boolean validarAnticipacion) {
-<span class="nc" id="L135">        Cita cita = citaRepository.findByIdForUpdate(citaId)</span>
-<span class="nc" id="L136">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
-<span class="nc bnc" id="L137" title="All 2 branches missed.">        if (validarAnticipacion) verificarAnticipacion(cita);</span>
-<span class="nc" id="L138">        return cancelarBloqueada(cita, motivo);</span>
+<span class="fc" id="L135">        Cita cita = citaRepository.findByIdForUpdate(citaId)</span>
+<span class="pc" id="L136">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
+<span class="pc bpc" id="L137" title="1 of 2 branches missed.">        if (validarAnticipacion) verificarAnticipacion(cita);</span>
+<span class="fc" id="L138">        return cancelarBloqueada(cita, motivo);</span>
     }
 
     private CitaResponse cancelarBloqueada(Cita cita, String motivo) {
@@ -155,9 +155,9 @@ public class CitaManagementService {
     }
 
     private CitaResponse reprogramar(Long citaId, Long horarioId) {
-<span class="nc" id="L158">        Cita cita = citaRepository.findByIdForUpdate(citaId)</span>
-<span class="nc" id="L159">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
-<span class="nc" id="L160">        return reprogramar(cita, horarioId);</span>
+<span class="fc" id="L158">        Cita cita = citaRepository.findByIdForUpdate(citaId)</span>
+<span class="pc" id="L159">                .orElseThrow(() -&gt; new ApiException(HttpStatus.NOT_FOUND, &quot;Cita no encontrada&quot;));</span>
+<span class="fc" id="L160">        return reprogramar(cita, horarioId);</span>
     }
 
     private CitaResponse reprogramar(Cita cita, Long horarioId) {
@@ -228,22 +228,22 @@ public class CitaManagementService {
     }
 
     private boolean matches(Cita cita, String query) {
-<span class="nc" id="L231">        String name = cita.getPaciente().getNombre() + &quot; &quot; + cita.getPaciente().getApellidoPaterno()</span>
-<span class="nc" id="L232">                + &quot; &quot; + String.valueOf(cita.getPaciente().getApellidoMaterno());</span>
-<span class="nc bnc" id="L233" title="All 2 branches missed.">        if (cita.getServicioComplementario() != null) {</span>
-<span class="nc bnc" id="L234" title="All 4 branches missed.">            return contains(name, query) || contains(cita.getPaciente().getDni(), query)</span>
-<span class="nc bnc" id="L235" title="All 2 branches missed.">                    || contains(cita.getPaciente().getCorreo(), query)</span>
-<span class="nc bnc" id="L236" title="All 2 branches missed.">                    || contains(cita.getServicioComplementario().getNombre(), query);</span>
+<span class="fc" id="L231">        String name = cita.getPaciente().getNombre() + &quot; &quot; + cita.getPaciente().getApellidoPaterno()</span>
+<span class="fc" id="L232">                + &quot; &quot; + String.valueOf(cita.getPaciente().getApellidoMaterno());</span>
+<span class="fc bfc" id="L233" title="All 2 branches covered.">        if (cita.getServicioComplementario() != null) {</span>
+<span class="pc bpc" id="L234" title="2 of 4 branches missed.">            return contains(name, query) || contains(cita.getPaciente().getDni(), query)</span>
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">                    || contains(cita.getPaciente().getCorreo(), query)</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">                    || contains(cita.getServicioComplementario().getNombre(), query);</span>
         }
-<span class="nc bnc" id="L238" title="All 4 branches missed.">        return contains(name, query) || contains(cita.getPaciente().getDni(), query)</span>
-<span class="nc bnc" id="L239" title="All 2 branches missed.">                || contains(cita.getPaciente().getCorreo(), query)</span>
-<span class="nc bnc" id="L240" title="All 2 branches missed.">                || contains(cita.getHorario().getDoctor().getNombre(), query)</span>
-<span class="nc" id="L241">                || cita.getHorario().getDoctor().getEspecialidades().stream()</span>
-<span class="nc bnc" id="L242" title="All 2 branches missed.">                        .anyMatch(especialidad -&gt; contains(especialidad.getNombre(), query));</span>
+<span class="fc bfc" id="L238" title="All 4 branches covered.">        return contains(name, query) || contains(cita.getPaciente().getDni(), query)</span>
+<span class="pc bpc" id="L239" title="1 of 2 branches missed.">                || contains(cita.getPaciente().getCorreo(), query)</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">                || contains(cita.getHorario().getDoctor().getNombre(), query)</span>
+<span class="fc" id="L241">                || cita.getHorario().getDoctor().getEspecialidades().stream()</span>
+<span class="pc bpc" id="L242" title="1 of 2 branches missed.">                        .anyMatch(especialidad -&gt; contains(especialidad.getNombre(), query));</span>
     }
 
     private boolean contains(String value, String query) {
-<span class="nc bnc" id="L246" title="All 4 branches missed.">        return value != null &amp;&amp; value.toLowerCase(Locale.ROOT).contains(query);</span>
+<span class="pc bpc" id="L246" title="1 of 4 branches missed.">        return value != null &amp;&amp; value.toLowerCase(Locale.ROOT).contains(query);</span>
     }
 
     private String blankToNull(String value) {

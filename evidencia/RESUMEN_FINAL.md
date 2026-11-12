@@ -21,13 +21,13 @@ El sistema modernizado sustituye la arquitectura heredada acoplada por una soluc
 ## 2. Métricas de Pruebas y Cobertura Automatizada
 
 ### 2.1. Pruebas Backend (`mvn test` y `-Pintegration`)
-El backend cuenta con un total de **38 pruebas automatizadas**, distribuidas en dos suites desacopladas:
+El backend cuenta con un total de **123 pruebas automatizadas**, distribuidas en dos suites desacopladas:
 
 | Suite | Comando | Entorno | Total Pruebas | Exitosas | Fallos | Tiempo |
 | :--- | :--- | :--- | :---: | :---: | :---: | :---: |
-| **Pruebas Unitarias** | `.\mvnw.cmd test -f backend/pom.xml` | Spring Mock / H2 / Mocks (Sin PostgreSQL) | **36** | 36 | 0 | ~18 - 25 s |
-| **Pruebas de Integración** | `.\mvnw.cmd test -f backend/pom.xml -Pintegration` | Base real PostgreSQL (`sigesmed_test`, puerto 5433) | **2** | 2 | 0 | ~40 s |
-| **TOTAL** | | | **38** | **38** | **0** | — |
+| **Pruebas Unitarias** | `.\mvnw.cmd test -f backend/pom.xml` | Spring Mock / H2 / Mocks (Sin PostgreSQL) | **121** | 121 | 0 | ~19 s |
+| **Pruebas de Integración** | `.\mvnw.cmd test -f backend/pom.xml -Pintegration` | Base real PostgreSQL (`sigesmed_test`, puerto 5433) | **2** | 2 | 0 | ~27 s |
+| **TOTAL** | | | **123** | **123** | **0** | — |
 
 - **Desacoplamiento comprobado:** El comando `mvn test` por defecto no requiere tener activo el motor de PostgreSQL. Las pruebas concurrentes anotadas con `@Tag("integration")` solo se activan mediante el perfil explícito `-Pintegration`.
 - **Limpieza de datos de prueba:** Las pruebas de integración limpian de forma autónoma todos los registros generados (`usuario`, `paciente`, `cita`, `horario`) en su método `@AfterEach tearDown()`.
@@ -37,15 +37,15 @@ El reporte HTML de cobertura se regeneró exitosamente en [backend/reports/jacoc
 
 | Métrica JaCoCo | Cubierto | Total Analizado | Porcentaje |
 | :--- | :---: | :---: | :---: |
-| **Instrucciones (C0)** | 2,007 | 5,924 | **33%** |
-| **Ramas (Branches / C1)** | 78 | 411 | **18%** |
-| **Líneas de Código** | 415 | 1,049 | **40%** |
-| **Clases Analizadas** | 40 | 65 | **61%** |
+| **Instrucciones (C0)** | 4,091 | 5,924 | **69%** |
+| **Ramas (Branches / C1)** | 220 | 411 | **53%** |
+| **Líneas de Código** | 751 | 1,049 | **72%** (71.6%) |
+| **Clases Analizadas** | 52 | 65 | **80%** |
 
 *Aspectos destacados de cobertura:*
 - Capa de enumeraciones y modelos de dominio: **100% de cobertura**.
-- Capa de configuración de seguridad y filtros: **34% de instrucciones**, validando la totalidad de reglas de autorización RBAC (`ROLE_PACIENTE`, `ROLE_RECEPCIONISTA`, `ROLE_ADMINISTRADOR`).
-- Capa de servicios (`CitaManagementService`, `AuthService`, `DisponibilidadService`): lógica crítica de reserva concurrente, validaciones de DNI (8 dígitos), teléfono (9 dígitos) y zonas horarias (`America/Lima`) cubiertas con aserciones rigurosas.
+- Capa de servicios (`AdministracionService`, `CitaManagementService`, `CitaService`, `CuentaService`, `DisponibilidadService`, `AuthService`): **85% de instrucciones** y **69% de ramas** cubiertas con pruebas unitarias exhaustivas con Mockito.
+- Validación de límites de tiempo (`America/Lima`), concurrencia, anticipación mínima (2 horas), aislamiento de perfiles de usuario y gestión administrativa completa.
 
 ### 2.3. Pruebas Unitarias Frontend
 - **Herramienta:** Karma runner con headless Chrome (`ng test --watch=false`).

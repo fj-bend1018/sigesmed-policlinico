@@ -80,8 +80,8 @@ public class AuthService {
         }
 <span class="fc" id="L81">        Usuario usuario = usuarioRepository.findByIdForUpdate(candidates.getFirst().getId())</span>
 <span class="pc" id="L82">                .orElseThrow(() -&gt; new ApiException(HttpStatus.UNAUTHORIZED, &quot;Credenciales inválidas&quot;));</span>
-<span class="pc bpc" id="L83" title="3 of 4 branches missed.">        if (usuario.getRecepcionista() != null &amp;&amp; !usuario.getRecepcionista().estaActivo()) {</span>
-<span class="nc" id="L84">            throw new ApiException(HttpStatus.UNAUTHORIZED, &quot;Credenciales inválidas&quot;);</span>
+<span class="pc bpc" id="L83" title="1 of 4 branches missed.">        if (usuario.getRecepcionista() != null &amp;&amp; !usuario.getRecepcionista().estaActivo()) {</span>
+<span class="fc" id="L84">            throw new ApiException(HttpStatus.UNAUTHORIZED, &quot;Credenciales inválidas&quot;);</span>
         }
 <span class="fc" id="L86">        OffsetDateTime now = OffsetDateTime.now(clock);</span>
 <span class="fc bfc" id="L87" title="All 4 branches covered.">        if (usuario.getBloqueadoHasta() != null &amp;&amp; usuario.getBloqueadoHasta().isAfter(now)) {</span>
@@ -108,8 +108,8 @@ public class AuthService {
     @Transactional
     public void solicitarRecuperacion(String email) {
 <span class="fc" id="L110">        List&lt;Usuario&gt; candidates = usuarioRepository.findByIdentifier(email.trim());</span>
-<span class="pc bpc" id="L111" title="1 of 2 branches missed.">        if (candidates.size() != 1)</span>
-<span class="nc" id="L112">            return;</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (candidates.size() != 1)</span>
+<span class="fc" id="L112">            return;</span>
 <span class="fc" id="L113">        Usuario usuario = candidates.getFirst();</span>
 <span class="fc" id="L114">        byte[] random = new byte[32];</span>
 <span class="fc" id="L115">        secureRandom.nextBytes(random);</span>
@@ -125,17 +125,17 @@ public class AuthService {
 
     @Transactional
     public void restablecerClave(String rawToken, String newPassword) {
-<span class="nc" id="L128">        String hash = sha256(rawToken);</span>
-<span class="nc" id="L129">        RecuperacionClave token = recuperacionRepository.findValidForUpdate(hash, OffsetDateTime.now(clock))</span>
-<span class="nc" id="L130">                .orElseThrow(() -&gt; new ApiException(HttpStatus.BAD_REQUEST, &quot;El enlace no es válido o venció&quot;));</span>
-<span class="nc" id="L131">        Usuario usuario = token.getUsuario();</span>
-<span class="nc" id="L132">        usuario.setPasswordHash(passwordEncoder.encode(newPassword));</span>
-<span class="nc" id="L133">        usuario.setIntentosFallidos(0);</span>
-<span class="nc" id="L134">        usuario.setBloqueadoHasta(null);</span>
-<span class="nc" id="L135">        token.marcarUsado();</span>
-<span class="nc" id="L136">        usuarioRepository.save(usuario);</span>
-<span class="nc" id="L137">        recuperacionRepository.save(token);</span>
-<span class="nc" id="L138">    }</span>
+<span class="fc" id="L128">        String hash = sha256(rawToken);</span>
+<span class="fc" id="L129">        RecuperacionClave token = recuperacionRepository.findValidForUpdate(hash, OffsetDateTime.now(clock))</span>
+<span class="fc" id="L130">                .orElseThrow(() -&gt; new ApiException(HttpStatus.BAD_REQUEST, &quot;El enlace no es válido o venció&quot;));</span>
+<span class="fc" id="L131">        Usuario usuario = token.getUsuario();</span>
+<span class="fc" id="L132">        usuario.setPasswordHash(passwordEncoder.encode(newPassword));</span>
+<span class="fc" id="L133">        usuario.setIntentosFallidos(0);</span>
+<span class="fc" id="L134">        usuario.setBloqueadoHasta(null);</span>
+<span class="fc" id="L135">        token.marcarUsado();</span>
+<span class="fc" id="L136">        usuarioRepository.save(usuario);</span>
+<span class="fc" id="L137">        recuperacionRepository.save(token);</span>
+<span class="fc" id="L138">    }</span>
 
     private String sha256(String value) {
         try {

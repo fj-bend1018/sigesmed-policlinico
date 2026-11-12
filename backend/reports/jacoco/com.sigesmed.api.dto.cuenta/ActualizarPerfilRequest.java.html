@@ -5,7 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-<span class="nc" id="L8">public record ActualizarPerfilRequest(</span>
+<span class="fc" id="L8">public record ActualizarPerfilRequest(</span>
         @NotBlank @Email @Size(max = 254) String correo,
         @Pattern(regexp = &quot;^$|^[0-9]{9}$&quot;, message = &quot;El celular debe contener 9 dígitos&quot;)
         @Size(max = 9) String celular,

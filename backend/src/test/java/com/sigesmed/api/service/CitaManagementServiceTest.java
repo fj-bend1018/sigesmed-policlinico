@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -25,6 +27,7 @@ import com.sigesmed.api.domain.entity.Doctor;
 import com.sigesmed.api.domain.entity.Especialidad;
 import com.sigesmed.api.domain.entity.Horario;
 import com.sigesmed.api.domain.entity.Paciente;
+import com.sigesmed.api.domain.entity.ServicioComplementario;
 import com.sigesmed.api.domain.entity.Usuario;
 import com.sigesmed.api.domain.enums.EstadoCita;
 import com.sigesmed.api.domain.enums.RolUsuario;
@@ -182,6 +185,196 @@ class CitaManagementServiceTest {
         verify(horarios).save(oldSlot);
         verify(horarios).save(newSlot);
         verify(citas).saveAndFlush(appointment);
+    }
+
+    // === LISTAR AGENDA ===
+
+    @Test
+    void listarAgenda_porEstadoYFechaSinBusqueda() {
+        when(citas.findAgenda(EstadoCita.RESERVADA, LocalDate.of(2026, 11, 9)))
+                .thenReturn(List.of(appointment));
+
+        var result = service.listarAgenda(EstadoCita.RESERVADA, LocalDate.of(2026, 11, 9), null);
+        assertEquals(1, result.size());
+        assertEquals(60L, result.getFirst().id());
+    }
+
+    @Test
+    void listarAgenda_conBusquedaPorNombrePaciente() {
+        when(citas.findAgenda(null, null)).thenReturn(List.of(appointment));
+
+        var result = service.listarAgenda(null, null, "Ana");
+        assertEquals(1, result.size());
+
+        var empty = service.listarAgenda(null, null, "NombreInexistente");
+        assertEquals(0, empty.size());
+    }
+
+    @Test
+    void listarAgenda_conBusquedaPorDniPaciente() {
+        when(citas.findAgenda(null, null)).thenReturn(List.of(appointment));
+
+        var result = service.listarAgenda(null, null, "12345678");
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void listarAgenda_conBusquedaPorServicioComplementario() {
+        ServicioComplementario serv = new ServicioComplementario("Radiología");
+        ReflectionTestUtils.setField(serv, "id", 80L);
+        Horario servSlot = new Horario(serv, LocalDate.of(2026, 11, 9), LocalTime.of(14, 0));
+        ReflectionTestUtils.setField(servSlot, "id", 85L);
+        Cita servCita = new Cita(patient, servSlot, serv, EstadoCita.RESERVADA, OffsetDateTime.now(clock));
+        ReflectionTestUtils.setField(servCita, "id", 88L);
+
+        when(citas.findAgenda(null, null)).thenReturn(List.of(servCita));
+
+        var result = service.listarAgenda(null, null, "Radiología");
+        assertEquals(1, result.size());
+        assertEquals(88L, result.getFirst().id());
+    }
+
+    // === CAMBIAR ESTADO POR RECEPCION ===
+
+    @Test
+    void cambiarEstadoPorRecepcion_citaNoExisteLanza404() {
+        when(citas.findByIdForUpdate(99L)).thenReturn(Optional.empty());
+
+        ApiException ex = assertThrows(ApiException.class,
+                () -> service.cambiarEstadoPorRecepcion(99L, EstadoCita.ATENDIDA));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatus());
+    }
+
+    @Test
+    void cambiarEstadoPorRecepcion_estadoInvalidoLanza400() {
+        when(citas.findByIdForUpdate(60L)).thenReturn(Optional.of(appointment));
+
+        ApiException ex = assertThrows(ApiException.class,
+                () -> service.cambiarEstadoPorRecepcion(60L, EstadoCita.CONFIRMADA));
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+        assertEquals("Recepción solo puede marcar una cita como atendida, inasistencia o cancelada", ex.getMessage());
+    }
+
+    @Test
+    void cambiarEstadoPorRecepcion_citaInactivaLanza409() {
+        appointment.setEstado(EstadoCita.CANCELADA);
+        when(citas.findByIdForUpdate(60L)).thenReturn(Optional.of(appointment));
+
+        ApiException ex = assertThrows(ApiException.class,
+                () -> service.cambiarEstadoPorRecepcion(60L, EstadoCita.ATENDIDA));
+        assertEquals(HttpStatus.CONFLICT, ex.getStatus());
+        assertEquals("La cita ya no está activa", ex.getMessage());
+    }
+
+    @Test
+    void cambiarEstadoPorRecepcion_horarioFuturoLanza409() {
+        // appointment is at 2026-11-09 10:00 (future relative to clock 2026-11-08 10:00)
+        when(citas.findByIdForUpdate(60L)).thenReturn(Optional.of(appointment));
+
+        ApiException ex = assertThrows(ApiException.class,
+                () -> service.cambiarEstadoPorRecepcion(60L, EstadoCita.ATENDIDA));
+        assertEquals(HttpStatus.CONFLICT, ex.getStatus());
+        assertEquals("No se puede cerrar una cita antes de su horario", ex.getMessage());
+    }
+
+    @Test
+    void cambiarEstadoPorRecepcion_atendidaConHorarioPasadoExitoso() {
+        Horario pastSlot = slot(70L, pediatria, LocalDate.of(2026, 11, 7), LocalTime.of(10, 0));
+        appointment.setHorario(pastSlot);
+
+        when(citas.findByIdForUpdate(60L)).thenReturn(Optional.of(appointment));
+        when(citas.save(appointment)).thenReturn(appointment);
+
+        var resp = service.cambiarEstadoPorRecepcion(60L, EstadoCita.ATENDIDA);
+        assertEquals(EstadoCita.ATENDIDA, appointment.getEstado());
+        assertEquals(EstadoCita.ATENDIDA, resp.estado());
+        verify(citas).save(appointment);
+    }
+
+    @Test
+    void cambiarEstadoPorRecepcion_noAsistioConHorarioPasadoExitoso() {
+        Horario pastSlot = slot(70L, pediatria, LocalDate.of(2026, 11, 7), LocalTime.of(10, 0));
+        appointment.setHorario(pastSlot);
+
+        when(citas.findByIdForUpdate(60L)).thenReturn(Optional.of(appointment));
+        when(citas.save(appointment)).thenReturn(appointment);
+
+        var resp = service.cambiarEstadoPorRecepcion(60L, EstadoCita.NO_ASISTIO);
+        assertEquals(EstadoCita.NO_ASISTIO, appointment.getEstado());
+        assertEquals(EstadoCita.NO_ASISTIO, resp.estado());
+        verify(citas).save(appointment);
+    }
+
+    // === CANCELAR Y REPROGRAMAR POR RECEPCION ===
+
+    @Test
+    void cancelarPorRecepcion_exitoso() {
+        when(citas.findByIdForUpdate(60L)).thenReturn(Optional.of(appointment));
+        when(horarios.findByIdForUpdate(50L)).thenReturn(Optional.of(oldSlot));
+        when(citas.save(appointment)).thenReturn(appointment);
+
+        var resp = service.cancelarPorRecepcion(60L, "Cancelación en ventanilla");
+        assertEquals(EstadoCita.CANCELADA, resp.estado());
+        assertEquals(true, oldSlot.isDisponible());
+        verify(horarios).save(oldSlot);
+        verify(citas).save(appointment);
+    }
+
+    @Test
+    void reprogramarPorRecepcion_exitoso() {
+        Horario newSlot = slot(52L, pediatria, LocalDate.of(2026, 11, 10), LocalTime.of(10, 0));
+        when(citas.findByIdForUpdate(60L)).thenReturn(Optional.of(appointment));
+        when(horarios.findByIdForUpdate(52L)).thenReturn(Optional.of(newSlot));
+        when(horarios.findByIdForUpdate(50L)).thenReturn(Optional.of(oldSlot));
+        when(citas.existsActiveForPatientAt(20L, newSlot.getFecha(), newSlot.getHora(),
+                Set.of(EstadoCita.RESERVADA, EstadoCita.CONFIRMADA))).thenReturn(false);
+        when(citas.saveAndFlush(appointment)).thenReturn(appointment);
+
+        var resp = service.reprogramarPorRecepcion(60L, 52L);
+        assertSame(newSlot, appointment.getHorario());
+        assertEquals(true, oldSlot.isDisponible());
+        assertEquals(false, newSlot.isDisponible());
+        verify(horarios).save(oldSlot);
+        verify(horarios).save(newSlot);
+    }
+
+    // === OBTENER Y LISTAR PROPIAS ===
+
+    @Test
+    void obtenerParaRecepcion_noExisteLanza404() {
+        when(citas.findById(99L)).thenReturn(Optional.empty());
+        ApiException ex = assertThrows(ApiException.class, () -> service.obtenerParaRecepcion(99L));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatus());
+    }
+
+    @Test
+    void obtenerParaRecepcion_exitoso() {
+        when(citas.findById(60L)).thenReturn(Optional.of(appointment));
+        var resp = service.obtenerParaRecepcion(60L);
+        assertEquals(60L, resp.id());
+    }
+
+    @Test
+    void listarPropias_pacienteNoExisteLanza404() {
+        when(pacientes.findByUsuario_Id(10L)).thenReturn(Optional.empty());
+        ApiException ex = assertThrows(ApiException.class, () -> service.listarPropias(10L, "PROXIMAS"));
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatus());
+    }
+
+    @Test
+    void listarPropias_vistaInvalidaLanza400() {
+        when(pacientes.findByUsuario_Id(10L)).thenReturn(Optional.of(patient));
+        ApiException ex = assertThrows(ApiException.class, () -> service.listarPropias(10L, "OTRA"));
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+    }
+
+    @Test
+    void listarPropias_vistaProximasExitoso() {
+        when(pacientes.findByUsuario_Id(10L)).thenReturn(Optional.of(patient));
+        when(citas.findPatientCitas(eq(20L), anyCollection())).thenReturn(List.of(appointment));
+
+        var list = service.listarPropias(10L, "PROXIMAS");
+        assertEquals(1, list.size());
     }
 
     private Especialidad specialty(Long id, String name) {

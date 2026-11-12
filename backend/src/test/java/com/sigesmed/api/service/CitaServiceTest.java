@@ -23,6 +23,7 @@ import com.sigesmed.api.domain.entity.Especialidad;
 import com.sigesmed.api.domain.entity.Horario;
 import com.sigesmed.api.domain.entity.Paciente;
 import com.sigesmed.api.domain.entity.Usuario;
+import com.sigesmed.api.domain.entity.ServicioComplementario;
 import com.sigesmed.api.domain.enums.EstadoCita;
 import com.sigesmed.api.domain.enums.RolUsuario;
 import com.sigesmed.api.exception.ApiException;
@@ -30,12 +31,14 @@ import com.sigesmed.api.repository.CitaRepository;
 import com.sigesmed.api.repository.EspecialidadRepository;
 import com.sigesmed.api.repository.HorarioRepository;
 import com.sigesmed.api.repository.PacienteRepository;
+import com.sigesmed.api.repository.ServicioComplementarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -46,6 +49,7 @@ class CitaServiceTest {
     @Mock private HorarioRepository horarios;
     @Mock private CitaRepository citas;
     @Mock private EspecialidadRepository especialidades;
+    @Mock private ServicioComplementarioRepository servicios;
     private CitaService service;
     private Paciente patient;
     private Horario slot;
@@ -53,7 +57,7 @@ class CitaServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new CitaService(pacientes, horarios, citas, especialidades, clock);
+        service = new CitaService(pacientes, horarios, citas, especialidades, servicios, clock);
         Usuario user = new Usuario("12345678", "hash", RolUsuario.PACIENTE);
         ReflectionTestUtils.setField(user, "id", 10L);
         patient = new Paciente(user, "Ana", "Prueba", "Demo", "12345678",
@@ -163,5 +167,135 @@ class CitaServiceTest {
         ApiException error = assertThrows(ApiException.class, () -> service.obtenerPropia(10L, 60L));
 
         assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+    }
+
+    @Test
+    void reservar_C6_especialidadYServicioAlMismoTiempoOAmbosNulos() {
+        ApiException ex1 = assertThrows(ApiException.class,
+                () -> service.reservar(10L, 50L, null, null));
+        assertEquals(HttpStatus.BAD_REQUEST, ex1.getStatus());
+        assertEquals("Selecciona una especialidad o un servicio complementario", ex1.getMessage());
+
+        ApiException ex2 = assertThrows(ApiException.class,
+                () -> service.reservar(10L, 50L, 30L, 40L));
+        assertEquals(HttpStatus.BAD_REQUEST, ex2.getStatus());
+        assertEquals("Selecciona una especialidad o un servicio complementario", ex2.getMessage());
+        verify(pacientes, never()).findByUsuarioIdForUpdate(anyLong());
+    }
+
+    @Test
+    void reservar_C7_especialidadNoExiste() {
+        when(pacientes.findByUsuarioIdForUpdate(10L)).thenReturn(Optional.of(patient));
+        when(horarios.findByIdForUpdate(50L)).thenReturn(Optional.of(slot));
+        when(especialidades.findById(999L)).thenReturn(Optional.empty());
+
+        ApiException error = assertThrows(ApiException.class,
+                () -> service.reservar(10L, 50L, 999L));
+
+        assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
+        assertEquals("La especialidad no existe", error.getMessage());
+        verify(citas, never()).saveAndFlush(any(Cita.class));
+    }
+
+    @Test
+    void reservar_C8_horarioYaVencido() {
+        Doctor doctor = slot.getDoctor();
+        Horario pastSlot = new Horario(doctor, LocalDate.of(2026, 11, 7), LocalTime.of(10, 0));
+        ReflectionTestUtils.setField(pastSlot, "id", 55L);
+
+        when(pacientes.findByUsuarioIdForUpdate(10L)).thenReturn(Optional.of(patient));
+        when(horarios.findByIdForUpdate(55L)).thenReturn(Optional.of(pastSlot));
+        when(especialidades.findById(30L)).thenReturn(Optional.of(specialty));
+
+        ApiException error = assertThrows(ApiException.class,
+                () -> service.reservar(10L, 55L, 30L));
+
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEquals("El horario ya no está disponible", error.getMessage());
+        verify(citas, never()).saveAndFlush(any(Cita.class));
+    }
+
+    @Test
+    void reservar_conServicioComplementario_exitoso() {
+        ServicioComplementario servicio = new ServicioComplementario("Ecografía");
+        ReflectionTestUtils.setField(servicio, "id", 70L);
+        Horario servicioSlot = new Horario(servicio, LocalDate.of(2026, 11, 9), LocalTime.of(11, 0));
+        ReflectionTestUtils.setField(servicioSlot, "id", 75L);
+
+        when(pacientes.findByUsuarioIdForUpdate(10L)).thenReturn(Optional.of(patient));
+        when(horarios.findByIdForUpdate(75L)).thenReturn(Optional.of(servicioSlot));
+        when(servicios.findById(70L)).thenReturn(Optional.of(servicio));
+        when(citas.existsActiveForPatientAt(20L, servicioSlot.getFecha(), servicioSlot.getHora(), EstadoCita.ACTIVAS))
+                .thenReturn(false);
+        when(citas.saveAndFlush(any(Cita.class))).thenAnswer(i -> {
+            Cita c = i.getArgument(0);
+            ReflectionTestUtils.setField(c, "id", 88L);
+            return c;
+        });
+
+        var response = service.reservar(10L, 75L, null, 70L);
+
+        assertEquals(88L, response.id());
+        assertEquals(false, servicioSlot.isDisponible());
+        verify(horarios).save(servicioSlot);
+        verify(citas).saveAndFlush(any(Cita.class));
+    }
+
+    @Test
+    void reservar_conServicioComplementario_noExiste() {
+        Horario servicioSlot = new Horario(new ServicioComplementario("Lab"), LocalDate.of(2026, 11, 9), LocalTime.of(11, 0));
+        when(pacientes.findByUsuarioIdForUpdate(10L)).thenReturn(Optional.of(patient));
+        when(horarios.findByIdForUpdate(50L)).thenReturn(Optional.of(servicioSlot));
+        when(servicios.findById(999L)).thenReturn(Optional.empty());
+
+        ApiException error = assertThrows(ApiException.class,
+                () -> service.reservar(10L, 50L, null, 999L));
+
+        assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
+        assertEquals("El servicio complementario no existe", error.getMessage());
+    }
+
+    @Test
+    void reservar_conServicioComplementario_horarioNoCorresponde() {
+        ServicioComplementario servicio = new ServicioComplementario("Lab");
+        ReflectionTestUtils.setField(servicio, "id", 70L);
+        // slot has a doctor, not complementary service
+        when(pacientes.findByUsuarioIdForUpdate(10L)).thenReturn(Optional.of(patient));
+        when(horarios.findByIdForUpdate(50L)).thenReturn(Optional.of(slot));
+        when(servicios.findById(70L)).thenReturn(Optional.of(servicio));
+
+        ApiException error = assertThrows(ApiException.class,
+                () -> service.reservar(10L, 50L, null, 70L));
+
+        assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
+        assertEquals("El horario no corresponde al servicio seleccionado", error.getMessage());
+    }
+
+    @Test
+    void reservar_capturaDataIntegrityViolationYTraduceAConflict() {
+        when(pacientes.findByUsuarioIdForUpdate(10L)).thenReturn(Optional.of(patient));
+        when(horarios.findByIdForUpdate(50L)).thenReturn(Optional.of(slot));
+        when(especialidades.findById(30L)).thenReturn(Optional.of(specialty));
+        when(citas.existsActiveForPatientAt(20L, slot.getFecha(), slot.getHora(), EstadoCita.ACTIVAS))
+                .thenReturn(false);
+        when(citas.saveAndFlush(any(Cita.class))).thenThrow(new DataIntegrityViolationException("duplicate"));
+
+        ApiException error = assertThrows(ApiException.class, () -> service.reservar(10L, 50L, 30L));
+
+        assertEquals(HttpStatus.CONFLICT, error.getStatus());
+        assertEquals("El horario acaba de ser reservado", error.getMessage());
+    }
+
+    @Test
+    void obtenerPropia_exitosa() {
+        Cita c = new Cita(patient, slot, specialty, EstadoCita.RESERVADA, java.time.OffsetDateTime.now(clock));
+        ReflectionTestUtils.setField(c, "id", 60L);
+        when(pacientes.findByUsuario_Id(10L)).thenReturn(Optional.of(patient));
+        when(citas.findByIdAndPaciente_Id(60L, 20L)).thenReturn(Optional.of(c));
+
+        var resp = service.obtenerPropia(10L, 60L);
+
+        assertEquals(60L, resp.id());
+        assertEquals(EstadoCita.RESERVADA, resp.estado());
     }
 }

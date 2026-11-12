@@ -17,6 +17,7 @@ import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 
+import com.sigesmed.api.domain.entity.Recepcionista;
 import com.sigesmed.api.domain.entity.RecuperacionClave;
 import com.sigesmed.api.domain.entity.Usuario;
 import com.sigesmed.api.domain.enums.RolUsuario;
@@ -115,6 +116,59 @@ class AuthServiceTest {
         assertEquals(0, user.getIntentosFallidos());
         assertEquals(null, user.getBloqueadoHasta());
         verify(usuarios).save(user);
+    }
+
+    @Test
+    void autenticar_C6_recepcionistaInactivo() {
+        Usuario user = user(8L, 0);
+        user.setRol(RolUsuario.RECEPCIONISTA);
+        Recepcionista rec = new Recepcionista(user, "Ana", "Recepcion", null, "12345678", "ana@example.test");
+        rec.cambiarEstado("INACTIVO");
+        ReflectionTestUtils.setField(user, "recepcionista", rec);
+
+        when(usuarios.findByIdentifier("12345678")).thenReturn(List.of(user));
+        when(usuarios.findByIdForUpdate(8L)).thenReturn(Optional.of(user));
+
+        ApiException exception = assertThrows(ApiException.class,
+                () -> service.autenticar("12345678", "clave"));
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatus());
+        assertEquals("Credenciales inválidas", exception.getMessage());
+        verify(encoder, never()).matches(any(), any());
+    }
+
+    @Test
+    void solicitarRecuperacion_noHaceNadaSiUsuarioNoExiste() {
+        when(usuarios.findByIdentifier("nadie@example.test")).thenReturn(List.of());
+        service.solicitarRecuperacion("nadie@example.test");
+        verify(recuperaciones, never()).save(any());
+        verify(notifier, never()).notify(any(), any());
+    }
+
+    @Test
+    void restablecerClave_rechazaTokenInvalidoOVencido() {
+        when(recuperaciones.findValidForUpdate(any(), any())).thenReturn(Optional.empty());
+        ApiException exception = assertThrows(ApiException.class,
+                () -> service.restablecerClave("tokenInvalido", "NuevaClave123!"));
+        assertEquals(HttpStatus.BAD_REQUEST, exception.getStatus());
+        assertEquals("El enlace no es válido o venció", exception.getMessage());
+    }
+
+    @Test
+    void restablecerClave_exitosoActualizaPasswordYMarcaUsado() {
+        Usuario user = user(9L, 2);
+        user.setBloqueadoHasta(NOW.plusMinutes(5));
+        RecuperacionClave token = new RecuperacionClave(user, "hashToken", NOW.plusMinutes(30));
+        when(recuperaciones.findValidForUpdate(any(), any())).thenReturn(Optional.of(token));
+        when(encoder.encode("NuevaClave123!")).thenReturn("newHashedPassword");
+
+        service.restablecerClave("rawToken", "NuevaClave123!");
+
+        assertEquals("newHashedPassword", user.getPasswordHash());
+        assertEquals(0, user.getIntentosFallidos());
+        assertEquals(null, user.getBloqueadoHasta());
+        assertEquals(true, token.isUsado());
+        verify(usuarios).save(user);
+        verify(recuperaciones).save(token);
     }
 
     @Test
