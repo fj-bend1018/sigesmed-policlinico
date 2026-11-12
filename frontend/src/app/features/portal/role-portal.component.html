@@ -49,7 +49,7 @@
                 <td>{{ appointment.paciente }}<small class="d-block text-secondary">DNI {{ appointment.pacienteDni }}</small></td>
                 <td>{{ specialtyLabel(appointment) }}</td><td>{{ appointment.doctor || '—' }}</td>
                 <td>{{ appointment.fecha | date:'d MMM y' }} · {{ appointment.hora.slice(0, 5) }}</td>
-                <td>{{ statusLabel(appointment.estado) }}</td>
+                <td><span class="badge-status" [attr.data-status]="appointment.estado">{{ statusLabel(appointment.estado) }}</span></td>
                 <td>
                   <div class="workspace-actions">
                     <a *ngIf="appointment.estado === 'RESERVADA'" class="btn btn-sm btn-outline-primary" [routerLink]="['/recepcionista/citas', appointment.id, 'modificar']">Reprogramar</a>
@@ -81,7 +81,7 @@
                 <td>{{ appointment.paciente }}<small class="d-block text-secondary">DNI {{ appointment.pacienteDni }}</small></td>
                 <td>{{ specialtyLabel(appointment) }}</td><td>{{ appointment.doctor || '—' }}</td>
                 <td>{{ appointment.fecha | date:'d MMM y' }} · {{ appointment.hora.slice(0, 5) }}</td>
-                <td>{{ statusLabel(appointment.estado) }}</td>
+                <td><span class="badge-status" [attr.data-status]="appointment.estado">{{ statusLabel(appointment.estado) }}</span></td>
               </tr></tbody>
             </table>
           </div>

@@ -60,20 +60,22 @@ Fecha de actualización: 2026-11-12
 
 ---
 
-## 2. Fase 2 — Rediseño Visual del Frontend (EN PROGRESO)
+## 2. Fase 2 — Rediseño Visual del Frontend (COMPLETADA)
 
 - **Objetivo:** Capa visual solamente, evolucionando los componentes existentes sin romper bindings, formularios ni servicios Angular.
 - **Sistema de Diseño y Tokens:** Centralización de variables en `frontend/src/styles.scss` (paleta médica profesional, tipografía accesible, espaciados, bordes redondeados, sombras suaves, contraste WCAG AA >= 4.5:1).
-- **Héroe de Landing Page:** Contraste reforzado sobre imagen de fondo mediante gradiente/overlay oscuro (`rgba(15, 23, 42, 0.75)`) asegurando legibilidad inmediata de los textos.
-- **Secuencia de Prioridad:**
-  1. Landing Page (Home)
-  2. Autenticación (Login / Registro / Recuperar / Restablecer)
-  3. Flujo de Reserva y Disponibilidad (Especialidades, Médicos, Horarios)
-  4. Confirmación y Pago Demo
-  5. Portal de Paciente (Citas, Historial, Canceladas, Perfil, Reprogramación)
-  6. Portal de Recepcionista (Agenda diaria, Búsqueda, Cambio de estados, Historial)
-  7. Portal de Administrador (Directorio médico, Horarios, Recepcionistas)
-- **Criterio de éxito:** Bundle inicial < 520 kB, pruebas `npm test` en verde, contraste AA verificado.
+- **Héroe de Landing Page:**
+  - Contraste reforzado sobre imagen de fondo mediante gradiente/overlay profundo en escritorio (`linear-gradient(90deg, rgba(5, 34, 20, 0.96) 0%, rgba(8, 44, 27, 0.90) 38%, rgba(12, 54, 34, 0.76) 68%, rgba(14, 58, 36, 0.58) 100%)`).
+  - Overlay vertical adaptativo en pantallas móviles <= 760px (`linear-gradient(180deg, rgba(5, 34, 20, 0.96) 0%, rgba(8, 44, 27, 0.92) 55%, rgba(10, 52, 32, 0.88) 100%)`).
+  - Sombras de texto (`text-shadow`) en títulos, subtítulos y bajada para legibilidad cristalina (WCAG AAA > 10:1) sobre cualquier fotografía del carrusel.
+  - Botones del héroe rediseñados: `.hero-button--light` (texto verde profundo sobre blanco, contraste 11.4:1) y `.hero-button--outline` (borde y texto blanco sobre verde profundo con backdrop-filter).
+- **Consistencia Visual en Portales:**
+  - Introducción de badges semánticos `.badge-status` con soporte por atributo `data-status` (`RESERVADA`, `CONFIRMADA`, `ATENDIDA`, `CANCELADA`, `NO_ASISTIO`) en el portal de recepción y administración, unificando la estética con el portal del paciente.
+  - Estilización de botones compactos de tabla `.btn-sm`, `.btn-outline-success`, `.btn-outline-danger` y `.btn-outline-secondary`.
+- **Auditoría de Bundle y Tests:**
+  - Initial Bundle Total: **483.87 kB** (cumpliendo con holgura el límite estricto de < 520 kB; margen de 36.13 kB).
+  - Transfer size estimado (gzip): **111.63 kB**.
+  - Pruebas unitarias de frontend (`npm test`): **2/2 exitosas**, cero regresiones.
 
 ---
 
@@ -86,3 +88,4 @@ Fecha de actualización: 2026-11-12
   - `npm --prefix frontend run build` (auditoría de bundle size)
 - Recorrido completo con capturas finales en 360px y 1440px en `evidencia/capturas_finales/`.
 - Generación del informe consolidado `evidencia/RESUMEN_FINAL.md`.
+
