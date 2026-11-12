@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.*;
 import org.springframework.stereotype.Repository;
 
 @Repository
+@SuppressWarnings("null")
 public class UsuarioDAO {
 
     @Autowired

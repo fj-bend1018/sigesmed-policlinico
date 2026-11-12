@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Especialidad;
 
 @Repository
+@SuppressWarnings("null")
 public class EspecialidadDAO {
 
     @Autowired
@@ -51,7 +52,8 @@ public class EspecialidadDAO {
     public int obtenerIdPorNombre(String nombreEspecialidad) {
         String sql = "SELECT id FROM especialidad WHERE nombre = ?";
         try {
-            return jdbc.queryForObject(sql, Integer.class, nombreEspecialidad);
+            Integer id = jdbc.queryForObject(sql, Integer.class, nombreEspecialidad);
+            return id != null ? id : 0;
         } catch (EmptyResultDataAccessException e) {
             return 0; // O lanza una excepción si prefieres
         }

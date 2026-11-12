@@ -11,6 +11,7 @@ import com.webapplication.PoliclinicoSagradoCorazon.dto.PacienteDTO;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Paciente1;
 
 @Repository
+@SuppressWarnings("null")
 public class PacienteDAO {
 
     @Autowired

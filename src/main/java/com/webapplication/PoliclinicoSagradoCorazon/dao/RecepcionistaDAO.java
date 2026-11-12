@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.webapplication.PoliclinicoSagradoCorazon.dto.RecepcionistaDTO;
 
 @Repository
+@SuppressWarnings({"null", "deprecation"})
 public class RecepcionistaDAO {
 
     @Autowired

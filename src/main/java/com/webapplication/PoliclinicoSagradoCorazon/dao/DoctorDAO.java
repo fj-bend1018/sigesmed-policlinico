@@ -12,6 +12,7 @@ import com.webapplication.PoliclinicoSagradoCorazon.dto.DoctorDTO;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Doctor;
 
 @Repository
+@SuppressWarnings("null")
 public class DoctorDAO {
 
     @Autowired
@@ -33,7 +34,8 @@ public class DoctorDAO {
 
     public int obetenerEspecialidadID(int doctorID) {
         String sql = "SELECT especialidad_id FROM doctor WHERE id = ?";
-        return jdbc.queryForObject(sql, int.class, doctorID);
+        Integer espId = jdbc.queryForObject(sql, Integer.class, doctorID);
+        return espId != null ? espId : 0;
     }
 
     public List<DoctorDTO> obtenerTodosLosDoctores() {
@@ -127,7 +129,8 @@ public class DoctorDAO {
 
     public int obtenerIDporNombre(String nombreDoctor) {
         String sql = "SELECT id FROM doctor WHERE nombre = ?";
-        return jdbc.queryForObject(sql, Integer.class, nombreDoctor);
+        Integer id = jdbc.queryForObject(sql, Integer.class, nombreDoctor);
+        return id != null ? id : 0;
     }
 
     public void cambiarActivado(int iddoctor){

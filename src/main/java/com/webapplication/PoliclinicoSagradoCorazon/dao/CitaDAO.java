@@ -13,6 +13,7 @@ import com.webapplication.PoliclinicoSagradoCorazon.dto.CitaDetalleDTO;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Cita;
 
 @Repository
+@SuppressWarnings("null")
 public class CitaDAO {
     @Autowired
     private JdbcTemplate jdbc;

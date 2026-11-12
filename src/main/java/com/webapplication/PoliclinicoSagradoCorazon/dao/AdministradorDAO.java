@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import com.webapplication.PoliclinicoSagradoCorazon.dto.AdministradorDTO;
 
 @Repository
+@SuppressWarnings({"null", "deprecation"})
 public class AdministradorDAO {
 
     @Autowired

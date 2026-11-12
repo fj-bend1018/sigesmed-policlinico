@@ -15,6 +15,7 @@ import com.webapplication.PoliclinicoSagradoCorazon.dto.HorarioDTO;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Horario;
 
 @Repository
+@SuppressWarnings("null")
 public class HorarioDAO {
 
     @Autowired
