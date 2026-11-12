@@ -103,22 +103,7 @@ public class DevDataInitializer implements ApplicationRunner {
             doctors.add(doctorRepository.save(doctor));
         }
 
-        List<String> legacySpecialties = List.of(
-                "Cardiología",
-                "Pediatría",
-                "Medicina General",
-                "Odontología",
-                "Medicina Interna",
-                "Traumatología"
-        );
-        for (String legacy : legacySpecialties) {
-            especialidadRepository.findByNombreIgnoreCase(legacy).ifPresent(oldSpecialty -> {
-                if (!doctorRepository.existsByEspecialidades_Id(oldSpecialty.getId())
-                        && !citaRepository.existsByEspecialidad_Id(oldSpecialty.getId())) {
-                    especialidadRepository.delete(oldSpecialty);
-                }
-            });
-        }
+        remapLegacySpecialties();
 
         LocalDate firstDay = LocalDate.now(clock).plusDays(1);
         List<ServicioComplementario> services = servicioRepository.findAllByOrderByNombreAsc();
@@ -189,6 +174,39 @@ public class DevDataInitializer implements ApplicationRunner {
     private Especialidad asegurarEspecialidad(String nombre) {
         return especialidadRepository.findByNombreIgnoreCase(nombre)
                 .orElseGet(() -> especialidadRepository.save(new Especialidad(nombre)));
+    }
+
+    private void remapLegacySpecialties() {
+        remapLegacySpecialty("Pediatría", "Pediatría general");
+        remapLegacySpecialty("Medicina General", "Medicina familiar");
+        remapLegacySpecialty("Odontología", "Odontología pediátrica");
+
+        List<String> toClean = List.of("Cardiología", "Medicina Interna", "Traumatología",
+                "Pediatría", "Medicina General", "Odontología");
+        for (String legacy : toClean) {
+            especialidadRepository.findByNombreIgnoreCase(legacy).ifPresent(oldSpecialty -> {
+                if (!doctorRepository.existsByEspecialidades_Id(oldSpecialty.getId())
+                        && !citaRepository.existsByEspecialidad_Id(oldSpecialty.getId())) {
+                    especialidadRepository.delete(oldSpecialty);
+                }
+            });
+        }
+    }
+
+    private void remapLegacySpecialty(String legacyName, String officialName) {
+        especialidadRepository.findByNombreIgnoreCase(legacyName).ifPresent(oldSpecialty -> {
+            Especialidad target = asegurarEspecialidad(officialName);
+            List<Cita> citas = citaRepository.findAll().stream()
+                    .filter(c -> c.getEspecialidad() != null && c.getEspecialidad().getId().equals(oldSpecialty.getId()))
+                    .toList();
+            for (Cita c : citas) {
+                c.setEspecialidad(target);
+                citaRepository.save(c);
+            }
+            if (!doctorRepository.existsByEspecialidades_Id(oldSpecialty.getId())) {
+                especialidadRepository.delete(oldSpecialty);
+            }
+        });
     }
 
     private void requirePassword(String password, String variable) {
