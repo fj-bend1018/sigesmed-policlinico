@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Especialidad;
 
 @Repository
-@SuppressWarnings("null")
 public class ListaDAO {
     
     @Autowired

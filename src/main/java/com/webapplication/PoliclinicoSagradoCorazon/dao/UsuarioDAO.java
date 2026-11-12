@@ -1,13 +1,12 @@
 package com.webapplication.PoliclinicoSagradoCorazon.dao;
 
-
 import com.webapplication.PoliclinicoSagradoCorazon.model.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.*;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 @Repository
-@SuppressWarnings("null")
 public class UsuarioDAO {
 
     @Autowired
@@ -32,9 +31,10 @@ public class UsuarioDAO {
         jdbcTemplate.update(sql, contraseña, dni);
     }
 
-    public int obternerId(String dni){
+    public int obternerId(String dni) {
         String sql = "SELECT id FROM usuario WHERE dni = ?";
-            return jdbcTemplate.queryForObject(sql, Integer.class, dni);
+        Integer id = jdbcTemplate.queryForObject(sql, Integer.class, dni);
+        return id != null ? id : 0;
     }
 
 }

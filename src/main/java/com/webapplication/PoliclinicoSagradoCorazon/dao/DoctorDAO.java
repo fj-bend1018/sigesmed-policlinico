@@ -12,7 +12,6 @@ import com.webapplication.PoliclinicoSagradoCorazon.dto.DoctorDTO;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Doctor;
 
 @Repository
-@SuppressWarnings("null")
 public class DoctorDAO {
 
     @Autowired
@@ -87,8 +86,8 @@ public class DoctorDAO {
         // Ejecutar la consulta
         return jdbc.query(
                 sql.toString(),
-                params.toArray(),
-                new BeanPropertyRowMapper<>(DoctorDTO.class));
+                new BeanPropertyRowMapper<>(DoctorDTO.class),
+                params.toArray());
     }
 
     public DoctorDTO obtenerPorId(int id) {

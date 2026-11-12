@@ -13,7 +13,6 @@ import com.webapplication.PoliclinicoSagradoCorazon.dto.CitaDetalleDTO;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Cita;
 
 @Repository
-@SuppressWarnings("null")
 public class CitaDAO {
     @Autowired
     private JdbcTemplate jdbc;
@@ -225,7 +224,7 @@ public class CitaDAO {
         // Ordenar por fecha y hora ascendente
         sql.append("ORDER BY h.fecha ASC, h.hora ASC");
 
-        return jdbc.query(sql.toString(), params.toArray(), new BeanPropertyRowMapper<>(CitaDetalleDTO.class));
+        return jdbc.query(sql.toString(), new BeanPropertyRowMapper<>(CitaDetalleDTO.class), params.toArray());
     }
 
     public List<CitaDetalleDTO> buscarCitasHistorialPorFiltros(String dni, String especialidad, LocalDate fecha) {
@@ -258,7 +257,7 @@ public class CitaDAO {
 
         sql.append("ORDER BY h.fecha DESC, h.hora DESC");
 
-        return jdbc.query(sql.toString(), params.toArray(), new BeanPropertyRowMapper<>(CitaDetalleDTO.class));
+        return jdbc.query(sql.toString(), new BeanPropertyRowMapper<>(CitaDetalleDTO.class), params.toArray());
     }
 
     public List<String> obtenerEspecialidadesProgramadas() {

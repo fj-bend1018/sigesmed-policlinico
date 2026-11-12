@@ -11,7 +11,6 @@ import com.webapplication.PoliclinicoSagradoCorazon.dto.PacienteDTO;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Paciente1;
 
 @Repository
-@SuppressWarnings("null")
 public class PacienteDAO {
 
     @Autowired
@@ -35,7 +34,7 @@ public class PacienteDAO {
 
     public PacienteDTO buscarPorDni(String dni) {
         String sql = "SELECT * FROM paciente WHERE dni = ?";
-        List<PacienteDTO> lista = jdbc.query(sql, new Object[] { dni }, (rs, rowNum) -> {
+        List<PacienteDTO> lista = jdbc.query(sql, (rs, rowNum) -> {
             PacienteDTO dto = new PacienteDTO();
             dto.setId(rs.getInt("id"));
             dto.setDni(rs.getString("dni"));
@@ -47,7 +46,7 @@ public class PacienteDAO {
             dto.setCorreo(rs.getString("correo"));
             dto.setCelular(rs.getString("celular"));
             return dto;
-        });
+        }, dni);
 
         return lista.isEmpty() ? null : lista.get(0);
     }

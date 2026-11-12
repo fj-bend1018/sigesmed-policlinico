@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Pago;
 
 @Repository
-@SuppressWarnings("null")
 public class PagoDAO {
 
     @Autowired
