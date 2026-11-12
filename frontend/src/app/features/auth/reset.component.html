@@ -1,17 +1,39 @@
-<section class="account-layout" aria-labelledby="reset-title">
-  <aside class="account-aside">
-    <span class="auth-logo-frame"><img class="brand-logo" src="assets/LogoEmpresa.png" alt="Logo del Policlínico Infantil Nuestra Señora del Sagrado Corazón"></span>
-    <p class="eyebrow text-white">Seguridad de la cuenta</p>
+<section class="account-layout auth-glass-stage" aria-labelledby="reset-title">
+  <aside class="account-aside account-aside--glass">
+    <div class="auth-aside__brand-row">
+      <span class="auth-logo-frame"><img class="brand-logo" src="assets/LogoEmpresa.png" alt="Logo del Policlínico Infantil Nuestra Señora del Sagrado Corazón"></span>
+      <div class="auth-aside__brand-text">
+        <strong>SIGESMED · Seguridad</strong>
+        <span>Policlínico Infantil Sagrado Corazón</span>
+      </div>
+    </div>
+
+    <p class="eyebrow auth-aside__eyebrow">Seguridad de la cuenta</p>
     <h1>Elige una contraseña nueva</h1>
     <p>Actualiza tus credenciales para volver a gestionar la atención de tu familia.</p>
+
+    <div class="auth-photo-card" aria-hidden="true">
+      <img src="/assets/rediseno/spec-familiar.jpg" alt="" loading="lazy">
+      <div class="auth-photo-card__caption">
+        <strong>Actualización segura</strong>
+        <span>Validación automática de enlace temporal</span>
+      </div>
+    </div>
+
     <div class="account-aside__note">
       <span class="account-aside__mark" aria-hidden="true">✓</span>
       <span>El enlace de recuperación se valida antes de guardar el cambio.</span>
     </div>
   </aside>
 
-  <div class="surface-card account-card">
-    <div class="page-heading">
+  <div class="surface-card account-card auth-studio-card">
+    <nav class="auth-mode-tabs" aria-label="Opciones de cuenta">
+      <a class="auth-mode-tab" routerLink="/login">Iniciar sesión</a>
+      <a class="auth-mode-tab" routerLink="/registro">Crear cuenta</a>
+      <a class="auth-mode-tab is-active" routerLink="/recuperar" aria-current="page">Restablecer clave</a>
+    </nav>
+
+    <div class="page-heading mb-4">
       <p class="eyebrow mb-2">Restablecimiento seguro</p>
       <h2 id="reset-title">Crear nueva contraseña</h2>
       <p>Ingresa tu nueva contraseña para continuar.</p>
@@ -34,11 +56,11 @@
         <small id="reset-help" class="form-text">Máximo 72 caracteres.</small>
         <small id="reset-error" class="invalid-feedback d-block" *ngIf="form.controls.nuevaClave.touched && form.controls.nuevaClave.invalid">Ingresa una contraseña de máximo 72 caracteres.</small>
       </div>
-      <button class="btn btn-primary w-100 py-2" type="submit" [disabled]="loading" [attr.aria-busy]="loading">
+      <button class="btn btn-primary w-100 py-2 auth-submit-btn" type="submit" [disabled]="loading" [attr.aria-busy]="loading">
         {{ loading ? 'Actualizando contraseña…' : 'Restablecer contraseña' }}
       </button>
     </form>
 
-    <div class="account-card__footer"><a class="link-primary" routerLink="/login">Ir a iniciar sesión</a></div>
+    <div class="account-card__footer"><a class="link-primary fw-bold" routerLink="/login">Ir a iniciar sesión</a></div>
   </div>
 </section>

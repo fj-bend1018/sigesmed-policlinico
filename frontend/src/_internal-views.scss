@@ -188,6 +188,26 @@ body:has(.auth-glass-stage) main.page-shell > .alert {
   text-decoration: underline;
 }
 
+.account-aside__mark {
+  display: inline-grid;
+  width: 1.85rem;
+  height: 1.85rem;
+  flex: 0 0 1.85rem;
+  place-items: center;
+  border: 1px solid var(--clinic-gold-light);
+  border-radius: 50%;
+  background: rgba(201, 155, 46, 0.22);
+  color: var(--clinic-gold-light);
+  font-weight: 800;
+}
+
+.account-card__footer {
+  margin-top: 1.5rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid #dce7df;
+  text-align: center;
+}
+
 /* Panel derecho de formulario luminoso */
 .auth-glass-stage .auth-studio-card {
   position: relative;

@@ -1,17 +1,39 @@
-<section class="account-layout" aria-labelledby="recover-title">
-  <aside class="account-aside">
-    <span class="auth-logo-frame"><img class="brand-logo" src="assets/LogoEmpresa.png" alt="Logo del Policlínico Infantil Nuestra Señora del Sagrado Corazón"></span>
-    <p class="eyebrow text-white">Recuperación de acceso</p>
+<section class="account-layout auth-glass-stage" aria-labelledby="recover-title">
+  <aside class="account-aside account-aside--glass">
+    <div class="auth-aside__brand-row">
+      <span class="auth-logo-frame"><img class="brand-logo" src="assets/LogoEmpresa.png" alt="Logo del Policlínico Infantil Nuestra Señora del Sagrado Corazón"></span>
+      <div class="auth-aside__brand-text">
+        <strong>SIGESMED · Seguridad</strong>
+        <span>Policlínico Infantil Sagrado Corazón</span>
+      </div>
+    </div>
+
+    <p class="eyebrow auth-aside__eyebrow">Recuperación de acceso</p>
     <h1>Recupera el acceso a tu cuenta</h1>
     <p>Te guiaremos para restablecer tu contraseña de manera segura.</p>
+
+    <div class="auth-photo-card" aria-hidden="true">
+      <img src="/assets/rediseno/spec-familiar.jpg" alt="" loading="lazy">
+      <div class="auth-photo-card__caption">
+        <strong>Protección de credenciales</strong>
+        <span>Enlace de restablecimiento enviado a tu correo registrado</span>
+      </div>
+    </div>
+
     <div class="account-aside__note">
       <span class="account-aside__mark" aria-hidden="true">✓</span>
       <span>Si la cuenta existe, enviaremos las instrucciones al correo registrado.</span>
     </div>
   </aside>
 
-  <div class="surface-card account-card">
-    <div class="page-heading">
+  <div class="surface-card account-card auth-studio-card">
+    <nav class="auth-mode-tabs" aria-label="Opciones de cuenta">
+      <a class="auth-mode-tab" routerLink="/login">Iniciar sesión</a>
+      <a class="auth-mode-tab" routerLink="/registro">Crear cuenta</a>
+      <a class="auth-mode-tab is-active" routerLink="/recuperar" aria-current="page">Recuperar clave</a>
+    </nav>
+
+    <div class="page-heading mb-4">
       <p class="eyebrow mb-2">Un paso a la vez</p>
       <h2 id="recover-title">Restablece tu contraseña</h2>
       <p>Ingresa el correo asociado a tu cuenta para recibir un enlace de recuperación.</p>
@@ -31,11 +53,11 @@
         <small id="recovery-help" class="form-text">Usa el correo registrado en tu cuenta.</small>
         <small id="recovery-error" class="invalid-feedback d-block" *ngIf="form.controls.correo.touched && form.controls.correo.invalid">Ingresa un correo válido de hasta 254 caracteres.</small>
       </div>
-      <button class="btn btn-primary w-100 py-2" type="submit" [disabled]="loading" [attr.aria-busy]="loading">
+      <button class="btn btn-primary w-100 py-2 auth-submit-btn" type="submit" [disabled]="loading" [attr.aria-busy]="loading">
         {{ loading ? 'Enviando instrucciones…' : 'Enviar instrucciones' }}
       </button>
     </form>
 
-    <div class="account-card__footer"><a class="link-primary" routerLink="/login">Volver al inicio de sesión</a></div>
+    <div class="account-card__footer"><a class="link-primary fw-bold" routerLink="/login">Volver al inicio de sesión</a></div>
   </div>
 </section>
