@@ -52,12 +52,13 @@
     </aside>
 
     <div class="patient-portal__content">
-      <header class="patient-portal__heading">
+      <header class="patient-portal__heading patient-hero-banner">
         <div>
-          <p class="patient-portal__eyebrow">Área del paciente</p>
+          <p class="patient-portal__eyebrow">Área del paciente · SIGESMED</p>
           <h1 id="patient-page-title">{{ title }}</h1>
           <p class="patient-portal__description">{{ description }}</p>
         </div>
+        <a class="patient-hero-banner__cta" routerLink="/paciente/disponibilidad">Reservar nueva cita →</a>
       </header>
 
       <div *ngIf="errorMessage" class="patient-portal__alert patient-portal__alert--error" role="alert">
@@ -103,10 +104,15 @@
 
                   <div class="patient-appointment__body">
                     <div class="patient-appointment__heading">
-                      <div>
-                        <span class="patient-appointment__reference">Cita #{{ appointment.id }}</span>
-                        <span class="patient-appointment__label">{{ appointment.servicio ? 'Servicio complementario' : 'Especialidad' }}</span>
-                        <h3>{{ specialties(appointment) }}</h3>
+                      <div class="patient-appointment__title-row">
+                        <img class="patient-appointment__portrait"
+                             [src]="appointment.servicio ? '/assets/rediseno/hero-slide-2.jpg' : '/assets/rediseno/spec-pediatria.jpg'"
+                             alt="" loading="lazy">
+                        <div>
+                          <span class="patient-appointment__reference">Cita #{{ appointment.id }}</span>
+                          <span class="patient-appointment__label">{{ appointment.servicio ? 'Servicio complementario' : 'Especialidad' }}</span>
+                          <h3>{{ specialties(appointment) }}</h3>
+                        </div>
                       </div>
                       <span class="patient-portal__status" [attr.data-status]="appointment.estado">
                         {{ statusLabel(appointment.estado) }}
