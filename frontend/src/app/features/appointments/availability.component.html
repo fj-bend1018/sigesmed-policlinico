@@ -6,10 +6,19 @@
       <span aria-current="page">Reservar cita</span>
     </nav>
 
-    <header class="booking-intro">
-      <p class="booking-kicker">Atención para toda la familia</p>
-      <h1 id="availability-title">Reserva una cita <span>para tu familia</span></h1>
-      <p>Elige la especialidad, el médico y un horario disponible. Revisa tu selección antes de confirmar la cita.</p>
+    <header class="booking-intro booking-hero-banner">
+      <div class="booking-hero-banner__copy">
+        <p class="booking-kicker">Atención para toda la familia · SIGESMED</p>
+        <h1 id="availability-title">Reserva una cita <span>para tu familia</span></h1>
+        <p>Elige la especialidad, el médico y un horario disponible. Revisa tu selección antes de confirmar la cita.</p>
+      </div>
+      <div class="booking-hero-banner__badge" aria-hidden="true">
+        <img src="/assets/rediseno/hero-slide-1.jpg" alt="" loading="lazy">
+        <div>
+          <strong>Agenda Médica en Línea</strong>
+          <span>San Gregorio, Ate · Lun a Sáb 8:00 a. m. – 8:00 p. m.</span>
+        </div>
+      </div>
     </header>
 
     <ol class="booking-progress" [style.gridTemplateColumns]="'repeat(' + totalSteps + ', minmax(0, 1fr))'" aria-label="Pasos para reservar una cita">
@@ -138,14 +147,18 @@
             <span>Regresa a especialidades y elige otra opción.</span>
           </div>
           <div class="booking-doctors" *ngIf="!loadingDoctors && doctors.length > 0" aria-label="Médicos disponibles">
-            <button class="booking-doctor" type="button" *ngFor="let doctor of doctors"
+            <button class="booking-doctor" type="button" *ngFor="let doctor of doctors; let idx = index"
                     [class.is-selected]="doctorId === '' + doctor.id"
                     [attr.aria-pressed]="doctorId === '' + doctor.id"
                     (click)="onDoctorChange('' + doctor.id)">
-              <span class="booking-doctor__avatar" aria-hidden="true">
-                <svg viewBox="0 0 32 32" focusable="false"><circle cx="16" cy="9" r="5"/><path d="M6 28a10 10 0 0 1 20 0M12 15l4 4 4-4m-4 4v7"/></svg>
+              <span class="booking-doctor__avatar booking-doctor__avatar--photo" aria-hidden="true">
+                <img [src]="idx % 2 === 0 ? '/assets/rediseno/spec-pediatria.jpg' : '/assets/rediseno/doc-male.jpg'" alt="" loading="lazy">
               </span>
-              <span class="booking-doctor__copy"><strong>{{ doctor.nombre }}</strong><small>{{ selectedSpecialtyName }}</small></span>
+              <span class="booking-doctor__copy">
+                <strong>{{ doctor.nombre }}</strong>
+                <small>{{ selectedSpecialtyName }}</small>
+                <span class="booking-doctor__cmp">Staff Médico · Sagrado Corazón</span>
+              </span>
               <span class="booking-specialty__check" aria-hidden="true"><svg viewBox="0 0 20 20" focusable="false"><path d="m4 10 4 4 8-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
             </button>
           </div>
@@ -227,8 +240,20 @@
           <span class="booking-summary__icon" aria-hidden="true">
             <svg viewBox="0 0 32 32" focusable="false"><rect x="5" y="7" width="22" height="21" rx="3"/><path d="M11 4v6m10-6v6M5 13h22m-15 5h8m-8 5h5"/></svg>
           </span>
-          <div><p class="booking-card__eyebrow">Tu cita</p><h2 id="booking-summary-title">Resumen de selección</h2></div>
+          <div><p class="booking-card__eyebrow">Pase Clínico · SIGESMED</p><h2 id="booking-summary-title">Resumen de selección</h2></div>
         </div>
+
+        <div class="booking-summary__card-preview" aria-hidden="true">
+          <div class="booking-summary__card-top">
+            <span class="booking-summary__chip"></span>
+            <span>SIGESMED · ATE</span>
+          </div>
+          <div class="booking-summary__card-main">
+            <strong>{{ selectedAttentionName || 'Especialidad o Servicio' }}</strong>
+            <span>{{ selectedDoctorName || 'Policlínico Sagrado Corazón' }}</span>
+          </div>
+        </div>
+
         <dl class="booking-summary__details">
           <div><dt>{{ bookingType === 'CONSULTA' ? 'Especialidad' : 'Servicio' }}</dt><dd>{{ selectedAttentionName || 'Por elegir' }}</dd></div>
           <div *ngIf="bookingType === 'CONSULTA'"><dt>Médico</dt><dd>{{ selectedDoctorName || 'Por elegir' }}</dd></div>
