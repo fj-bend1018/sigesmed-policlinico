@@ -23,3 +23,4 @@ export const ADMINISTRADOR_ROUTES: Routes = [
   { path: 'recepcionista/activar/:id', redirectTo: 'recepcionistas' },
   { path: 'recepcionista/desactivar/:id', redirectTo: 'recepcionistas' }
 ];
+

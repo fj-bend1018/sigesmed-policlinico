@@ -12,3 +12,4 @@ export const PATIENT_ROUTES: Routes = [
   { path: 'editarPerfil/:dni', redirectTo: 'perfil/editar' },
   { path: 'cita/modificar/:id', redirectTo: 'citas/:id/modificar' }
 ];
+

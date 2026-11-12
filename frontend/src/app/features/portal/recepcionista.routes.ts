@@ -10,3 +10,4 @@ export const RECEPCIONISTA_ROUTES: Routes = [
   { path: 'cita/marcar/:id', redirectTo: 'citas' },
   { path: 'cita/cancelar/:id', redirectTo: 'citas' }
 ];
+
