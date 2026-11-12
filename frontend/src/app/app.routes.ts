@@ -1,8 +1,6 @@
 import { Routes } from '@angular/router';
 import { roleGuard } from './core/auth/role.guard';
 
-const patientPortal = () => import('./features/patient/patient-portal.component').then(m => m.PatientPortalComponent);
-const staffPortal = () => import('./features/portal/role-portal.component').then(m => m.RolePortalComponent);
 const legacyWorkflow = () => import('./features/legacy/legacy-workflow.component').then(m => m.LegacyWorkflowComponent);
 const publicHome = () => import('./features/home/home.component').then(m => m.HomeComponent);
 const availability = () => import('./features/appointments/availability.component').then(m => m.AvailabilityComponent);
@@ -41,18 +39,7 @@ export const routes: Routes = [
 
   {
     path: 'paciente', canActivate: [roleGuard], data: { roles: ['PACIENTE'] },
-    children: [
-      { path: '', pathMatch: 'full', redirectTo: 'citas' },
-      { path: 'disponibilidad', loadComponent: availability },
-      { path: 'citas/:id/modificar', loadComponent: patientPortal, data: { section: 'reschedule' } },
-      { path: 'citas', loadComponent: patientPortal, data: { section: 'appointments' } },
-      { path: 'historial', loadComponent: patientPortal, data: { section: 'history' } },
-      { path: 'canceladas', loadComponent: patientPortal, data: { section: 'cancelled' } },
-      { path: 'perfil/editar', loadComponent: patientPortal, data: { section: 'editProfile' } },
-      { path: 'perfil', loadComponent: patientPortal, data: { section: 'profile' } },
-      { path: 'editarPerfil/:dni', redirectTo: 'perfil/editar' },
-      { path: 'cita/modificar/:id', redirectTo: 'citas/:id/modificar' }
-    ]
+    loadChildren: () => import('./features/patient/patient.routes').then(m => m.PATIENT_ROUTES)
   },
   { path: 'citas/:id/confirmacion', loadComponent: () => import('./features/appointments/confirmation.component').then(m => m.ConfirmationComponent),
     canActivate: [roleGuard], data: { roles: ['PACIENTE'] } },
@@ -61,43 +48,12 @@ export const routes: Routes = [
 
   {
     path: 'recepcionista', canActivate: [roleGuard], data: { roles: ['RECEPCIONISTA'] },
-    children: [
-      { path: '', pathMatch: 'full', redirectTo: 'citas' },
-      { path: 'citas/:id/modificar', loadComponent: staffPortal, data: { section: 'edit' } },
-      { path: 'citas', loadComponent: staffPortal, data: { section: 'appointments' } },
-      { path: 'historial', loadComponent: staffPortal, data: { section: 'history' } },
-      { path: 'perfil', loadComponent: staffPortal, data: { section: 'profile' } },
-      { path: 'cita/modificar/:id', redirectTo: 'citas/:id/modificar' },
-      { path: 'cita/marcar/:id', redirectTo: 'citas' },
-      { path: 'cita/cancelar/:id', redirectTo: 'citas' }
-    ]
+    loadChildren: () => import('./features/portal/recepcionista.routes').then(m => m.RECEPCIONISTA_ROUTES)
   },
 
   {
     path: 'administrador', canActivate: [roleGuard], data: { roles: ['ADMINISTRADOR'] },
-    children: [
-      { path: '', pathMatch: 'full', redirectTo: 'doctores' },
-      { path: 'doctores/nuevo', loadComponent: staffPortal, data: { section: 'doctorForm' } },
-      { path: 'doctores/:id/editar', loadComponent: staffPortal, data: { section: 'doctorEditForm' } },
-      { path: 'doctores', loadComponent: staffPortal, data: { section: 'doctors' } },
-      { path: 'horarios/nuevo', loadComponent: staffPortal, data: { section: 'scheduleForm' } },
-      { path: 'horarios/:id/editar', loadComponent: staffPortal, data: { section: 'scheduleEditForm' } },
-      { path: 'horarios', loadComponent: staffPortal, data: { section: 'schedules' } },
-      { path: 'recepcionistas/nuevo', loadComponent: staffPortal, data: { section: 'receptionistForm' } },
-      { path: 'recepcionistas/:id/editar', loadComponent: staffPortal, data: { section: 'receptionistEditForm' } },
-      { path: 'recepcionistas', loadComponent: staffPortal, data: { section: 'receptionists' } },
-      { path: 'perfil', loadComponent: staffPortal, data: { section: 'profile' } },
-      { path: 'doctor/nuevo', redirectTo: 'doctores/nuevo' },
-      { path: 'doctor/modificar', redirectTo: 'doctores' },
-      { path: 'horario/nuevo', redirectTo: 'horarios/nuevo' },
-      { path: 'horario/modificar/:id', redirectTo: 'horarios/:id/editar' },
-      { path: 'horario/apertura/:id', redirectTo: 'horarios' },
-      { path: 'horario/cierre/:id', redirectTo: 'horarios' },
-      { path: 'recepcionista/nuevo', redirectTo: 'recepcionistas/nuevo' },
-      { path: 'recepcionista/modificar/:id', redirectTo: 'recepcionistas/:id/editar' },
-      { path: 'recepcionista/activar/:id', redirectTo: 'recepcionistas' },
-      { path: 'recepcionista/desactivar/:id', redirectTo: 'recepcionistas' }
-    ]
+    loadChildren: () => import('./features/portal/administrador.routes').then(m => m.ADMINISTRADOR_ROUTES)
   },
 
   { path: 'portalPaciente', redirectTo: 'paciente/citas', pathMatch: 'full' },
