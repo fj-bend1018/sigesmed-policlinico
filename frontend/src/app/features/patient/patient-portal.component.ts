@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink, RouterLinkActive } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Appointment, AppointmentApiService, AvailableSlot } from '../../core/appointments/appointment-api.service';
 import { AccountProfile, AppointmentView, WorkspaceApiService } from '../../core/workspaces/workspace-api.service';
 import { AuthService } from '../../core/auth/auth.service';
@@ -12,7 +12,7 @@ type PatientSection = 'appointments' | 'history' | 'cancelled' | 'profile' | 'ed
 @Component({
   standalone: true,
   selector: 'app-patient-portal',
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './patient-portal.component.html',
   styleUrls: ['./patient-portal.component.scss']
 })

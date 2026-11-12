@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Appointment, AppointmentApiService, AvailableSlot, ComplementaryService, Specialty } from '../../core/appointments/appointment-api.service';
 import { AccountProfile, DoctorRecord, ReceptionistRecord, ScheduleRecord, WorkspaceApiService } from '../../core/workspaces/workspace-api.service';
@@ -16,7 +16,7 @@ interface PortalNavigationItem { key: PortalSection; label: string; icon: string
 @Component({
   standalone: true,
   selector: 'app-role-portal',
-  imports: [CommonModule, FormsModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './role-portal.component.html'
 })
 export class RolePortalComponent implements OnInit {
