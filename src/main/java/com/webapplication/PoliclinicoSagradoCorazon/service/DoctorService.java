@@ -58,7 +58,7 @@ public class DoctorService {
         doctorDAO.cambiarDesactivado(iddoctor);
     }
     /*
-     * METODO ES REVISION, RECORDAR QUE SI SE ELIMINAR SE ELIMINARIA TODO LOS
+     * METODO ES REVISION, RECORDAR QUE SI SE ELIMINAR SE ELIMINARIA TODOS LOS
      * HROARIOS Y CITAS QUE TIENEN VINCULADO, MEJOR OPCION PONER ESTADO INACTIVO
      * public void eliminar(int id){
      * doctorDAO.eliminar(id);
