@@ -143,3 +143,4 @@ npm start --prefix frontend
   2. Ir a la gestión de horarios y dar de alta un nuevo horario futuro para un médico disponible.
   3. **Demostración de Integridad Referencial (Rechazo 409):** Intentar eliminar un horario que tiene una cita activa vinculada.
 - **Qué debe verse:** El sistema bloquea la eliminación y responde con un código de error controlado **HTTP 409 Conflict** mostrando el mensaje: *"No se puede eliminar el horario porque tiene una cita reservada o confirmada"*, garantizando la integridad de la base de datos sin excepciones no controladas.
+
