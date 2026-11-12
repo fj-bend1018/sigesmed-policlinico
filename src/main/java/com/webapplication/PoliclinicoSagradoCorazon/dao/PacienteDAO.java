@@ -34,20 +34,7 @@ public class PacienteDAO {
 
     public PacienteDTO buscarPorDni(String dni) {
         String sql = "SELECT * FROM paciente WHERE dni = ?";
-        List<PacienteDTO> lista = jdbc.query(sql, new Object[] { dni }, (rs, rowNum) -> {
-            PacienteDTO dto = new PacienteDTO();
-            dto.setId(rs.getInt("id"));
-            dto.setDni(rs.getString("dni"));
-            dto.setNombre(rs.getString("nombre"));
-            dto.setApellidoPaterno(rs.getString("apellido_paterno"));
-            dto.setApellidoMaterno(rs.getString("apellido_materno"));
-            dto.setFechaNacimiento(rs.getDate("fecha_nacimiento").toLocalDate());
-            dto.setSexo(rs.getString("sexo"));
-            dto.setCorreo(rs.getString("correo"));
-            dto.setCelular(rs.getString("celular"));
-            return dto;
-        });
-
+        List<PacienteDTO> lista = jdbc.query(sql, new BeanPropertyRowMapper<>(PacienteDTO.class), dni);
         return lista.isEmpty() ? null : lista.get(0);
     }
 

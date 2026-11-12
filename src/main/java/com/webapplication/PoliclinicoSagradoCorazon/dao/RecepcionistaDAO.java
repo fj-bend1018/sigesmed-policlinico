@@ -16,21 +16,23 @@ public class RecepcionistaDAO {
     private JdbcTemplate jdbc;
 
     public RecepcionistaDTO buscarPorDni(String dni) {
-        String sql = "SELECT * FROM recepcionista WHERE dni = ? AND estado = 'ACTIVO'";
-        List<RecepcionistaDTO> lista = jdbc.query(sql, new Object[] { dni }, (rs, rowNum) -> {
-            RecepcionistaDTO dto = new RecepcionistaDTO();
-            dto.setId(rs.getInt("id"));
-            dto.setDni(rs.getString("dni"));
-            dto.setNombre(rs.getString("nombre"));
-            dto.setApellidoPaterno(rs.getString("apellido_paterno"));
-            dto.setApellidoMaterno(rs.getString("apellido_materno"));
-            dto.setFechaNacimiento(rs.getDate("fecha_nacimiento").toLocalDate());
-            dto.setSexo(rs.getString("sexo"));
-            dto.setCorreo(rs.getString("correo"));
-            dto.setCelular(rs.getString("celular"));
-            return dto;
-        });
-
+        String sql = """
+                SELECT p.id,
+                    p.dni,
+                    p.nombre,
+                    p.apellido_paterno AS apellidoPaterno,
+                    p.apellido_materno AS apellidoMaterno,
+                    p.fecha_nacimiento AS fechaNacimiento,
+                    p.sexo,
+                    p.correo,
+                    p.celular,
+                    u.contraseña,
+                    p.estado
+                FROM recepcionista p
+                JOIN usuario u ON p.usuario_id = u.id
+                WHERE p.dni = ? AND p.estado = 'ACTIVO'
+                """;
+        List<RecepcionistaDTO> lista = jdbc.query(sql, new BeanPropertyRowMapper<>(RecepcionistaDTO.class), dni);
         return lista.isEmpty() ? null : lista.get(0);
     }
 
