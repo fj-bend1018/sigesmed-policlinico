@@ -85,7 +85,7 @@ public class HorarioDAO {
     public List<Horario> obtenerDisponiblesPorDoctor(int doctorId) {
         String sql = "SELECT * FROM horario WHERE doctor_id = ? AND disponible = 'SI'";
 
-        return jdbc.query(sql, (rs, rowNum) -> {
+        return jdbc.query(sql, new Object[] { doctorId }, (rs, rowNum) -> {
             Horario h = new Horario();
             h.setId(rs.getInt("id"));
             h.setDoctor_id(rs.getInt("doctor_id"));
@@ -93,7 +93,7 @@ public class HorarioDAO {
             h.setHora(rs.getTime("hora").toLocalTime());
             h.setDisponible(rs.getString("disponible"));
             return h;
-        }, doctorId);
+        });
     }
 
     public List<HorarioDTO> obtenerDisponiblesPorespecialidad(int especialidad_id) {
@@ -167,7 +167,7 @@ public class HorarioDAO {
             params.add(Date.valueOf(fecha));
         }
 
-        return jdbc.query(sql.toString(), new BeanPropertyRowMapper<>(HorarioDTO.class), params.toArray());
+        return jdbc.query(sql.toString(), params.toArray(), new BeanPropertyRowMapper<>(HorarioDTO.class));
     }
 
     public boolean existeHorario(int doctorId, LocalDate fecha, LocalTime hora) {

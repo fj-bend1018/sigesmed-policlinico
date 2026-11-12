@@ -17,7 +17,7 @@ public class RecepcionistaDAO {
 
     public RecepcionistaDTO buscarPorDni(String dni) {
         String sql = "SELECT * FROM recepcionista WHERE dni = ? AND estado = 'ACTIVO'";
-        List<RecepcionistaDTO> lista = jdbc.query(sql, (rs, rowNum) -> {
+        List<RecepcionistaDTO> lista = jdbc.query(sql, new Object[] { dni }, (rs, rowNum) -> {
             RecepcionistaDTO dto = new RecepcionistaDTO();
             dto.setId(rs.getInt("id"));
             dto.setDni(rs.getString("dni"));
@@ -29,7 +29,7 @@ public class RecepcionistaDAO {
             dto.setCorreo(rs.getString("correo"));
             dto.setCelular(rs.getString("celular"));
             return dto;
-        }, dni);
+        });
 
         return lista.isEmpty() ? null : lista.get(0);
     }

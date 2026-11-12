@@ -86,8 +86,8 @@ public class DoctorDAO {
         // Ejecutar la consulta
         return jdbc.query(
                 sql.toString(),
-                new BeanPropertyRowMapper<>(DoctorDTO.class),
-                params.toArray());
+                params.toArray(),
+                new BeanPropertyRowMapper<>(DoctorDTO.class));
     }
 
     public DoctorDTO obtenerPorId(int id) {
