@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CuentaController {
     private final CuentaService cuentaService;
 
-<span class="nc" id="L20">    public CuentaController(CuentaService cuentaService) { this.cuentaService = cuentaService; }</span>
+<span class="fc" id="L20">    public CuentaController(CuentaService cuentaService) { this.cuentaService = cuentaService; }</span>
 
     @GetMapping
     public PerfilResponse obtener(@AuthenticationPrincipal UsuarioPrincipal usuario) {

@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdministracionController {
     private final AdministracionService service;
 
-<span class="nc" id="L38">    public AdministracionController(AdministracionService service) { this.service = service; }</span>
+<span class="fc" id="L38">    public AdministracionController(AdministracionService service) { this.service = service; }</span>
 
     @GetMapping(&quot;/doctores&quot;)
 <span class="nc" id="L41">    public List&lt;DoctorAdminResponse&gt; doctores() { return service.listarDoctores(); }</span>

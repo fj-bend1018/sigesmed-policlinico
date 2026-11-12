@@ -25,7 +25,7 @@ public class RecuperacionClave {
     private String tokenHash;
     @Column(name = &quot;expira_en&quot;, nullable = false) private OffsetDateTime expiraEn;
     @Column(nullable = false) private boolean usado;
-<span class="nc" id="L28">    protected RecuperacionClave() { }</span>
+<span class="fc" id="L28">    protected RecuperacionClave() { }</span>
 <span class="fc" id="L29">    public RecuperacionClave(Usuario usuario, String tokenHash, OffsetDateTime expiraEn) {</span>
 <span class="fc" id="L30">        this.usuario = usuario; this.tokenHash = tokenHash; this.expiraEn = expiraEn; this.usado = false;</span>
 <span class="fc" id="L31">    }</span>

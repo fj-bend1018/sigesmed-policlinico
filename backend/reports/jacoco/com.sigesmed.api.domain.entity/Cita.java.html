@@ -36,7 +36,7 @@ public class Cita {
     private EstadoCita estado;
     @Column(name = &quot;motivo_cancelacion&quot;, length = 500) private String motivoCancelacion;
     @Column(name = &quot;creado_en&quot;, nullable = false) private OffsetDateTime creadoEn;
-<span class="nc" id="L39">    protected Cita() { }</span>
+<span class="fc" id="L39">    protected Cita() { }</span>
     public Cita(Paciente paciente, Horario horario, Especialidad especialidad,
 <span class="fc" id="L41">            EstadoCita estado, OffsetDateTime creadoEn) {</span>
 <span class="fc" id="L42">        this.paciente = paciente;</span>

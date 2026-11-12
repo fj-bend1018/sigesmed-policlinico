@@ -36,10 +36,10 @@ public class AuthController {
     private final AuthService authService;
     private final SecurityContextRepository securityContextRepository;
 
-<span class="nc" id="L39">    public AuthController(AuthService authService, SecurityContextRepository securityContextRepository) {</span>
-<span class="nc" id="L40">        this.authService = authService;</span>
-<span class="nc" id="L41">        this.securityContextRepository = securityContextRepository;</span>
-<span class="nc" id="L42">    }</span>
+<span class="fc" id="L39">    public AuthController(AuthService authService, SecurityContextRepository securityContextRepository) {</span>
+<span class="fc" id="L40">        this.authService = authService;</span>
+<span class="fc" id="L41">        this.securityContextRepository = securityContextRepository;</span>
+<span class="fc" id="L42">    }</span>
 
     @GetMapping(&quot;/csrf&quot;)
     public ResponseEntity&lt;Void&gt; csrf(CsrfToken csrfToken) {

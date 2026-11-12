@@ -24,7 +24,7 @@ public class Pago {
     @Enumerated(EnumType.STRING) @Column(nullable = false, length = 20) private EstadoPago estado;
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = &quot;registrado_por_usuario_id&quot;)
     private Usuario registradoPor;
-<span class="nc" id="L27">    protected Pago() { }</span>
+<span class="fc" id="L27">    protected Pago() { }</span>
 <span class="nc" id="L28">    public Long getId() { return id; }</span>
 <span class="nc" id="L29">    public EstadoPago getEstado() { return estado; }</span>
 }

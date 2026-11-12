@@ -22,14 +22,14 @@ public class Doctor {
     @Column(nullable = false, length = 160) private String nombre;
     @Column(nullable = false, unique = true, length = 40) private String cmp;
     @Column(length = 500) private String imagen;
-<span class="pc" id="L25">    @Column(nullable = false, length = 10) private String estado = &quot;ACTIVO&quot;;</span>
-<span class="pc" id="L26">    @ManyToMany(fetch = FetchType.LAZY)</span>
+<span class="fc" id="L25">    @Column(nullable = false, length = 10) private String estado = &quot;ACTIVO&quot;;</span>
+<span class="fc" id="L26">    @ManyToMany(fetch = FetchType.LAZY)</span>
     @JoinTable(name = &quot;doctor_especialidad&quot;,
             joinColumns = @JoinColumn(name = &quot;doctor_id&quot;),
             inverseJoinColumns = @JoinColumn(name = &quot;especialidad_id&quot;))
     private Set&lt;Especialidad&gt; especialidades = new HashSet&lt;&gt;();
 
-<span class="nc" id="L32">    protected Doctor() { }</span>
+<span class="fc" id="L32">    protected Doctor() { }</span>
 <span class="fc" id="L33">    public Doctor(String nombre, String cmp, Set&lt;Especialidad&gt; especialidades) {</span>
 <span class="fc" id="L34">        this.nombre = nombre; this.cmp = cmp; this.especialidades = new HashSet&lt;&gt;(especialidades);</span>
 <span class="fc" id="L35">    }</span>

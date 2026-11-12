@@ -62,9 +62,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 <span class="fc" id="L62">                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)</span>
 <span class="fc" id="L63">                        .sessionFixation(fixation -&gt; fixation.changeSessionId()))</span>
 <span class="fc" id="L64">                .exceptionHandling(errors -&gt; errors</span>
-<span class="pc" id="L65">                        .authenticationEntryPoint((request, response, exception) -&gt; writeError(</span>
+<span class="fc" id="L65">                        .authenticationEntryPoint((request, response, exception) -&gt; writeError(</span>
                                 mapper, response, applicationClock, HttpStatus.UNAUTHORIZED, &quot;Autenticación requerida&quot;,
-<span class="nc" id="L67">                                request.getRequestURI()))</span>
+<span class="fc" id="L67">                                request.getRequestURI()))</span>
 <span class="fc" id="L68">                        .accessDeniedHandler((request, response, exception) -&gt; writeError(</span>
                                 mapper, response, applicationClock, HttpStatus.FORBIDDEN, &quot;Acceso denegado&quot;,
 <span class="fc" id="L70">                                request.getRequestURI())))</span>

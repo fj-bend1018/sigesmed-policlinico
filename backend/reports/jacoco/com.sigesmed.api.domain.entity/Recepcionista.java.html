@@ -25,9 +25,9 @@ public class Recepcionista {
     @Column(nullable = false, unique = true, length = 254) private String correo;
     @Column(length = 30) private String celular;
     @Column(length = 300) private String direccion;
-<span class="nc" id="L28">    @Column(nullable = false, length = 10) private String estado = &quot;ACTIVO&quot;;</span>
+<span class="pc" id="L28">    @Column(nullable = false, length = 10) private String estado = &quot;ACTIVO&quot;;</span>
 
-<span class="nc" id="L30">    protected Recepcionista() { }</span>
+<span class="fc" id="L30">    protected Recepcionista() { }</span>
     public Recepcionista(Usuario usuario, String nombre, String apellidoPaterno, String apellidoMaterno,
 <span class="nc" id="L32">            String dni, String correo) {</span>
 <span class="nc" id="L33">        this.usuario = usuario; this.nombre = nombre; this.apellidoPaterno = apellidoPaterno;</span>

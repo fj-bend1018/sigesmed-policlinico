@@ -22,9 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class DisponibilidadController {
     private final DisponibilidadService disponibilidadService;
 
-<span class="nc" id="L25">    public DisponibilidadController(DisponibilidadService disponibilidadService) {</span>
-<span class="nc" id="L26">        this.disponibilidadService = disponibilidadService;</span>
-<span class="nc" id="L27">    }</span>
+<span class="fc" id="L25">    public DisponibilidadController(DisponibilidadService disponibilidadService) {</span>
+<span class="fc" id="L26">        this.disponibilidadService = disponibilidadService;</span>
+<span class="fc" id="L27">    }</span>
 
     @GetMapping(&quot;/especialidades&quot;)
     public List&lt;EspecialidadResponse&gt; especialidades() {

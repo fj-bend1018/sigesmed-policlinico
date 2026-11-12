@@ -79,13 +79,23 @@ Fecha de actualización: 2026-11-12
 
 ---
 
-## 3. Fase 3 — Verificación Final (PENDIENTE)
+## 3. Fase 3 — Verificación Final (COMPLETADA)
 
-- Ejecución completa de tests:
-  - `.\mvnw.cmd test -f backend/pom.xml` (36 pruebas unitarias)
-  - `.\mvnw.cmd test -f backend/pom.xml -Pintegration` (2 pruebas de concurrencia e integración)
-  - `npm --prefix frontend test -- --watch=false`
-  - `npm --prefix frontend run build` (auditoría de bundle size)
-- Recorrido completo con capturas finales en 360px y 1440px en `evidencia/capturas_finales/`.
-- Generación del informe consolidado `evidencia/RESUMEN_FINAL.md`.
+- **Ejecución Completa de Pruebas Automatizadas:**
+  - `.\mvnw.cmd test -f backend/pom.xml`: **36 pruebas unitarias exitosas (0 fallos)** en ~25 s, 100% desacopladas de PostgreSQL.
+  - `.\mvnw.cmd test -f backend/pom.xml -Pintegration`: **2 pruebas de integración y concurrencia exitosas (0 fallos)** sobre `sigesmed_test` (puerto 5433).
+  - Total pruebas backend: **38 pruebas reales**.
+  - `npm --prefix frontend test -- --watch=false`: **2 pruebas unitarias de frontend exitosas (0 fallos)** en Karma/Chrome.
+  - `npm --prefix frontend run build`: compilación de producción exitosa con tamaño inicial de **483.87 kB** (por debajo de la cota de 520 kB).
+- **Reporte JaCoCo Actualizado:**
+  - Regenerado y copiado en `backend/reports/jacoco/` (fecha 12/11/2026):
+    - Instrucciones cubiertas: **33%** (2,007 / 5,924).
+    - Ramas (Branches) cubiertas: **18%** (78 / 411).
+    - Líneas de código cubiertas: **40%** (415 / 1,049).
+- **Recorrido E2E Final en Navegador (`evidencia/recorrido_fase3_final.js`):**
+  - Validación con interacciones y peticiones HTTP reales (200, 201, 204, 409).
+  - Cero errores en consola del navegador (`consoleErrors: 0`).
+  - Total de 24 capturas fotográficas en 360px y 1440px generadas en `evidencia/capturas_finales/`.
+- **Informe Consolidado:** Generado en `evidencia/RESUMEN_FINAL.md` con desglose técnico completo y sección honesta de limitaciones.
+
 

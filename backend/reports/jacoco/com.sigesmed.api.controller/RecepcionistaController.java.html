@@ -29,7 +29,7 @@ import org.springframework.validation.annotation.Validated;
 public class RecepcionistaController {
     private final CitaManagementService service;
 
-<span class="nc" id="L32">    public RecepcionistaController(CitaManagementService service) { this.service = service; }</span>
+<span class="fc" id="L32">    public RecepcionistaController(CitaManagementService service) { this.service = service; }</span>
 
     @GetMapping
     public List&lt;CitaResponse&gt; listar(@RequestParam(required = false) EstadoCita estado,
