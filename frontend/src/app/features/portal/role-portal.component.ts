@@ -430,7 +430,18 @@ export class RolePortalComponent implements OnInit {
   }
 
   private showFailure(error: unknown, fallback: string): void {
-    this.errorMessage = (error as { error?: { message?: string } })?.error?.message ?? fallback;
+    const err = error as { status?: number; error?: { message?: string } };
+    if (err?.status === 0) {
+      this.errorMessage = 'No se pudo conectar con el servidor. Verifica tu conexión o que SIGESMED esté en línea.';
+    } else if (err?.status === 401) {
+      this.errorMessage = 'Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.';
+    } else if (err?.status === 403) {
+      this.errorMessage = 'Acceso denegado: no tienes permisos suficientes para realizar esta acción.';
+    } else if (err?.status === 409) {
+      this.errorMessage = err.error?.message || 'Existe un conflicto con la solicitud (horario ocupado o con citas activas).';
+    } else {
+      this.errorMessage = err?.error?.message ?? fallback;
+    }
   }
 
   private localDate(value: Date): string {

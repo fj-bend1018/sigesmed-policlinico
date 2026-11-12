@@ -246,6 +246,19 @@ export class PatientPortalComponent implements OnInit {
   }
 
   private messageFrom(error: unknown, fallback: string): string {
-    return (error as { error?: { message?: string } })?.error?.message ?? fallback;
+    const err = error as { status?: number; error?: { message?: string } };
+    if (err?.status === 0) {
+      return 'No se pudo conectar con el servidor. Verifica tu conexión a internet o que el sistema esté disponible.';
+    }
+    if (err?.status === 401) {
+      return 'Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.';
+    }
+    if (err?.status === 403) {
+      return 'Acceso denegado: no tienes permisos para realizar esta operación.';
+    }
+    if (err?.status === 409) {
+      return err.error?.message || 'Existe un conflicto con la información enviada (el horario ya no está disponible).';
+    }
+    return err?.error?.message ?? fallback;
   }
 }
