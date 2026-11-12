@@ -1,9 +1,24 @@
 <section class="workspace-page staff-workspace" aria-labelledby="staff-page-title">
-  <div class="workspace-heading">
-    <div>
+  <div class="workspace-heading workspace-heading--photo">
+    <div class="workspace-heading__copy">
       <p class="eyebrow mb-2">SIGESMED · {{ roleLabel }}</p>
       <h1 id="staff-page-title">{{ portalTitle }}</h1>
       <p>Espacio de trabajo del Policlínico Infantil Nuestra Señora del Sagrado Corazón.</p>
+    </div>
+    <div class="workspace-hero-pills" aria-hidden="true">
+      <div class="workspace-hero-pill">
+        <span class="workspace-hero-pill__dot"></span>
+        <div>
+          <strong>Consola Operativa Activa</strong>
+          <span>Lun–Sáb · 8:00 a. m. a 8:00 p. m.</span>
+        </div>
+      </div>
+      <div class="workspace-hero-pill workspace-hero-pill--gold">
+        <div>
+          <strong>Sede La Esperanza</strong>
+          <span>Trujillo · Atención presencial</span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -34,6 +49,24 @@
 
       <ng-container [ngSwitch]="activeSection">
         <ng-container *ngSwitchCase="'appointments'">
+          <div class="staff-kpi-strip" aria-label="Indicadores rápidos de recepción">
+            <div class="staff-kpi-card">
+              <span class="staff-kpi-card__label">Citas en bandeja</span>
+              <strong class="staff-kpi-card__value">{{ visibleAppointments.length }}</strong>
+              <span class="staff-kpi-card__hint">Registros visibles según filtro</span>
+            </div>
+            <div class="staff-kpi-card staff-kpi-card--gold">
+              <span class="staff-kpi-card__label">Control de asistencia</span>
+              <strong class="staff-kpi-card__value">Atendida / No asistió</strong>
+              <span class="staff-kpi-card__hint">Actualización inmediata en recepción</span>
+            </div>
+            <div class="staff-kpi-card">
+              <span class="staff-kpi-card__label">Regla de cancelación</span>
+              <strong class="staff-kpi-card__value">Mín. 2 horas antes</strong>
+              <span class="staff-kpi-card__hint">Solo citas en estado RESERVADA</span>
+            </div>
+          </div>
+
           <div class="workspace-toolbar">
             <label class="visually-hidden" for="appointment-search">Buscar paciente o cita</label>
             <input id="appointment-search" name="searchText" class="form-control" type="search" placeholder="Buscar paciente, DNI o médico"
@@ -46,9 +79,18 @@
             <table class="workspace-table">
               <thead><tr><th>Paciente</th><th>Atención</th><th>Médico</th><th>Fecha y hora</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody><tr *ngFor="let appointment of visibleAppointments">
-                <td>{{ appointment.paciente }}<small class="d-block text-secondary">DNI {{ appointment.pacienteDni }}</small></td>
-                <td>{{ specialtyLabel(appointment) }}</td><td>{{ appointment.doctor || '—' }}</td>
-                <td>{{ appointment.fecha | date:'d MMM y' }} · {{ appointment.hora.slice(0, 5) }}</td>
+                <td>
+                  <div class="staff-patient-cell">
+                    <span class="staff-patient-cell__avatar" aria-hidden="true">{{ (appointment.paciente || 'P').slice(0, 1) }}</span>
+                    <div>
+                      <strong>{{ appointment.paciente }}</strong>
+                      <small class="d-block text-secondary">DNI {{ appointment.pacienteDni }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="staff-specialty-pill">{{ specialtyLabel(appointment) }}</span></td>
+                <td>{{ appointment.doctor || '—' }}</td>
+                <td><span class="staff-datetime-chip">{{ appointment.fecha | date:'d MMM y' }} · {{ appointment.hora.slice(0, 5) }}</span></td>
                 <td><span class="badge-status" [attr.data-status]="appointment.estado">{{ statusLabel(appointment.estado) }}</span></td>
                 <td>
                   <div class="workspace-actions">
@@ -78,9 +120,18 @@
             <table class="workspace-table">
               <thead><tr><th>Paciente</th><th>Atención</th><th>Médico</th><th>Fecha</th><th>Estado</th></tr></thead>
               <tbody><tr *ngFor="let appointment of visibleAppointments">
-                <td>{{ appointment.paciente }}<small class="d-block text-secondary">DNI {{ appointment.pacienteDni }}</small></td>
-                <td>{{ specialtyLabel(appointment) }}</td><td>{{ appointment.doctor || '—' }}</td>
-                <td>{{ appointment.fecha | date:'d MMM y' }} · {{ appointment.hora.slice(0, 5) }}</td>
+                <td>
+                  <div class="staff-patient-cell">
+                    <span class="staff-patient-cell__avatar" aria-hidden="true">{{ (appointment.paciente || 'P').slice(0, 1) }}</span>
+                    <div>
+                      <strong>{{ appointment.paciente }}</strong>
+                      <small class="d-block text-secondary">DNI {{ appointment.pacienteDni }}</small>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="staff-specialty-pill">{{ specialtyLabel(appointment) }}</span></td>
+                <td>{{ appointment.doctor || '—' }}</td>
+                <td><span class="staff-datetime-chip">{{ appointment.fecha | date:'d MMM y' }} · {{ appointment.hora.slice(0, 5) }}</span></td>
                 <td><span class="badge-status" [attr.data-status]="appointment.estado">{{ statusLabel(appointment.estado) }}</span></td>
               </tr></tbody>
             </table>
