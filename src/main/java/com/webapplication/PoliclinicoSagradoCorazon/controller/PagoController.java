@@ -15,7 +15,6 @@ import com.webapplication.PoliclinicoSagradoCorazon.dto.RecepcionistaDTO;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Cita;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Doctor;
 import com.webapplication.PoliclinicoSagradoCorazon.model.Horario;
-import com.webapplication.PoliclinicoSagradoCorazon.model.Paciente1;
 import com.webapplication.PoliclinicoSagradoCorazon.service.CitaService;
 import com.webapplication.PoliclinicoSagradoCorazon.service.DoctorService;
 import com.webapplication.PoliclinicoSagradoCorazon.service.EmailService;
