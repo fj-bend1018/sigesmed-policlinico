@@ -1,0 +1,69 @@
+<section class="registration-layout" aria-labelledby="register-title">
+  <aside class="auth-aside registration-aside">
+    <span class="auth-logo-frame mb-4"><img class="brand-logo" src="assets/LogoEmpresa.png" alt="Logo del Policlínico Infantil Nuestra Señora del Sagrado Corazón"></span>
+    <p class="eyebrow text-white mb-2">Portal del paciente</p>
+    <h1 id="register-title">Crea tu cuenta</h1>
+    <p>Registra tus datos para consultar disponibilidad y organizar las citas de tu familia.</p>
+    <div class="auth-aside__note"><strong>¿Ya tienes cuenta?</strong><a routerLink="/login" [queryParams]="returnUrl ? { returnUrl: returnUrl } : null">Inicia sesión</a></div>
+  </aside>
+
+  <div class="surface-card registration-card">
+    <div class="page-heading mb-4">
+      <p class="eyebrow mb-2">Registro de paciente</p>
+      <h2 class="h3">Datos personales</h2>
+      <p class="mb-0">Completa la información solicitada. Los campos con * son obligatorios.</p>
+    </div>
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="registration-fields">
+        <div>
+          <label class="form-label" for="name">Nombres *</label>
+          <input id="name" class="form-control" formControlName="nombre" autocomplete="given-name" maxlength="100"
+                 [attr.aria-invalid]="form.controls.nombre.touched && form.controls.nombre.invalid" aria-describedby="name-error">
+          <small id="name-error" class="invalid-feedback d-block" *ngIf="form.controls.nombre.touched && form.controls.nombre.invalid">Ingresa tus nombres.</small>
+        </div>
+        <div>
+          <label class="form-label" for="lastName">Apellido paterno *</label>
+          <input id="lastName" class="form-control" formControlName="apellidoPaterno" autocomplete="family-name" maxlength="100"
+                 [attr.aria-invalid]="form.controls.apellidoPaterno.touched && form.controls.apellidoPaterno.invalid" aria-describedby="lastName-error">
+          <small id="lastName-error" class="invalid-feedback d-block" *ngIf="form.controls.apellidoPaterno.touched && form.controls.apellidoPaterno.invalid">Ingresa tu apellido paterno.</small>
+        </div>
+        <div>
+          <label class="form-label" for="secondLastName">Apellido materno <span class="field-optional">(opcional)</span></label>
+          <input id="secondLastName" class="form-control" formControlName="apellidoMaterno" autocomplete="additional-name" maxlength="100">
+        </div>
+        <div>
+          <label class="form-label" for="dni">DNI *</label>
+          <input id="dni" class="form-control" type="text" formControlName="dni" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="off" placeholder="8 dígitos"
+                 [attr.aria-invalid]="form.controls.dni.touched && form.controls.dni.invalid" aria-describedby="dni-help dni-error">
+          <small id="dni-help" class="form-text">Escribe los ocho números, sin espacios.</small>
+          <small id="dni-error" class="invalid-feedback d-block" *ngIf="form.controls.dni.touched && form.controls.dni.invalid">El DNI debe tener 8 dígitos numéricos.</small>
+        </div>
+        <div>
+          <label class="form-label" for="birthDate">Fecha de nacimiento *</label>
+          <input id="birthDate" class="form-control" type="date" [max]="latestBirthDate" formControlName="fechaNacimiento"
+                 [attr.aria-invalid]="form.controls.fechaNacimiento.touched && form.controls.fechaNacimiento.invalid" aria-describedby="birthDate-error">
+          <small id="birthDate-error" class="invalid-feedback d-block" *ngIf="form.controls.fechaNacimiento.touched && form.controls.fechaNacimiento.invalid">La fecha de nacimiento debe ser anterior a hoy.</small>
+        </div>
+        <div>
+          <label class="form-label" for="email">Correo electrónico *</label>
+          <input id="email" class="form-control" type="email" formControlName="correo" autocomplete="email" maxlength="254"
+                 [attr.aria-invalid]="form.controls.correo.touched && form.controls.correo.invalid" aria-describedby="email-error">
+          <small id="email-error" class="invalid-feedback d-block" *ngIf="form.controls.correo.touched && form.controls.correo.invalid">Ingresa un correo válido.</small>
+        </div>
+        <div class="registration-password">
+          <label class="form-label" for="newPassword">Contraseña *</label>
+          <input id="newPassword" class="form-control" type="password" formControlName="clave" autocomplete="new-password" maxlength="72"
+                 [attr.aria-invalid]="form.controls.clave.touched && form.controls.clave.invalid" aria-describedby="password-help password-register-error">
+          <small id="password-help" class="form-text">Hasta 72 caracteres.</small>
+          <small id="password-register-error" class="invalid-feedback d-block" *ngIf="form.controls.clave.touched && form.controls.clave.invalid">Ingresa una contraseña.</small>
+        </div>
+      </div>
+      <div class="registration-actions">
+        <a class="link-primary" routerLink="/login" [queryParams]="returnUrl ? { returnUrl: returnUrl } : null">Volver a iniciar sesión</a>
+        <button class="btn btn-primary px-4" type="submit" [disabled]="loading" [attr.aria-busy]="loading">
+          {{ loading ? 'Creando cuenta…' : 'Crear cuenta' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</section>

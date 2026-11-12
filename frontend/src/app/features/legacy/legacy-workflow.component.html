@@ -1,0 +1,62 @@
+<section class="legacy-workflow" aria-labelledby="legacy-title">
+  <div class="workspace-heading">
+    <div><p class="eyebrow mb-2">Policlínico Infantil Nuestra Señora del Sagrado Corazón</p><h1 id="legacy-title">{{ title }}</h1><p>{{ description }}</p></div>
+  </div>
+
+  <article class="surface-card legacy-card" [ngSwitch]="view">
+    <ng-container *ngSwitchCase="'identification'">
+      <div class="legacy-card__icon" aria-hidden="true">01</div>
+      <p class="eyebrow mb-2">Reserva de atención</p>
+      <h2>Identificación del paciente</h2>
+      <p class="legacy-card__lead">El sistema migrado requiere una sesión de paciente para consultar disponibilidad.</p>
+      <div class="legacy-form-preview">
+        <label class="form-label" for="legacy-dni">DNI</label>
+        <input id="legacy-dni" class="form-control" type="text" inputmode="numeric" maxlength="8" placeholder="8 dígitos" disabled>
+        <small class="form-text">La búsqueda independiente por DNI no está conectada a la API actual.</small>
+        <button class="btn btn-primary w-100 mt-4" type="button" disabled>Continuar</button>
+      </div>
+      <a class="legacy-back-link" routerLink="/login">Volver al inicio de sesión</a>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'appointment'">
+      <div class="legacy-card__icon" aria-hidden="true">02</div>
+      <p class="eyebrow mb-2">Resumen de atención</p>
+      <h2>Revisa los datos de tu cita</h2>
+      <p class="legacy-card__lead">Esta pantalla heredada se representa como resumen. La reserva operativa se realiza desde disponibilidad.</p>
+      <dl class="profile-details profile-details--compact legacy-summary">
+        <div><dt>Paciente</dt><dd>—</dd></div><div><dt>Especialidad</dt><dd>—</dd></div>
+        <div><dt>Médico</dt><dd>—</dd></div><div><dt>Fecha y hora</dt><dd>—</dd></div>
+      </dl>
+      <a class="btn btn-primary" routerLink="/paciente/disponibilidad">Ir a disponibilidad</a>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'confirmation'">
+      <div class="legacy-card__icon" aria-hidden="true">✓</div>
+      <p class="eyebrow mb-2">Cita</p>
+      <h2>La confirmación requiere una cita de tu cuenta</h2>
+      <p class="legacy-card__lead">Para mostrar el resultado y el resumen, abre la confirmación desde una reserva identificada.</p>
+      <a class="btn btn-primary" routerLink="/paciente/citas">Ir a Mis citas</a>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'payment'">
+      <div class="legacy-card__icon" aria-hidden="true">$</div>
+      <p class="eyebrow mb-2">Pago</p>
+      <h2>La pasarela de pago no está habilitada</h2>
+      <p class="legacy-card__lead">La plantilla de pago heredada se trasladó a Angular como una vista informativa. En este avance no se solicitan datos de tarjeta ni se procesa ningún pago.</p>
+      <div class="workspace-notice" role="note">No ingreses información financiera. No hay un proveedor de pago conectado.</div>
+      <a class="btn btn-outline-primary" routerLink="/paciente/disponibilidad">Volver a disponibilidad</a>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'error'">
+      <div class="legacy-card__icon legacy-card__icon--error" aria-hidden="true">!</div>
+      <p class="eyebrow mb-2">Estado de la solicitud</p>
+      <h2>No pudimos completar la solicitud</h2>
+      <p class="legacy-card__lead">Inténtalo nuevamente en unos momentos o vuelve al inicio.</p>
+      <div class="workspace-notice" role="status">Código de referencia: no disponible</div>
+      <div class="legacy-card__actions">
+        <a class="btn btn-primary" routerLink="/login">Volver al inicio</a>
+        <a class="btn btn-outline-primary" routerLink="/paciente/disponibilidad">Ir a disponibilidad</a>
+      </div>
+    </ng-container>
+  </article>
+</section>

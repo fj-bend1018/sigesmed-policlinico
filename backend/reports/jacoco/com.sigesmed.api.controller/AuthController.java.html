@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AuthController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sigesmed-api</a> &gt; <a href="index.source.html" class="el_package">com.sigesmed.api.controller</a> &gt; <span class="el_source">AuthController.java</span></div><h1>AuthController.java</h1><pre class="source lang-java linenums">package com.sigesmed.api.controller;
+
+
+import com.sigesmed.api.domain.entity.Paciente;
+import com.sigesmed.api.domain.entity.Usuario;
+import com.sigesmed.api.domain.enums.RolUsuario;
+import com.sigesmed.api.dto.ApiMessage;
+import com.sigesmed.api.dto.auth.AuthResponse;
+import com.sigesmed.api.dto.auth.LoginRequest;
+import com.sigesmed.api.dto.auth.RecuperacionRequest;
+import com.sigesmed.api.dto.auth.RegistroPacienteRequest;
+import com.sigesmed.api.dto.auth.RestablecerRequest;
+import com.sigesmed.api.security.UsuarioPrincipal;
+import com.sigesmed.api.service.auth.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.web.csrf.CsrfToken;
+
+@RestController
+@RequestMapping(&quot;/api/v1&quot;)
+public class AuthController {
+    private final AuthService authService;
+    private final SecurityContextRepository securityContextRepository;
+
+<span class="nc" id="L39">    public AuthController(AuthService authService, SecurityContextRepository securityContextRepository) {</span>
+<span class="nc" id="L40">        this.authService = authService;</span>
+<span class="nc" id="L41">        this.securityContextRepository = securityContextRepository;</span>
+<span class="nc" id="L42">    }</span>
+
+    @GetMapping(&quot;/csrf&quot;)
+    public ResponseEntity&lt;Void&gt; csrf(CsrfToken csrfToken) {
+<span class="nc" id="L46">        csrfToken.getToken();</span>
+<span class="nc" id="L47">        return ResponseEntity.noContent().build();</span>
+    }
+
+    @PostMapping(&quot;/auth/registro&quot;)
+    public ResponseEntity&lt;ApiMessage&gt; registrar(@Valid @RequestBody RegistroPacienteRequest request) {
+<span class="nc" id="L52">        Paciente paciente = authService.registrarPaciente(request);</span>
+<span class="nc" id="L53">        return ResponseEntity.status(HttpStatus.CREATED)</span>
+<span class="nc" id="L54">                .body(new ApiMessage(&quot;Registro completado para el DNI &quot; + paciente.getDni()));</span>
+    }
+
+    @PostMapping(&quot;/auth/login&quot;)
+    public AuthResponse login(@Valid @RequestBody LoginRequest request,
+            HttpServletRequest httpRequest, HttpServletResponse httpResponse) {
+<span class="nc" id="L60">        Usuario usuario = authService.autenticar(request.identificador(), request.clave());</span>
+<span class="nc" id="L61">        HttpSession session = httpRequest.getSession(false);</span>
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (session == null) httpRequest.getSession(true);</span>
+<span class="nc" id="L63">        else httpRequest.changeSessionId();</span>
+
+<span class="nc" id="L65">        UsuarioPrincipal principal = new UsuarioPrincipal(usuario);</span>
+<span class="nc" id="L66">        Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(</span>
+<span class="nc" id="L67">                principal, null, principal.getAuthorities());</span>
+<span class="nc" id="L68">        SecurityContext context = SecurityContextHolder.createEmptyContext();</span>
+<span class="nc" id="L69">        context.setAuthentication(authentication);</span>
+<span class="nc" id="L70">        SecurityContextHolder.setContext(context);</span>
+<span class="nc" id="L71">        securityContextRepository.saveContext(context, httpRequest, httpResponse);</span>
+<span class="nc" id="L72">        return new AuthResponse(usuario.getId(), usuario.getDni(), usuario.getRol(), portal(usuario.getRol()));</span>
+    }
+
+    @PostMapping(&quot;/auth/logout&quot;)
+    public ResponseEntity&lt;Void&gt; logout(HttpServletRequest request) {
+<span class="nc" id="L77">        SecurityContextHolder.clearContext();</span>
+<span class="nc" id="L78">        HttpSession session = request.getSession(false);</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (session != null) session.invalidate();</span>
+<span class="nc" id="L80">        return ResponseEntity.noContent().build();</span>
+    }
+
+    @PostMapping(&quot;/auth/recuperar&quot;)
+    public ApiMessage recuperar(@Valid @RequestBody RecuperacionRequest request) {
+<span class="nc" id="L85">        authService.solicitarRecuperacion(request.correo());</span>
+<span class="nc" id="L86">        return new ApiMessage(&quot;Si la cuenta existe, se enviarán instrucciones de recuperación&quot;);</span>
+    }
+
+    @PostMapping(&quot;/auth/restablecer&quot;)
+    public ApiMessage restablecer(@Valid @RequestBody RestablecerRequest request) {
+<span class="nc" id="L91">        authService.restablecerClave(request.token(), request.nuevaClave());</span>
+<span class="nc" id="L92">        return new ApiMessage(&quot;Contraseña restablecida&quot;);</span>
+    }
+
+    private String portal(RolUsuario rol) {
+<span class="nc bnc" id="L96" title="All 3 branches missed.">        return switch (rol) {</span>
+<span class="nc" id="L97">            case PACIENTE -&gt; &quot;paciente&quot;;</span>
+<span class="nc" id="L98">            case RECEPCIONISTA -&gt; &quot;recepcionista&quot;;</span>
+<span class="nc" id="L99">            case ADMINISTRADOR -&gt; &quot;administrador&quot;;</span>
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

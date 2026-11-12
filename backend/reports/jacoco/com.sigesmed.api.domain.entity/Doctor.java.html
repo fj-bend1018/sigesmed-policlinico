@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Doctor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sigesmed-api</a> &gt; <a href="index.source.html" class="el_package">com.sigesmed.api.domain.entity</a> &gt; <span class="el_source">Doctor.java</span></div><h1>Doctor.java</h1><pre class="source lang-java linenums">package com.sigesmed.api.domain.entity;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = &quot;doctor&quot;)
+public class Doctor {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(nullable = false, length = 160) private String nombre;
+    @Column(nullable = false, unique = true, length = 40) private String cmp;
+    @Column(length = 500) private String imagen;
+<span class="pc" id="L25">    @Column(nullable = false, length = 10) private String estado = &quot;ACTIVO&quot;;</span>
+<span class="pc" id="L26">    @ManyToMany(fetch = FetchType.LAZY)</span>
+    @JoinTable(name = &quot;doctor_especialidad&quot;,
+            joinColumns = @JoinColumn(name = &quot;doctor_id&quot;),
+            inverseJoinColumns = @JoinColumn(name = &quot;especialidad_id&quot;))
+    private Set&lt;Especialidad&gt; especialidades = new HashSet&lt;&gt;();
+
+<span class="nc" id="L32">    protected Doctor() { }</span>
+<span class="fc" id="L33">    public Doctor(String nombre, String cmp, Set&lt;Especialidad&gt; especialidades) {</span>
+<span class="fc" id="L34">        this.nombre = nombre; this.cmp = cmp; this.especialidades = new HashSet&lt;&gt;(especialidades);</span>
+<span class="fc" id="L35">    }</span>
+<span class="nc" id="L36">    public Long getId() { return id; }</span>
+<span class="fc" id="L37">    public String getNombre() { return nombre; }</span>
+<span class="nc" id="L38">    public String getCmp() { return cmp; }</span>
+<span class="nc" id="L39">    public String getEstado() { return estado; }</span>
+<span class="fc" id="L40">    public Set&lt;Especialidad&gt; getEspecialidades() { return especialidades; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

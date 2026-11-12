@@ -1,0 +1,289 @@
+<section class="workspace-page staff-workspace" aria-labelledby="staff-page-title">
+  <div class="workspace-heading">
+    <div>
+      <p class="eyebrow mb-2">SIGESMED · {{ roleLabel }}</p>
+      <h1 id="staff-page-title">{{ portalTitle }}</h1>
+      <p>Espacio de trabajo del Policlínico Infantil Nuestra Señora del Sagrado Corazón.</p>
+    </div>
+  </div>
+
+  <div class="workspace-layout">
+    <aside class="workspace-sidebar" [attr.aria-label]="'Navegación de ' + portalTitle">
+      <div class="workspace-brand">
+        <span class="workspace-brand__logo"><img src="assets/LogoEmpresa.png" alt=""></span>
+        <span><strong>{{ portalTitle }}</strong><small>Panel de gestión</small></span>
+      </div>
+      <nav class="workspace-nav" aria-label="Secciones del portal">
+        <a *ngFor="let item of navigation" [routerLink]="item.link" [class.is-active]="activeSection === item.key"
+           [attr.aria-current]="activeSection === item.key ? 'page' : null">
+          <span class="workspace-nav__icon" aria-hidden="true">{{ item.icon }}</span>{{ item.label }}
+        </a>
+      </nav>
+      <div class="workspace-sidebar__note">Acceso de {{ roleLabel.toLowerCase() }}.</div>
+    </aside>
+
+    <div class="workspace-panel">
+      <div class="workspace-panel__top">
+        <div><p class="eyebrow mb-1">Gestión</p><h2>{{ sectionTitle }}</h2><p>{{ sectionDescription }}</p></div>
+        <span class="workspace-role">{{ roleLabel }}</span>
+      </div>
+
+      <div *ngIf="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
+      <div *ngIf="successMessage" class="alert alert-success" role="status">{{ successMessage }}</div>
+      <p *ngIf="loading" class="workspace-loading" role="status" aria-live="polite">Cargando información…</p>
+
+      <ng-container [ngSwitch]="activeSection">
+        <ng-container *ngSwitchCase="'appointments'">
+          <div class="workspace-toolbar">
+            <label class="visually-hidden" for="appointment-search">Buscar paciente o cita</label>
+            <input id="appointment-search" name="searchText" class="form-control" type="search" placeholder="Buscar paciente, DNI o médico"
+                   [(ngModel)]="searchText" (keyup.enter)="loadAppointments()">
+            <label class="visually-hidden" for="appointment-date">Filtrar por fecha</label>
+            <input id="appointment-date" name="appointmentDate" class="form-control" type="date" [(ngModel)]="appointmentDate">
+            <button class="btn btn-outline-primary" type="button" (click)="loadAppointments()" [disabled]="loading">Buscar</button>
+          </div>
+          <div class="workspace-table-wrap" *ngIf="!loading && visibleAppointments.length">
+            <table class="workspace-table">
+              <thead><tr><th>Paciente</th><th>Atención</th><th>Médico</th><th>Fecha y hora</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody><tr *ngFor="let appointment of visibleAppointments">
+                <td>{{ appointment.paciente }}<small class="d-block text-secondary">DNI {{ appointment.pacienteDni }}</small></td>
+                <td>{{ specialtyLabel(appointment) }}</td><td>{{ appointment.doctor || '—' }}</td>
+                <td>{{ appointment.fecha | date:'d MMM y' }} · {{ appointment.hora.slice(0, 5) }}</td>
+                <td>{{ statusLabel(appointment.estado) }}</td>
+                <td>
+                  <div class="workspace-actions">
+                    <a *ngIf="appointment.estado === 'RESERVADA'" class="btn btn-sm btn-outline-primary" [routerLink]="['/recepcionista/citas', appointment.id, 'modificar']">Reprogramar</a>
+                    <button class="btn btn-sm btn-outline-success" type="button" (click)="closeAppointment(appointment, 'ATENDIDA')">Atendida</button>
+                    <button class="btn btn-sm btn-outline-secondary" type="button" (click)="closeAppointment(appointment, 'NO_ASISTIO')">No asistió</button>
+                    <button class="btn btn-sm btn-outline-danger" type="button" (click)="cancel(appointment)" [disabled]="appointment.estado !== 'RESERVADA'">Cancelar</button>
+                  </div>
+                </td>
+              </tr></tbody>
+            </table>
+          </div>
+          <div class="workspace-empty" *ngIf="!loading && !visibleAppointments.length && !errorMessage" role="status">
+            <span class="workspace-empty__icon" aria-hidden="true">▣</span><h3>No hay citas para mostrar</h3>
+            <p>Las citas que coincidan con la búsqueda aparecerán aquí.</p>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'history'">
+          <div class="workspace-toolbar">
+            <label class="visually-hidden" for="history-search">Buscar en el historial</label>
+            <input id="history-search" name="searchText" class="form-control" type="search" placeholder="Buscar paciente, DNI o médico"
+                   [(ngModel)]="searchText" (keyup.enter)="loadAppointments()">
+            <button class="btn btn-outline-primary" type="button" (click)="loadAppointments()" [disabled]="loading">Buscar</button>
+          </div>
+          <div class="workspace-table-wrap" *ngIf="!loading && visibleAppointments.length">
+            <table class="workspace-table">
+              <thead><tr><th>Paciente</th><th>Atención</th><th>Médico</th><th>Fecha</th><th>Estado</th></tr></thead>
+              <tbody><tr *ngFor="let appointment of visibleAppointments">
+                <td>{{ appointment.paciente }}<small class="d-block text-secondary">DNI {{ appointment.pacienteDni }}</small></td>
+                <td>{{ specialtyLabel(appointment) }}</td><td>{{ appointment.doctor || '—' }}</td>
+                <td>{{ appointment.fecha | date:'d MMM y' }} · {{ appointment.hora.slice(0, 5) }}</td>
+                <td>{{ statusLabel(appointment.estado) }}</td>
+              </tr></tbody>
+            </table>
+          </div>
+          <div class="workspace-empty" *ngIf="!loading && !visibleAppointments.length && !errorMessage" role="status">
+            <span class="workspace-empty__icon" aria-hidden="true">▤</span><h3>El historial está vacío</h3>
+            <p>Las citas atendidas, canceladas e inasistencias se mostrarán aquí.</p>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'edit'">
+          <div class="workspace-form-card" *ngIf="appointment">
+            <p class="eyebrow mb-2">Cita #{{ appointment.id }}</p><h3>Reprogramar cita</h3>
+            <dl class="profile-details profile-details--compact mt-3">
+              <div><dt>Paciente</dt><dd>{{ appointment.paciente }} · DNI {{ appointment.pacienteDni }}</dd></div>
+              <div><dt>{{ appointment.servicio ? 'Servicio complementario' : 'Especialidad' }}</dt><dd>{{ specialtyLabel(appointment) }}</dd></div>
+              <div *ngIf="appointment.doctor"><dt>Médico</dt><dd>{{ appointment.doctor }}</dd></div>
+              <div><dt>Horario actual</dt><dd>{{ appointment.fecha | date:'d MMM y' }} · {{ appointment.hora.slice(0, 5) }}</dd></div>
+            </dl>
+            <div class="workspace-form-grid mt-4">
+              <div><label class="form-label" for="staff-reschedule-date">Nueva fecha</label>
+                <input id="staff-reschedule-date" name="rescheduleDate" class="form-control" type="date" [min]="minDate" required
+                       [(ngModel)]="rescheduleDate" (change)="loadAppointmentSlots()"></div>
+              <div><label class="form-label" for="staff-reschedule-slot">Horario disponible</label>
+                <select id="staff-reschedule-slot" name="selectedSlotId" class="form-select" required [(ngModel)]="selectedSlotId">
+                  <option value="">Selecciona un horario</option>
+                  <option *ngFor="let slot of appointmentSlots" [value]="slot.id">{{ slot.hora.slice(0, 5) }}</option>
+                </select></div>
+            </div>
+            <p *ngIf="!loading && appointmentSlots.length === 0" class="text-secondary mt-3">No hay horarios disponibles para esa fecha.</p>
+            <button class="btn btn-primary mt-4" type="button" [disabled]="saving || !selectedSlotId" (click)="rescheduleAppointment()">{{ saving ? 'Guardando…' : 'Guardar nuevo horario' }}</button>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'profile'">
+          <form class="workspace-form-card" *ngIf="profile" (ngSubmit)="saveProfile()">
+            <p class="eyebrow mb-2">Datos de la cuenta</p><h3>{{ profile.nombre || roleLabel }} {{ profile.apellidoPaterno || '' }}</h3>
+            <div class="workspace-form-grid mt-4">
+              <div><label class="form-label" for="staff-dni">DNI</label><input id="staff-dni" class="form-control" [value]="profile.dni" readonly></div>
+              <div><label class="form-label" for="staff-email">Correo electrónico</label>
+                <input id="staff-email" name="correo" class="form-control" type="email" required maxlength="254" [(ngModel)]="profileForm.correo"></div>
+              <div><label class="form-label" for="staff-phone">Celular</label>
+                <input id="staff-phone" name="celular" class="form-control" type="tel" inputmode="numeric" pattern="[0-9]{9}" minlength="9" maxlength="9" [ngModel]="profileForm.celular" (ngModelChange)="profileForm.celular = normalizeCellularInput($event)" (input)="profileForm.celular = normalizeCellularInputEvent($event)" (focus)="selectInvalidCellular($event, profileForm.celular)"><small class="invalid-feedback d-block" *ngIf="isInvalidCellular(profileForm.celular)">Escribe exactamente 9 dígitos.</small></div>
+              <div class="workspace-form-grid__wide"><label class="form-label" for="staff-address">Dirección</label>
+                <input id="staff-address" name="direccion" class="form-control" type="text" maxlength="300" [(ngModel)]="profileForm.direccion"></div>
+            </div>
+            <button class="btn btn-primary mt-4" type="submit" [disabled]="saving">{{ saving ? 'Guardando…' : 'Guardar cambios' }}</button>
+          </form>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'doctors'">
+          <div class="workspace-toolbar"><span class="workspace-toolbar__label">Directorio de médicos</span>
+            <a class="btn btn-primary" routerLink="/administrador/doctores/nuevo">Agregar doctor</a></div>
+          <div class="workspace-table-wrap" *ngIf="!loading && doctors.length">
+            <table class="workspace-table"><thead><tr><th>Nombre</th><th>CMP</th><th>Especialidades</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody><tr *ngFor="let doctor of doctors">
+                <td>{{ doctor.nombre }}</td><td>{{ doctor.cmp }}</td><td>{{ doctor.especialidades.join(', ') }}</td><td>{{ doctor.estado }}</td>
+                <td><div class="workspace-actions"><a class="btn btn-sm btn-outline-primary" [routerLink]="['/administrador/doctores', doctor.id, 'editar']">Editar</a>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" (click)="toggleDoctor(doctor)">{{ doctor.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}</button></div></td>
+              </tr></tbody>
+            </table>
+          </div>
+          <div class="workspace-empty" *ngIf="!loading && !doctors.length && !errorMessage" role="status"><span class="workspace-empty__icon" aria-hidden="true">✚</span>
+            <h3>Aún no hay médicos registrados</h3><p>Agrega un médico para comenzar a organizar la agenda.</p></div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'doctorForm'"><form class="workspace-form-card" (ngSubmit)="saveDoctor()">
+          <p class="eyebrow mb-2">Personal médico</p><h3>Registrar doctor</h3>
+          <div class="workspace-form-grid mt-4">
+            <div><label class="form-label" for="doctor-name">Nombre completo</label><input id="doctor-name" name="nombre" class="form-control" required pattern=".*\S.*" maxlength="160" [(ngModel)]="doctorForm.nombre"></div>
+            <div><label class="form-label" for="doctor-cmp">CMP</label><input id="doctor-cmp" name="cmp" class="form-control" required pattern=".*\S.*" maxlength="40" [(ngModel)]="doctorForm.cmp"></div>
+            <div class="workspace-form-grid__wide"><label class="form-label" for="doctor-specialties">Especialidades</label>
+              <select id="doctor-specialties" name="especialidadIds" class="form-select" multiple size="6" required [(ngModel)]="doctorForm.especialidadIds">
+                <option *ngFor="let specialty of specialties" [ngValue]="specialty.id">{{ specialty.nombre }}</option>
+              </select><small class="form-text">Puedes seleccionar varias especialidades.</small></div>
+          </div>
+          <div class="workspace-actions mt-4"><button class="btn btn-primary" type="submit" [disabled]="saving || !doctorForm.especialidadIds.length">{{ saving ? 'Guardando…' : 'Guardar doctor' }}</button>
+            <a class="btn btn-outline-secondary" routerLink="/administrador/doctores">Volver</a></div>
+        </form></ng-container>
+
+        <ng-container *ngSwitchCase="'doctorEditForm'"><form class="workspace-form-card" (ngSubmit)="saveDoctor()">
+          <p class="eyebrow mb-2">Personal médico</p><h3>Editar doctor</h3>
+          <div class="workspace-form-grid mt-4">
+            <div><label class="form-label" for="doctor-edit-name">Nombre completo</label><input id="doctor-edit-name" name="nombre" class="form-control" required pattern=".*\S.*" maxlength="160" [(ngModel)]="doctorForm.nombre"></div>
+            <div><label class="form-label" for="doctor-edit-cmp">CMP</label><input id="doctor-edit-cmp" name="cmp" class="form-control" required pattern=".*\S.*" maxlength="40" [(ngModel)]="doctorForm.cmp"></div>
+            <div class="workspace-form-grid__wide"><label class="form-label" for="doctor-edit-specialties">Especialidades</label>
+              <select id="doctor-edit-specialties" name="especialidadIds" class="form-select" multiple size="6" required [(ngModel)]="doctorForm.especialidadIds">
+                <option *ngFor="let specialty of specialties" [ngValue]="specialty.id">{{ specialty.nombre }}</option>
+              </select></div>
+          </div>
+          <div class="workspace-actions mt-4"><button class="btn btn-primary" type="submit" [disabled]="saving || !doctorForm.especialidadIds.length">{{ saving ? 'Guardando…' : 'Guardar cambios' }}</button>
+            <a class="btn btn-outline-secondary" routerLink="/administrador/doctores">Volver</a></div>
+        </form></ng-container>
+
+        <ng-container *ngSwitchCase="'schedules'">
+          <div class="workspace-toolbar"><span class="workspace-toolbar__label">Horarios de atención · próximos 30 días</span>
+            <a class="btn btn-primary" routerLink="/administrador/horarios/nuevo">Agregar horario</a></div>
+          <div class="workspace-table-wrap" *ngIf="!loading && schedules.length">
+            <table class="workspace-table"><thead><tr><th>Fecha</th><th>Hora</th><th>Médico o servicio</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody><tr *ngFor="let schedule of schedules"><td>{{ schedule.fecha | date:'d MMM y' }}</td><td>{{ schedule.hora.slice(0, 5) }}</td>
+                <td>{{ schedule.doctor || schedule.servicio || '—' }}</td><td>{{ schedule.estado }}</td><td><div class="workspace-actions">
+                  <a *ngIf="schedule.disponible" class="btn btn-sm btn-outline-primary" [routerLink]="['/administrador/horarios', schedule.id, 'editar']">Editar</a>
+                  <button *ngIf="schedule.disponible" class="btn btn-sm btn-outline-danger" type="button" (click)="deleteSchedule(schedule)">Eliminar</button>
+                  <span *ngIf="!schedule.disponible" class="text-secondary">Reservado</span>
+                </div></td></tr></tbody>
+            </table>
+          </div>
+          <div class="workspace-empty" *ngIf="!loading && !schedules.length && !errorMessage" role="status"><span class="workspace-empty__icon" aria-hidden="true">▣</span>
+            <h3>No hay horarios próximos</h3><p>Agrega las franjas disponibles para que los pacientes puedan reservar.</p></div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'scheduleForm'"><form class="workspace-form-card" (ngSubmit)="saveSchedule()">
+          <p class="eyebrow mb-2">Agenda de atención</p><h3>Registrar horario</h3>
+          <div class="workspace-form-grid mt-4">
+            <div><label class="form-label" for="schedule-resource-type">Tipo de atención</label>
+              <select id="schedule-resource-type" name="tipoRecurso" class="form-select" required [(ngModel)]="scheduleForm.tipoRecurso">
+                <option value="DOCTOR">Consulta médica</option><option value="SERVICIO">Servicio complementario</option>
+              </select></div>
+            <div *ngIf="scheduleForm.tipoRecurso === 'DOCTOR'"><label class="form-label" for="schedule-doctor">Médico</label>
+              <select id="schedule-doctor" name="doctorId" class="form-select" required [(ngModel)]="scheduleForm.doctorId">
+                <option value="">Selecciona un doctor</option><option *ngFor="let doctor of activeDoctors" [value]="doctor.id">{{ doctor.nombre }} · {{ doctor.cmp }}</option>
+              </select></div>
+            <div *ngIf="scheduleForm.tipoRecurso === 'SERVICIO'"><label class="form-label" for="schedule-service">Servicio complementario</label>
+              <select id="schedule-service" name="servicioId" class="form-select" required [(ngModel)]="scheduleForm.servicioId">
+                <option value="">Selecciona un servicio</option><option *ngFor="let service of complementaryServices" [value]="service.id">{{ service.nombre }}</option>
+              </select></div>
+            <div><label class="form-label" for="schedule-date">Fecha</label><input id="schedule-date" name="fecha" class="form-control" type="date" [min]="minDate" required [(ngModel)]="scheduleForm.fecha"></div>
+              <div><label class="form-label" for="schedule-time">Hora</label><input id="schedule-time" name="hora" class="form-control" type="time" step="60" required [(ngModel)]="scheduleForm.hora"></div>
+          </div>
+          <div class="workspace-actions mt-4"><button class="btn btn-primary" type="submit" [disabled]="saving || (scheduleForm.tipoRecurso === 'DOCTOR' ? !scheduleForm.doctorId : !scheduleForm.servicioId)">{{ saving ? 'Guardando…' : 'Guardar horario' }}</button>
+            <a class="btn btn-outline-secondary" routerLink="/administrador/horarios">Volver</a></div>
+        </form></ng-container>
+
+        <ng-container *ngSwitchCase="'scheduleEditForm'"><form class="workspace-form-card" (ngSubmit)="saveSchedule()">
+          <p class="eyebrow mb-2">Agenda de atención</p><h3>Modificar horario</h3>
+          <div class="workspace-form-grid mt-4">
+            <div><label class="form-label" for="schedule-edit-resource-type">Tipo de atención</label>
+              <select id="schedule-edit-resource-type" name="tipoRecurso" class="form-select" required [(ngModel)]="scheduleForm.tipoRecurso">
+                <option value="DOCTOR">Consulta médica</option><option value="SERVICIO">Servicio complementario</option>
+              </select></div>
+            <div *ngIf="scheduleForm.tipoRecurso === 'DOCTOR'"><label class="form-label" for="schedule-edit-doctor">Médico</label>
+              <select id="schedule-edit-doctor" name="doctorId" class="form-select" required [(ngModel)]="scheduleForm.doctorId">
+                <option value="">Selecciona un doctor</option><option *ngFor="let doctor of activeDoctors" [value]="doctor.id">{{ doctor.nombre }} · {{ doctor.cmp }}</option>
+              </select></div>
+            <div *ngIf="scheduleForm.tipoRecurso === 'SERVICIO'"><label class="form-label" for="schedule-edit-service">Servicio complementario</label>
+              <select id="schedule-edit-service" name="servicioId" class="form-select" required [(ngModel)]="scheduleForm.servicioId">
+                <option value="">Selecciona un servicio</option><option *ngFor="let service of complementaryServices" [value]="service.id">{{ service.nombre }}</option>
+              </select></div>
+            <div><label class="form-label" for="schedule-edit-date">Fecha</label><input id="schedule-edit-date" name="fecha" class="form-control" type="date" [min]="minDate" required [(ngModel)]="scheduleForm.fecha"></div>
+              <div><label class="form-label" for="schedule-edit-time">Hora</label><input id="schedule-edit-time" name="hora" class="form-control" type="time" step="60" required [(ngModel)]="scheduleForm.hora"></div>
+          </div>
+          <div class="workspace-actions mt-4"><button class="btn btn-primary" type="submit" [disabled]="saving || (scheduleForm.tipoRecurso === 'DOCTOR' ? !scheduleForm.doctorId : !scheduleForm.servicioId)">{{ saving ? 'Guardando…' : 'Guardar cambios' }}</button>
+            <a class="btn btn-outline-secondary" routerLink="/administrador/horarios">Volver</a></div>
+        </form></ng-container>
+
+        <ng-container *ngSwitchCase="'receptionists'">
+          <div class="workspace-toolbar"><span class="workspace-toolbar__label">Personal de recepción</span>
+            <a class="btn btn-primary" routerLink="/administrador/recepcionistas/nuevo">Agregar recepcionista</a></div>
+          <div class="workspace-table-wrap" *ngIf="!loading && receptionists.length">
+            <table class="workspace-table"><thead><tr><th>Nombre</th><th>DNI</th><th>Correo</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody><tr *ngFor="let person of receptionists"><td>{{ person.nombre }} {{ person.apellidoPaterno }} {{ person.apellidoMaterno }}</td>
+                <td>{{ person.dni }}</td><td>{{ person.correo }}</td><td>{{ person.estado }}</td><td><div class="workspace-actions">
+                  <a class="btn btn-sm btn-outline-primary" [routerLink]="['/administrador/recepcionistas', person.id, 'editar']">Editar</a>
+                  <button class="btn btn-sm btn-outline-secondary" type="button" (click)="toggleReceptionist(person)">{{ person.estado === 'ACTIVO' ? 'Desactivar' : 'Activar' }}</button>
+                </div></td></tr></tbody>
+            </table>
+          </div>
+          <div class="workspace-empty" *ngIf="!loading && !receptionists.length && !errorMessage" role="status"><span class="workspace-empty__icon" aria-hidden="true">♙</span>
+            <h3>Aún no hay recepcionistas</h3><p>Agrega una cuenta para el personal de recepción.</p></div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'receptionistForm'"><form class="workspace-form-card" (ngSubmit)="saveReceptionist()">
+          <p class="eyebrow mb-2">Personal de recepción</p><h3>Registrar recepcionista</h3>
+          <div class="workspace-form-grid mt-4">
+            <div><label class="form-label" for="new-rec-dni">DNI</label><input id="new-rec-dni" name="dni" class="form-control" type="text" inputmode="numeric" pattern="[0-9]{8}" minlength="8" maxlength="8" required [(ngModel)]="receptionistForm.dni"></div>
+            <div><label class="form-label" for="new-rec-name">Nombre</label><input id="new-rec-name" name="nombre" class="form-control" type="text" maxlength="100" required [(ngModel)]="receptionistForm.nombre"></div>
+            <div><label class="form-label" for="new-rec-last">Apellido paterno</label><input id="new-rec-last" name="apellidoPaterno" class="form-control" type="text" maxlength="100" required [(ngModel)]="receptionistForm.apellidoPaterno"></div>
+            <div><label class="form-label" for="new-rec-second-last">Apellido materno</label><input id="new-rec-second-last" name="apellidoMaterno" class="form-control" type="text" maxlength="100" [(ngModel)]="receptionistForm.apellidoMaterno"></div>
+            <div><label class="form-label" for="new-rec-email">Correo</label><input id="new-rec-email" name="correo" class="form-control" type="email" maxlength="254" required [(ngModel)]="receptionistForm.correo"></div>
+            <div><label class="form-label" for="new-rec-phone">Celular</label><input id="new-rec-phone" name="celular" class="form-control" type="tel" inputmode="numeric" pattern="[0-9]{9}" minlength="9" maxlength="9" [ngModel]="receptionistForm.celular" (ngModelChange)="receptionistForm.celular = normalizeCellularInput($event)" (input)="receptionistForm.celular = normalizeCellularInputEvent($event)" (focus)="selectInvalidCellular($event, receptionistForm.celular)"><small class="invalid-feedback d-block" *ngIf="isInvalidCellular(receptionistForm.celular)">Escribe exactamente 9 dígitos.</small></div>
+            <div class="workspace-form-grid__wide"><label class="form-label" for="new-rec-address">Dirección</label><input id="new-rec-address" name="direccion" class="form-control" maxlength="300" [(ngModel)]="receptionistForm.direccion"></div>
+            <div class="workspace-form-grid__wide"><label class="form-label" for="new-rec-password">Contraseña temporal (mínimo 12 caracteres)</label>
+              <input id="new-rec-password" name="claveTemporal" class="form-control" type="password" autocomplete="new-password" minlength="12" maxlength="72" required [(ngModel)]="receptionistForm.claveTemporal"></div>
+          </div>
+          <div class="workspace-actions mt-4"><button class="btn btn-primary" type="submit" [disabled]="saving">{{ saving ? 'Guardando…' : 'Crear cuenta' }}</button>
+            <a class="btn btn-outline-secondary" routerLink="/administrador/recepcionistas">Volver</a></div>
+        </form></ng-container>
+
+        <ng-container *ngSwitchCase="'receptionistEditForm'"><form class="workspace-form-card" (ngSubmit)="saveReceptionist()">
+          <p class="eyebrow mb-2">Personal de recepción</p><h3>Editar recepcionista</h3>
+          <div class="workspace-form-grid mt-4">
+            <div><label class="form-label" for="edit-rec-dni">DNI</label><input id="edit-rec-dni" name="dni" class="form-control" readonly [(ngModel)]="receptionistForm.dni"></div>
+            <div><label class="form-label" for="edit-rec-name">Nombre</label><input id="edit-rec-name" name="nombre" class="form-control" maxlength="100" required [(ngModel)]="receptionistForm.nombre"></div>
+            <div><label class="form-label" for="edit-rec-last">Apellido paterno</label><input id="edit-rec-last" name="apellidoPaterno" class="form-control" maxlength="100" required [(ngModel)]="receptionistForm.apellidoPaterno"></div>
+            <div><label class="form-label" for="edit-rec-second-last">Apellido materno</label><input id="edit-rec-second-last" name="apellidoMaterno" class="form-control" maxlength="100" [(ngModel)]="receptionistForm.apellidoMaterno"></div>
+            <div><label class="form-label" for="edit-rec-email">Correo</label><input id="edit-rec-email" name="correo" class="form-control" type="email" maxlength="254" required [(ngModel)]="receptionistForm.correo"></div>
+            <div><label class="form-label" for="edit-rec-phone">Celular</label><input id="edit-rec-phone" name="celular" class="form-control" type="tel" inputmode="numeric" pattern="[0-9]{9}" minlength="9" maxlength="9" [ngModel]="receptionistForm.celular" (ngModelChange)="receptionistForm.celular = normalizeCellularInput($event)" (input)="receptionistForm.celular = normalizeCellularInputEvent($event)" (focus)="selectInvalidCellular($event, receptionistForm.celular)"><small class="invalid-feedback d-block" *ngIf="isInvalidCellular(receptionistForm.celular)">Escribe exactamente 9 dígitos.</small></div>
+            <div class="workspace-form-grid__wide"><label class="form-label" for="edit-rec-address">Dirección</label><input id="edit-rec-address" name="direccion" class="form-control" maxlength="300" [(ngModel)]="receptionistForm.direccion"></div>
+          </div>
+          <div class="workspace-actions mt-4"><button class="btn btn-primary" type="submit" [disabled]="saving">{{ saving ? 'Guardando…' : 'Guardar cambios' }}</button>
+            <a class="btn btn-outline-secondary" routerLink="/administrador/recepcionistas">Volver</a></div>
+        </form></ng-container>
+      </ng-container>
+    </div>
+  </div>
+</section>

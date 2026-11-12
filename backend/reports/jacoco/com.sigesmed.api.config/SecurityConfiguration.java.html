@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sigesmed-api</a> &gt; <a href="index.source.html" class="el_package">com.sigesmed.api.config</a> &gt; <span class="el_source">SecurityConfiguration.java</span></div><h1>SecurityConfiguration.java</h1><pre class="source lang-java linenums">package com.sigesmed.api.config;
+
+import java.time.Clock;
+import java.time.OffsetDateTime;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sigesmed.api.exception.ApiError;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+@Configuration
+<span class="nc" id="L29">public class SecurityConfiguration {</span>
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper mapper,
+            CookieCsrfTokenRepository csrfRepository, CorsConfigurationSource corsConfigurationSource)
+            throws Exception {
+<span class="nc" id="L34">        return http</span>
+<span class="nc" id="L35">                .cors(cors -&gt; cors.configurationSource(corsConfigurationSource))</span>
+<span class="nc" id="L36">                .csrf(csrf -&gt; csrf</span>
+<span class="nc" id="L37">                        .csrfTokenRepository(csrfRepository)</span>
+<span class="nc" id="L38">                        .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler()))</span>
+<span class="nc" id="L39">                .authorizeHttpRequests(authorize -&gt; authorize</span>
+<span class="nc" id="L40">                        .requestMatchers(&quot;/api/v1/health&quot;, &quot;/api/v1/csrf&quot;,</span>
+                                &quot;/api/v1/auth/registro&quot;, &quot;/api/v1/auth/login&quot;,
+<span class="nc" id="L42">                                &quot;/api/v1/auth/recuperar&quot;, &quot;/api/v1/auth/restablecer&quot;).permitAll()</span>
+<span class="nc" id="L43">                        .requestMatchers(&quot;/api/v1/auth/logout&quot;).authenticated()</span>
+<span class="nc" id="L44">                        .requestMatchers(&quot;/api/v1/especialidades/**&quot;, &quot;/api/v1/medicos/**&quot;,</span>
+<span class="nc" id="L45">                                &quot;/api/v1/citas/**&quot;).hasRole(&quot;PACIENTE&quot;)</span>
+<span class="nc" id="L46">                        .anyRequest().denyAll())</span>
+<span class="nc" id="L47">                .sessionManagement(session -&gt; session</span>
+<span class="nc" id="L48">                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)</span>
+<span class="nc" id="L49">                        .sessionFixation(fixation -&gt; fixation.changeSessionId()))</span>
+<span class="nc" id="L50">                .exceptionHandling(errors -&gt; errors</span>
+<span class="nc" id="L51">                        .authenticationEntryPoint((request, response, exception) -&gt; writeError(</span>
+                                mapper, response, HttpStatus.UNAUTHORIZED, &quot;Autenticación requerida&quot;,
+<span class="nc" id="L53">                                request.getRequestURI()))</span>
+<span class="nc" id="L54">                        .accessDeniedHandler((request, response, exception) -&gt; writeError(</span>
+                                mapper, response, HttpStatus.FORBIDDEN, &quot;Acceso denegado&quot;,
+<span class="nc" id="L56">                                request.getRequestURI())))</span>
+<span class="nc" id="L57">                .formLogin(form -&gt; form.disable())</span>
+<span class="nc" id="L58">                .httpBasic(basic -&gt; basic.disable())</span>
+<span class="nc" id="L59">                .logout(logout -&gt; logout.disable())</span>
+<span class="nc" id="L60">                .build();</span>
+    }
+
+    @Bean
+    CookieCsrfTokenRepository csrfTokenRepository() {
+<span class="nc" id="L65">        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();</span>
+<span class="nc" id="L66">        repository.setCookieName(&quot;XSRF-TOKEN&quot;);</span>
+<span class="nc" id="L67">        repository.setHeaderName(&quot;X-XSRF-TOKEN&quot;);</span>
+<span class="nc" id="L68">        repository.setCookiePath(&quot;/&quot;);</span>
+<span class="nc" id="L69">        return repository;</span>
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource(
+            @Value(&quot;${sigesmed.frontend-origin:http://localhost:4200}&quot;) String frontendOrigin) {
+<span class="nc" id="L75">        CorsConfiguration configuration = new CorsConfiguration();</span>
+<span class="nc" id="L76">        configuration.setAllowedOrigins(java.util.List.of(frontendOrigin));</span>
+<span class="nc" id="L77">        configuration.setAllowedMethods(java.util.List.of(&quot;GET&quot;, &quot;POST&quot;, &quot;OPTIONS&quot;));</span>
+<span class="nc" id="L78">        configuration.setAllowedHeaders(java.util.List.of(&quot;Content-Type&quot;, &quot;X-XSRF-TOKEN&quot;));</span>
+<span class="nc" id="L79">        configuration.setAllowCredentials(true);</span>
+<span class="nc" id="L80">        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();</span>
+<span class="nc" id="L81">        source.registerCorsConfiguration(&quot;/api/**&quot;, configuration);</span>
+<span class="nc" id="L82">        return source;</span>
+    }
+
+    @Bean
+    SecurityContextRepository securityContextRepository() {
+<span class="nc" id="L87">        return new HttpSessionSecurityContextRepository();</span>
+    }
+
+    @Bean
+    Clock applicationClock() {
+<span class="nc" id="L92">        return Clock.systemUTC();</span>
+    }
+
+    @Bean
+    PasswordEncoder passwordEncoder() {
+<span class="nc" id="L97">        return new BCryptPasswordEncoder();</span>
+    }
+
+    @Bean
+    UserDetailsService noAccountsUntilDataExists() {
+<span class="nc" id="L102">        return username -&gt; {</span>
+<span class="nc" id="L103">            throw new UsernameNotFoundException(&quot;La autenticación se realiza mediante AuthService&quot;);</span>
+        };
+    }
+
+    private static void writeError(ObjectMapper mapper, HttpServletResponse response,
+            HttpStatus status, String message, String path) throws java.io.IOException {
+<span class="nc" id="L109">        response.setStatus(status.value());</span>
+<span class="nc" id="L110">        response.setContentType(&quot;application/json&quot;);</span>
+<span class="nc" id="L111">        mapper.writeValue(response.getOutputStream(),</span>
+<span class="nc" id="L112">                new ApiError(OffsetDateTime.now(Clock.systemUTC()), status.value(),</span>
+<span class="nc" id="L113">                        status.getReasonPhrase(), message, path));</span>
+<span class="nc" id="L114">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

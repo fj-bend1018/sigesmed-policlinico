@@ -1,0 +1,257 @@
+<section class="booking-page" aria-labelledby="availability-title">
+  <div class="booking-frame">
+    <nav class="booking-breadcrumb" aria-label="Ruta de navegación">
+      <a routerLink="/">Inicio</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">Reservar cita</span>
+    </nav>
+
+    <header class="booking-intro">
+      <p class="booking-kicker">Atención para toda la familia</p>
+      <h1 id="availability-title">Reserva una cita <span>para tu familia</span></h1>
+      <p>Elige la especialidad, el médico y un horario disponible. Revisa tu selección antes de confirmar la cita.</p>
+    </header>
+
+    <ol class="booking-progress" [style.gridTemplateColumns]="'repeat(' + totalSteps + ', minmax(0, 1fr))'" aria-label="Pasos para reservar una cita">
+      <li *ngFor="let step of progressSteps"
+          [class.is-active]="activeStep === step"
+          [class.is-complete]="activeStep > step"
+          [attr.aria-current]="activeStep === step ? 'step' : null">
+        <button type="button" (click)="selectStep(step)" [disabled]="step >= activeStep"
+                [attr.aria-label]="'Paso ' + step + ': ' + stepLabel(step)">
+          <span class="booking-progress__number" aria-hidden="true">
+            <svg *ngIf="activeStep > step" viewBox="0 0 20 20" focusable="false" aria-hidden="true"><path d="m4 10 4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <ng-container *ngIf="activeStep <= step">{{ step }}</ng-container>
+          </span>
+          <span class="booking-progress__label">{{ stepLabel(step) }}</span>
+        </button>
+      </li>
+    </ol>
+
+    <div class="booking-layout">
+      <div class="booking-content">
+        <div class="booking-error" *ngIf="reservationError" role="alert">
+          <span class="booking-error__icon" aria-hidden="true">!</span>
+          <p>{{ reservationError }}</p>
+        </div>
+
+        <section class="booking-card booking-step-panel" *ngIf="activeStep === 1" aria-labelledby="specialty-step-title">
+          <div class="booking-card__heading">
+            <span class="booking-card__eyebrow">Paso 1 de {{ totalSteps }}</span>
+            <h2 id="specialty-step-title">¿Qué atención necesita tu familia?</h2>
+            <p>Elige una consulta médica o uno de nuestros servicios complementarios.</p>
+          </div>
+
+          <div class="booking-type-switch" role="group" aria-label="Tipo de atención">
+            <button *ngFor="let type of bookingTypes" type="button" class="booking-type-option"
+                    [class.is-selected]="bookingType === type.id" [attr.aria-pressed]="bookingType === type.id"
+                    (click)="onBookingTypeChange(type.id)">
+              <strong>{{ type.title }}</strong><small>{{ type.description }}</small>
+            </button>
+          </div>
+
+          <div class="booking-loading" *ngIf="bookingType === 'CONSULTA' && loadingSpecialties || bookingType === 'SERVICIO_COMPLEMENTARIO' && loadingServices" role="status">
+            <span class="spinner-border" aria-hidden="true"></span>
+            <span>{{ bookingType === 'CONSULTA' ? 'Cargando especialidades…' : 'Cargando servicios…' }}</span>
+          </div>
+
+          <div class="booking-empty" *ngIf="bookingType === 'CONSULTA' && !loadingSpecialties && specialtiesLoadError || bookingType === 'SERVICIO_COMPLEMENTARIO' && !loadingServices && servicesLoadError" role="alert">
+            <strong>{{ bookingType === 'CONSULTA' ? 'No pudimos cargar las especialidades.' : 'No pudimos cargar los servicios.' }}</strong>
+            <span>El servicio no respondió. Intenta nuevamente para consultar la disponibilidad.</span>
+            <button class="btn btn-outline-primary align-self-start" type="button"
+                    (click)="bookingType === 'CONSULTA' ? retrySpecialties() : retryServices()">Volver a intentar</button>
+          </div>
+          <div class="booking-empty" *ngIf="bookingType === 'CONSULTA' && !loadingSpecialties && !specialtiesLoadError && specialties.length === 0 || bookingType === 'SERVICIO_COMPLEMENTARIO' && !loadingServices && !servicesLoadError && complementaryServices.length === 0" role="status">
+            <strong>{{ bookingType === 'CONSULTA' ? 'No hay especialidades disponibles.' : 'No hay servicios disponibles.' }}</strong>
+            <span>Inténtalo de nuevo más tarde o comunícate con recepción.</span>
+          </div>
+
+          <div class="booking-specialties" *ngIf="bookingType === 'CONSULTA' && !loadingSpecialties && !specialtiesLoadError && specialties.length > 0" aria-label="Especialidades disponibles">
+            <button class="booking-specialty" type="button" *ngFor="let specialty of specialties"
+                    [class.is-selected]="specialtyId === '' + specialty.id"
+                    [attr.aria-pressed]="specialtyId === '' + specialty.id"
+                    (click)="onSpecialtyChange('' + specialty.id)">
+              <span class="booking-specialty__icon" aria-hidden="true" [ngSwitch]="specialtyIconKey(specialty.nombre)">
+                <svg *ngSwitchCase="'child'" viewBox="0 0 32 32" focusable="false"><circle cx="16" cy="9" r="4"/><path d="M8 27v-5a8 8 0 0 1 16 0v5M11 18l-4 4m14-4 4 4M13 13l-2 3m8-3 2 3"/></svg>
+                <svg *ngSwitchCase="'family'" viewBox="0 0 32 32" focusable="false"><circle cx="9" cy="10" r="3"/><circle cx="23" cy="10" r="3"/><circle cx="16" cy="16" r="3"/><path d="M3 25v-3a6 6 0 0 1 9-5m17 8v-3a6 6 0 0 0-9-5m-10 8v-2a6 6 0 0 1 12 0v2"/></svg>
+                <svg *ngSwitchCase="'nutrition'" viewBox="0 0 32 32" focusable="false"><path d="M16 28S5 22 5 13a5 5 0 0 1 9-3l2 3 2-3a5 5 0 0 1 9 3c0 9-11 15-11 15Z"/><path d="M16 13c0-4 2-7 6-9m-6 17c-2-3-5-4-8-4"/></svg>
+                <svg *ngSwitchCase="'psychology'" viewBox="0 0 32 32" focusable="false"><path d="M16 27V14a5 5 0 1 0-5-5m5 8a5 5 0 1 1 5-5m-10 2a5 5 0 1 0 0 10m10-8a5 5 0 1 1 0 10M16 27v-4"/></svg>
+                <svg *ngSwitchCase="'dental'" viewBox="0 0 32 32" focusable="false"><path d="M7 7c3-3 7-1 9 0 2-1 6-3 9 0 3 3 0 9-2 15-1 4-4 5-5 1l-2-7-2 7c-1 4-4 3-5-1C7 16 4 10 7 7Z"/></svg>
+                <svg *ngSwitchCase="'ear'" viewBox="0 0 32 32" focusable="false"><path d="M22 20c-1 4-4 7-7 7-3 0-5-2-5-5 0-3 2-4 4-6 2-1 3-3 3-5a4 4 0 0 0-8 0m13 9c2-2 3-4 3-7a9 9 0 0 0-18-1"/><path d="M14 22a3 3 0 0 0 6 0"/></svg>
+                <svg *ngSwitchDefault viewBox="0 0 32 32" focusable="false"><path d="M16 5v22M5 16h22"/><circle cx="16" cy="16" r="12"/></svg>
+              </span>
+              <span class="booking-specialty__copy">
+                <strong>{{ specialty.nombre }}</strong>
+                <small>{{ specialtyDescription(specialty.nombre) }}</small>
+              </span>
+              <span class="booking-specialty__check" aria-hidden="true">
+                <svg viewBox="0 0 20 20" focusable="false"><path d="m4 10 4 4 8-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </span>
+            </button>
+          </div>
+
+          <div class="booking-specialties booking-services" *ngIf="bookingType === 'SERVICIO_COMPLEMENTARIO' && !loadingServices && !servicesLoadError && complementaryServices.length > 0" aria-label="Servicios complementarios disponibles">
+            <button class="booking-specialty" type="button" *ngFor="let service of complementaryServices"
+                    [class.is-selected]="serviceId === '' + service.id"
+                    [attr.aria-pressed]="serviceId === '' + service.id"
+                    (click)="onServiceChange('' + service.id)">
+              <span class="booking-specialty__icon" aria-hidden="true">
+                <svg *ngIf="service.nombre.toLowerCase().includes('laboratorio')" viewBox="0 0 32 32" focusable="false"><path d="M12 4h8m-6 0v9l-7 12a2 2 0 0 0 2 3h14a2 2 0 0 0 2-3l-7-12V4"/><path d="M10 22h12m-10-4h8"/></svg>
+                <svg *ngIf="service.nombre.toLowerCase().includes('ecograf')" viewBox="0 0 32 32" focusable="false"><rect x="4" y="6" width="24" height="17" rx="2"/><path d="M12 28h8m-4-5v5m-8-15h16m-12 5h8"/></svg>
+              </span>
+              <span class="booking-specialty__copy"><strong>{{ service.nombre }}</strong><small>{{ serviceDescription(service.nombre) }}</small></span>
+              <span class="booking-specialty__check" aria-hidden="true"><svg viewBox="0 0 20 20" focusable="false"><path d="m4 10 4 4 8-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </button>
+          </div>
+
+          <div class="booking-inline-state" *ngIf="bookingType === 'CONSULTA' && specialtyId && !loadingDoctors && doctorsLoadError" role="alert">
+            <span>No pudimos cargar los médicos de esta especialidad.</span>
+            <button type="button" (click)="retryDoctors()">Reintentar</button>
+          </div>
+          <div class="booking-inline-state" *ngIf="bookingType === 'CONSULTA' && specialtyId && !loadingDoctors && !doctorsLoadError && doctors.length === 0" role="status">
+            No hay médicos disponibles para esta especialidad en este momento. Puedes elegir otra.
+          </div>
+
+          <div class="booking-step-actions">
+            <span class="booking-hint">La selección se conserva mientras completas tu reserva.</span>
+            <button class="btn btn-primary booking-continue" type="button" (click)="continueFromSpecialty()" [disabled]="!canContinueSelection || loadingDoctors">
+              {{ loadingDoctors ? 'Buscando profesionales…' : bookingType === 'CONSULTA' ? 'Continuar con esta especialidad' : 'Continuar con este servicio' }}
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="booking-card booking-step-panel" *ngIf="activeStep === 2 && bookingType === 'CONSULTA'" aria-labelledby="doctor-step-title">
+          <div class="booking-card__heading">
+            <span class="booking-card__eyebrow">Paso 2 de 4 · {{ selectedSpecialtyName }}</span>
+            <h2 id="doctor-step-title">Elige a tu médico</h2>
+            <p>Selecciona uno de los profesionales asociados a esta especialidad.</p>
+          </div>
+          <div class="booking-loading" *ngIf="loadingDoctors" role="status"><span class="spinner-border" aria-hidden="true"></span><span>Cargando profesionales…</span></div>
+          <div class="booking-empty" *ngIf="!loadingDoctors && doctorsLoadError" role="alert">
+            <strong>No pudimos cargar los médicos.</strong>
+            <span>El servicio no respondió. Inténtalo de nuevo para consultar la disponibilidad.</span>
+            <button class="btn btn-outline-primary align-self-start" type="button" (click)="retryDoctors()">Volver a intentar</button>
+          </div>
+          <div class="booking-empty" *ngIf="!loadingDoctors && !doctorsLoadError && doctors.length === 0" role="status">
+            <strong>No encontramos médicos disponibles para esta especialidad.</strong>
+            <span>Regresa a especialidades y elige otra opción.</span>
+          </div>
+          <div class="booking-doctors" *ngIf="!loadingDoctors && doctors.length > 0" aria-label="Médicos disponibles">
+            <button class="booking-doctor" type="button" *ngFor="let doctor of doctors"
+                    [class.is-selected]="doctorId === '' + doctor.id"
+                    [attr.aria-pressed]="doctorId === '' + doctor.id"
+                    (click)="onDoctorChange('' + doctor.id)">
+              <span class="booking-doctor__avatar" aria-hidden="true">
+                <svg viewBox="0 0 32 32" focusable="false"><circle cx="16" cy="9" r="5"/><path d="M6 28a10 10 0 0 1 20 0M12 15l4 4 4-4m-4 4v7"/></svg>
+              </span>
+              <span class="booking-doctor__copy"><strong>{{ doctor.nombre }}</strong><small>{{ selectedSpecialtyName }}</small></span>
+              <span class="booking-specialty__check" aria-hidden="true"><svg viewBox="0 0 20 20" focusable="false"><path d="m4 10 4 4 8-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+            </button>
+          </div>
+          <div class="booking-step-actions">
+            <button class="btn btn-link booking-back" type="button" (click)="selectStep(1)">← Cambiar especialidad</button>
+            <button class="btn btn-primary booking-continue" type="button" (click)="continueFromDoctor()" [disabled]="!canContinueDoctor">Elegir fecha <span aria-hidden="true">→</span></button>
+          </div>
+        </section>
+
+        <section class="booking-card booking-step-panel" *ngIf="activeStep === 2 && bookingType === 'SERVICIO_COMPLEMENTARIO'" aria-labelledby="service-date-step-title">
+          <div class="booking-card__heading">
+            <span class="booking-card__eyebrow">Paso 2 de 3 · {{ selectedServiceName }}</span>
+            <h2 id="service-date-step-title">Elige una fecha</h2>
+            <p>Selecciona el día para consultar los horarios disponibles del servicio.</p>
+          </div>
+          <div class="booking-date-picker">
+            <label for="service-booking-date">Fecha de atención</label>
+            <div class="booking-date-picker__control">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+              <input id="service-booking-date" class="form-control" type="date" [ngModel]="date" (ngModelChange)="onDateChange($event)" [min]="minDate" required>
+            </div>
+          </div>
+          <div class="booking-step-actions">
+            <button class="btn btn-link booking-back" type="button" (click)="selectStep(1)">← Cambiar servicio</button>
+            <button class="btn btn-primary booking-continue" type="button" (click)="search()" [disabled]="!serviceId || !date || loadingSlots" [attr.aria-busy]="loadingSlots">
+              {{ loadingSlots ? 'Consultando…' : 'Ver horarios disponibles' }} <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="booking-card booking-step-panel" *ngIf="activeStep === 3 && bookingType === 'CONSULTA'" aria-labelledby="date-step-title">
+          <div class="booking-card__heading">
+            <span class="booking-card__eyebrow">Paso 3 de 4 · {{ selectedSpecialtyName }}</span>
+            <h2 id="date-step-title">¿Qué día te queda mejor?</h2>
+            <p>Elige una fecha para consultar los horarios disponibles con {{ selectedDoctorName || 'el médico seleccionado' }}.</p>
+          </div>
+          <div class="booking-date-picker">
+            <label for="booking-date">Fecha de atención</label>
+            <div class="booking-date-picker__control">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
+              <input id="booking-date" class="form-control" type="date" [ngModel]="date" (ngModelChange)="onDateChange($event)" [min]="minDate" required aria-describedby="booking-date-help">
+            </div>
+            <small id="booking-date-help">Puedes consultar desde hoy en adelante. Los horarios se verifican en línea.</small>
+          </div>
+          <div class="booking-step-actions">
+            <button class="btn btn-link booking-back" type="button" (click)="selectStep(2)">← Cambiar médico</button>
+            <button class="btn btn-primary booking-continue" type="button" (click)="search()" [disabled]="!doctorId || !date || loadingSlots" [attr.aria-busy]="loadingSlots">
+              {{ loadingSlots ? 'Consultando…' : 'Ver horarios disponibles' }} <span aria-hidden="true">→</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="booking-card booking-step-panel" *ngIf="activeStep === scheduleStep" aria-labelledby="slot-step-title" aria-live="polite">
+          <div class="booking-card__heading">
+            <span class="booking-card__eyebrow">Paso {{ scheduleStep }} de {{ totalSteps }} · {{ date | date:'EEEE d MMMM':'':'es' }}</span>
+            <h2 id="slot-step-title">Selecciona un horario</h2>
+            <p>Los horarios mostrados están disponibles al momento de la consulta.</p>
+          </div>
+          <div class="booking-loading" *ngIf="loadingSlots" role="status"><span class="spinner-border" aria-hidden="true"></span><span>Consultando horarios disponibles…</span></div>
+          <div class="booking-empty" *ngIf="!loadingSlots && submittedSearch && slots.length === 0" role="status">
+            <strong>No hay horarios disponibles para esta fecha.</strong>
+            <span>Prueba otro día; puedes volver a la fecha anterior cuando quieras.</span>
+          </div>
+          <div class="booking-slots" *ngIf="!loadingSlots && slots.length > 0" aria-label="Horarios disponibles">
+            <button *ngFor="let slot of slots" type="button" class="booking-slot"
+                    [class.is-selected]="selectedSlot?.id === slot.id"
+                    [attr.aria-pressed]="selectedSlot?.id === slot.id"
+                    (click)="selectSlot(slot)">{{ slot.hora.slice(0, 5) }}</button>
+          </div>
+          <div class="booking-step-actions">
+            <button class="btn btn-link booking-back" type="button" (click)="selectStep(bookingType === 'CONSULTA' ? 3 : 2)">← Cambiar fecha</button>
+            <span class="booking-hint" *ngIf="selectedSlot">Horario elegido: <strong>{{ selectedSlot.hora.slice(0, 5) }}</strong></span>
+          </div>
+        </section>
+      </div>
+
+      <aside class="booking-summary" aria-labelledby="booking-summary-title">
+        <div class="booking-summary__top">
+          <span class="booking-summary__icon" aria-hidden="true">
+            <svg viewBox="0 0 32 32" focusable="false"><rect x="5" y="7" width="22" height="21" rx="3"/><path d="M11 4v6m10-6v6M5 13h22m-15 5h8m-8 5h5"/></svg>
+          </span>
+          <div><p class="booking-card__eyebrow">Tu cita</p><h2 id="booking-summary-title">Resumen de selección</h2></div>
+        </div>
+        <dl class="booking-summary__details">
+          <div><dt>{{ bookingType === 'CONSULTA' ? 'Especialidad' : 'Servicio' }}</dt><dd>{{ selectedAttentionName || 'Por elegir' }}</dd></div>
+          <div *ngIf="bookingType === 'CONSULTA'"><dt>Médico</dt><dd>{{ selectedDoctorName || 'Por elegir' }}</dd></div>
+          <div *ngIf="bookingType === 'SERVICIO_COMPLEMENTARIO'"><dt>Tipo de atención</dt><dd>Servicio complementario</dd></div>
+          <div><dt>Fecha</dt><dd>{{ selectedSlot ? (selectedSlot.fecha | date:'d MMMM y':'':'es') : activeStep >= (bookingType === 'CONSULTA' ? 3 : 2) ? (date | date:'d MMMM y':'':'es') : 'Por elegir' }}</dd></div>
+          <div><dt>Hora</dt><dd>{{ selectedSlot && !selectedSlotUnavailable ? selectedSlot.hora.slice(0, 5) : 'Por elegir' }}</dd></div>
+        </dl>
+        <div class="booking-summary__status" [class.is-ready]="selectedSlot && !selectedSlotUnavailable" role="status">
+          <span class="booking-summary__status-dot" aria-hidden="true"></span>
+          <span *ngIf="!selectedSlot">Completa los pasos para elegir tu horario.</span>
+          <span *ngIf="selectedSlot && !selectedSlotUnavailable">Horario seleccionado. Aún no se ha confirmado la cita.</span>
+          <span *ngIf="selectedSlotUnavailable">El horario anterior ya no está disponible; elige otro.</span>
+        </div>
+        <button *ngIf="guestBooking" class="btn btn-primary booking-summary__action" type="button" (click)="continueToAccount()"
+                [disabled]="!selectedSlot || selectedSlotUnavailable || reserving">
+          Continuar con la cita <span aria-hidden="true">→</span>
+        </button>
+        <button *ngIf="!guestBooking" class="btn btn-primary booking-summary__action" type="button" (click)="reserve()"
+                [disabled]="!selectedSlot || selectedSlotUnavailable || reserving" [attr.aria-busy]="reserving">
+          {{ reserving ? 'Confirmando cita…' : 'Confirmar cita' }} <span *ngIf="!reserving" aria-hidden="true">→</span>
+        </button>
+        <p class="booking-summary__note" *ngIf="!guestBooking">La cita se confirmará cuando completes esta acción.</p>
+      </aside>
+    </div>
+  </div>
+</section>

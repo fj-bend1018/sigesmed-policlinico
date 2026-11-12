@@ -1,0 +1,282 @@
+<section class="patient-workspace patient-portal" aria-labelledby="patient-page-title">
+  <div class="patient-portal__layout">
+    <aside class="patient-portal__sidebar" aria-label="Navegación del área del paciente">
+      <div class="patient-portal__brand">
+        <span class="patient-portal__brand-logo">
+          <img src="assets/LogoEmpresa.png" alt="">
+        </span>
+        <span>
+          <strong>Portal del paciente</strong>
+          <small>Policlínico Infantil</small>
+        </span>
+      </div>
+
+      <nav class="patient-portal__nav" aria-label="Secciones de tu cuenta">
+        <a *ngFor="let item of sections"
+           [routerLink]="item.link"
+           [class.is-active]="section === item.key"
+           [attr.aria-current]="section === item.key ? 'page' : null">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" [ngSwitch]="item.key">
+            <ng-container *ngSwitchCase="'appointments'">
+              <rect x="3.5" y="5" width="17" height="16" rx="2"></rect>
+              <path d="M8 3v4M16 3v4M4 10h16M8 14h.01M12 14h.01M16 14h.01M8 17h.01M12 17h.01"></path>
+            </ng-container>
+            <ng-container *ngSwitchCase="'history'">
+              <path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v14H6a2 2 0 0 1-2-2V6a1.5 1.5 0 0 1 1-1.42"></path>
+              <path d="M8 9h8M8 13h8M8 17h5M4 7v11a2 2 0 0 0 2 2"></path>
+            </ng-container>
+            <ng-container *ngSwitchCase="'cancelled'">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="m9 9 6 6m0-6-6 6"></path>
+            </ng-container>
+            <ng-container *ngSwitchCase="'profile'">
+              <circle cx="12" cy="8" r="4"></circle>
+              <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
+            </ng-container>
+            <ng-container *ngSwitchCase="'editProfile'">
+              <path d="m14 5 5 5M4 20l4.2-.8L19 8.4a2.1 2.1 0 0 0-3-3L5.2 16.2 4 20Z"></path>
+              <path d="M13 6 18 11"></path>
+            </ng-container>
+          </svg>
+          <span>{{ item.label }}</span>
+          <span class="patient-portal__nav-arrow" aria-hidden="true">›</span>
+        </a>
+      </nav>
+
+      <div class="patient-portal__sidebar-note">
+        <span class="patient-portal__shield" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false"><path d="M12 3 19 6v5c0 4.5-2.8 8-7 10-4.2-2-7-5.5-7-10V6l7-3Z"></path><path d="m9 12 2 2 4-4"></path></svg>
+        </span>
+        <span>Tu información y tus citas están protegidas.</span>
+      </div>
+    </aside>
+
+    <div class="patient-portal__content">
+      <header class="patient-portal__heading">
+        <div>
+          <p class="patient-portal__eyebrow">Área del paciente</p>
+          <h1 id="patient-page-title">{{ title }}</h1>
+          <p class="patient-portal__description">{{ description }}</p>
+        </div>
+      </header>
+
+      <div *ngIf="errorMessage" class="patient-portal__alert patient-portal__alert--error" role="alert">
+        <span>{{ errorMessage }}</span>
+        <button *ngIf="section === 'appointments' || section === 'history' || section === 'cancelled'"
+                type="button" (click)="loadAppointments()">Volver a intentar</button>
+      </div>
+      <div *ngIf="successMessage" class="patient-portal__alert patient-portal__alert--success" role="status">
+        {{ successMessage }}
+      </div>
+
+      <div *ngIf="loading" class="patient-portal__loading" role="status" aria-live="polite">
+        <span class="patient-portal__spinner" aria-hidden="true"></span>
+        <span>Cargando tu información…</span>
+      </div>
+
+      <ng-container [ngSwitch]="section">
+        <ng-container *ngSwitchCase="'appointments'">
+          <div class="patient-appointments" *ngIf="!loading && appointments.length">
+            <div class="patient-appointments__main">
+              <div class="patient-appointments__section-heading">
+                <div>
+                  <span class="patient-portal__eyebrow">Tu agenda</span>
+                  <h2>Atenciones programadas</h2>
+                  <p>Revisa los detalles y gestiona tus citas reservadas.</p>
+                </div>
+                <span class="patient-appointments__count" [attr.aria-label]="appointments.length + ' citas activas'">
+                  <strong>{{ appointments.length }}</strong>
+                  <small>{{ appointments.length === 1 ? 'cita activa' : 'citas activas' }}</small>
+                </span>
+              </div>
+
+              <div class="patient-appointment-list">
+                <article class="patient-appointment" *ngFor="let appointment of appointments">
+                  <div class="patient-appointment__date" aria-label="Fecha de la cita">
+                    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                      <rect x="3.5" y="5" width="17" height="16" rx="2"></rect>
+                      <path d="M8 3v4M16 3v4M4 10h16"></path>
+                    </svg>
+                    <span>{{ appointment.fecha | date:'d MMM y' }}</span>
+                    <strong>{{ appointment.hora.slice(0, 5) }}</strong>
+                  </div>
+
+                  <div class="patient-appointment__body">
+                    <div class="patient-appointment__heading">
+                      <div>
+                        <span class="patient-appointment__reference">Cita #{{ appointment.id }}</span>
+                        <span class="patient-appointment__label">{{ appointment.servicio ? 'Servicio complementario' : 'Especialidad' }}</span>
+                        <h3>{{ specialties(appointment) }}</h3>
+                      </div>
+                      <span class="patient-portal__status" [attr.data-status]="appointment.estado">
+                        {{ statusLabel(appointment.estado) }}
+                      </span>
+                    </div>
+                    <div class="patient-appointment__doctor" *ngIf="appointment.doctor">
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M8 4a2 2 0 0 1 4 0v5a4 4 0 0 1-8 0V7"></path>
+                        <path d="M4 7H2v2a6 6 0 0 0 12 0V7h-2M8 15v2a4 4 0 0 0 8 0v-1a3 3 0 1 1 3 3"></path>
+                        <circle cx="19" cy="19" r="1"></circle>
+                      </svg>
+                      <span>{{ appointment.doctor }}</span>
+                    </div>
+                    <div class="patient-appointment__service" *ngIf="appointment.servicio">
+                      <span class="patient-appointment__service-mark" aria-hidden="true">
+                        <svg viewBox="0 0 20 20" focusable="false"><path d="M10 3v14M3 10h14"/></svg>
+                      </span>
+                      <span>Atención con agenda propia del servicio</span>
+                    </div>
+                  </div>
+
+                  <div class="patient-appointment__actions" *ngIf="appointment.estado === 'RESERVADA'; else appointmentNoActions">
+                    <a class="patient-portal__button patient-portal__button--soft"
+                       [routerLink]="['/paciente/citas', appointment.id, 'modificar']">Reprogramar</a>
+                    <button class="patient-portal__button patient-portal__button--danger" type="button"
+                            (click)="cancelAppointment(appointment)">Cancelar</button>
+                  </div>
+                  <ng-template #appointmentNoActions>
+                    <span class="patient-appointment__locked">Sin acciones disponibles</span>
+                  </ng-template>
+                </article>
+              </div>
+            </div>
+
+            <aside class="patient-support">
+              <div class="patient-support__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M4 13v-2a8 8 0 0 1 16 0v2"></path>
+                  <rect x="3" y="12" width="4" height="7" rx="2"></rect>
+                  <rect x="17" y="12" width="4" height="7" rx="2"></rect>
+                  <path d="M17 19a5 5 0 0 1-5 3h-2"></path>
+                </svg>
+              </div>
+              <span class="patient-portal__eyebrow">Estamos para ayudarte</span>
+              <h2>¿Necesitas ayuda?</h2>
+              <p>Comunícate con recepción si tienes consultas sobre tu atención.</p>
+              <div class="patient-support__contacts">
+                <a href="tel:+5113516775">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.6 3.5 9 3l2 5-2.3 1.6a15 15 0 0 0 5.7 5.7L16 13l5 2-.5 2.4a3 3 0 0 1-3.2 2.4A17 17 0 0 1 4.2 6.7a3 3 0 0 1 2.4-3.2Z"></path></svg>
+                  <span>(01) 351-6775</span>
+                </a>
+                <a href="tel:+5113520695">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.6 3.5 9 3l2 5-2.3 1.6a15 15 0 0 0 5.7 5.7L16 13l5 2-.5 2.4a3 3 0 0 1-3.2 2.4A17 17 0 0 1 4.2 6.7a3 3 0 0 1 2.4-3.2Z"></path></svg>
+                  <span>(01) 352-0695</span>
+                </a>
+                <a href="mailto:psaludchosica@hotmail.com">
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m4 7 8 6 8-6"></path></svg>
+                  <span>psaludchosica&#64;hotmail.com</span>
+                </a>
+              </div>
+              <div class="patient-support__note">
+                Puedes cancelar o reprogramar una cita reservada hasta dos horas antes.
+              </div>
+            </aside>
+          </div>
+
+          <div class="patient-empty" *ngIf="!loading && !appointments.length && !errorMessage" role="status">
+            <span class="patient-empty__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" focusable="false"><rect x="3.5" y="5" width="17" height="16" rx="2"></rect><path d="M8 3v4M16 3v4M4 10h16"></path></svg>
+            </span>
+            <h2>Aún no tienes citas reservadas</h2>
+            <p>Cuando reserves una atención, aquí verás la fecha, el horario y el profesional.</p>
+            <a class="patient-portal__primary-action" routerLink="/paciente/disponibilidad">Consultar horarios</a>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'history'">
+          <div class="patient-data-panel" *ngIf="!loading && appointments.length">
+            <div class="patient-data-panel__heading"><div><span class="patient-portal__eyebrow">Atenciones anteriores</span><h2>Tu historial</h2></div></div>
+            <div class="patient-table-wrap">
+              <table class="patient-table">
+                <caption class="visually-hidden">Historial de atenciones del paciente</caption>
+                <thead><tr><th>Especialidad</th><th>Médico</th><th>Fecha y hora</th><th>Estado</th></tr></thead>
+                <tbody><tr *ngFor="let appointment of appointments">
+                  <td>{{ specialties(appointment) }}</td><td>{{ appointment.doctor || '—' }}</td>
+                  <td>{{ appointment.fecha | date:'d MMM y' }} · {{ appointment.hora.slice(0, 5) }}</td>
+                  <td><span class="patient-portal__status" [attr.data-status]="appointment.estado">{{ statusLabel(appointment.estado) }}</span></td>
+                </tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="patient-empty" *ngIf="!loading && !appointments.length && !errorMessage" role="status">
+            <span class="patient-empty__icon" aria-hidden="true">▤</span><h2>Tu historial aparecerá aquí</h2>
+            <p>Cuando completes una atención, podrás consultar aquí su fecha y especialidad.</p>
+            <a class="patient-portal__button patient-portal__button--soft" routerLink="/paciente/disponibilidad">Consultar horarios</a>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'cancelled'">
+          <div class="patient-data-panel" *ngIf="!loading && appointments.length">
+            <div class="patient-data-panel__heading"><div><span class="patient-portal__eyebrow">Registro de tu cuenta</span><h2>Citas canceladas</h2></div></div>
+            <div class="patient-table-wrap">
+              <table class="patient-table">
+                <caption class="visually-hidden">Citas canceladas del paciente</caption>
+                <thead><tr><th>Especialidad</th><th>Médico</th><th>Fecha y hora</th><th>Motivo</th><th>Estado</th></tr></thead>
+                <tbody><tr *ngFor="let appointment of appointments">
+                  <td>{{ specialties(appointment) }}</td><td>{{ appointment.doctor || '—' }}</td>
+                  <td>{{ appointment.fecha | date:'d MMM y' }} · {{ appointment.hora.slice(0, 5) }}</td>
+                  <td>{{ appointment.motivoCancelacion || '—' }}</td>
+                  <td><span class="patient-portal__status" [attr.data-status]="appointment.estado">{{ statusLabel(appointment.estado) }}</span></td>
+                </tr></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="patient-empty" *ngIf="!loading && !appointments.length && !errorMessage" role="status">
+            <span class="patient-empty__icon" aria-hidden="true">×</span><h2>No hay citas canceladas</h2>
+            <p>Las citas que canceles se conservarán aquí para que puedas consultarlas.</p>
+            <a class="patient-portal__button patient-portal__button--soft" routerLink="/paciente/disponibilidad">Reservar otra cita</a>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'profile'">
+          <section class="patient-data-panel" *ngIf="profile">
+            <div class="patient-profile-summary">
+              <span class="patient-profile-summary__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="8" r="4"></circle><path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path></svg>
+              </span>
+              <div><span class="patient-portal__eyebrow">Datos de tu cuenta</span><h2>{{ profile.nombre }} {{ profile.apellidoPaterno }} {{ profile.apellidoMaterno }}</h2></div>
+              <a class="patient-portal__button patient-portal__button--soft" routerLink="/paciente/perfil/editar">Editar datos</a>
+            </div>
+            <dl class="patient-profile-details">
+              <div><dt>DNI</dt><dd>{{ profile.dni }}</dd></div>
+              <div><dt>Correo electrónico</dt><dd>{{ profile.correo || 'No registrado' }}</dd></div>
+              <div><dt>Celular</dt><dd>{{ profile.celular || 'No registrado' }}</dd></div>
+              <div><dt>Dirección</dt><dd>{{ profile.direccion || 'No registrada' }}</dd></div>
+            </dl>
+          </section>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'editProfile'">
+          <form class="patient-data-panel patient-profile-form" *ngIf="profile" (ngSubmit)="saveProfile()">
+            <div class="patient-data-panel__heading"><div><span class="patient-portal__eyebrow">Mantén tus datos al día</span><h2>Información de contacto</h2></div></div>
+            <div class="patient-profile-form__grid">
+              <div><label for="patient-email">Correo electrónico</label><input id="patient-email" name="correo" class="form-control" type="email" autocomplete="email" required maxlength="254" [(ngModel)]="profileForm.correo"></div>
+              <div><label for="patient-phone">Número de celular</label><input id="patient-phone" name="celular" class="form-control" type="tel" inputmode="numeric" autocomplete="tel-national" pattern="[0-9]{9}" minlength="9" maxlength="9" aria-describedby="patient-phone-help patient-phone-error" [ngModel]="profileForm.celular" (ngModelChange)="profileForm.celular = normalizeCellularInput($event)" (input)="profileForm.celular = normalizeCellularInputEvent($event)" (focus)="selectInvalidCellular($event, profileForm.celular)"><small id="patient-phone-help" class="form-text">Opcional; si lo indicas, escribe 9 dígitos.</small><small id="patient-phone-error" class="invalid-feedback d-block" *ngIf="isInvalidCellular(profileForm.celular)">Escribe exactamente 9 dígitos; al editar un valor antiguo, el campo se selecciona para reemplazarlo.</small></div>
+              <div class="patient-profile-form__wide"><label for="patient-address">Dirección</label><input id="patient-address" name="direccion" class="form-control" type="text" autocomplete="street-address" maxlength="300" [(ngModel)]="profileForm.direccion"></div>
+            </div>
+            <div class="patient-profile-form__actions"><a class="patient-portal__button patient-portal__button--quiet" routerLink="/paciente/perfil">Volver al perfil</a><button class="patient-portal__primary-action" type="submit" [disabled]="saving">{{ saving ? 'Guardando…' : 'Guardar cambios' }}</button></div>
+          </form>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'reschedule'">
+          <section class="patient-data-panel" *ngIf="appointment">
+            <div class="patient-data-panel__heading"><div><span class="patient-portal__eyebrow">Cita #{{ appointment.id }}</span><h2>Reprogramar atención</h2><p>{{ appointment.servicio ? 'Elige otro horario para el mismo servicio.' : 'Elige un horario disponible con el mismo médico.' }}</p></div></div>
+            <div class="patient-reschedule-summary">
+              <div><span>{{ appointment.servicio ? 'Servicio complementario' : 'Especialidad' }}</span><strong>{{ specialties(appointment) }}</strong></div>
+              <div *ngIf="appointment.doctor"><span>Médico</span><strong>{{ appointment.doctor }}</strong></div>
+              <div *ngIf="appointment.servicio"><span>Tipo de atención</span><strong>Servicio complementario</strong></div>
+              <div><span>Horario actual</span><strong>{{ appointment.fecha | date:'d MMM y' }} · {{ appointment.hora.slice(0, 5) }}</strong></div>
+            </div>
+            <p class="patient-reschedule-notice" role="note">Puedes reprogramar hasta dos horas antes de la cita actual.</p>
+            <div class="patient-profile-form__grid">
+              <div><label for="reschedule-date">Nueva fecha</label><input id="reschedule-date" name="rescheduleDate" class="form-control" type="date" [min]="minDate" required [(ngModel)]="rescheduleDate" (change)="loadSlots()"></div>
+              <div><label for="reschedule-slot">Horario disponible</label><select id="reschedule-slot" name="rescheduleSlot" class="form-select" required [(ngModel)]="selectedSlotId"><option value="">Selecciona un horario</option><option *ngFor="let slot of slots" [value]="slot.id">{{ slot.fecha | date:'d MMM y' }} · {{ slot.hora.slice(0, 5) }}</option></select></div>
+            </div>
+            <p *ngIf="!loading && slots.length === 0" class="patient-reschedule-empty">No hay horarios disponibles para esa fecha. Prueba con otro día.</p>
+            <div class="patient-profile-form__actions"><a class="patient-portal__button patient-portal__button--quiet" routerLink="/paciente/citas">Volver a mis citas</a><button class="patient-portal__primary-action" type="button" [disabled]="saving || !selectedSlotId" (click)="reschedule()">{{ saving ? 'Guardando…' : 'Confirmar nuevo horario' }}</button></div>
+          </section>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+</section>

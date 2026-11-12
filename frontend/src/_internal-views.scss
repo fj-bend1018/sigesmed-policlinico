@@ -1,0 +1,331 @@
+/* Presentación compartida de vistas privadas. El landing conserva sus estilos propios. */
+body:has(main.page-shell:not(:has(.public-home))) {
+  background: #edf3ef;
+  color: #25382d;
+}
+
+body:has(main.page-shell:not(:has(.public-home))) main.page-shell {
+  color-scheme: light;
+  color: #25382d;
+  padding-top: clamp(1.35rem, 2.6vw, 2.25rem);
+  padding-bottom: clamp(2.5rem, 4.5vw, 4rem);
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .site-header {
+  border-bottom-color: #dce7df;
+  background: #fff;
+  box-shadow: 0 3px 15px rgb(24 65 42 / 5%);
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .site-header .navbar { min-height: 4.65rem; }
+body:has(main.page-shell:not(:has(.public-home))) .brand-logo { width: 3.4rem; height: 3.4rem; }
+body:has(main.page-shell:not(:has(.public-home))) .brand-copy strong { color: #174b34; font-size: 1rem; }
+body:has(main.page-shell:not(:has(.public-home))) .brand-copy small { max-width: 24ch; color: #5c6e63; font-size: .73rem; }
+body:has(main.page-shell:not(:has(.public-home))) .site-header .nav-link { color: #273c30; font-size: .9rem; }
+body:has(main.page-shell:not(:has(.public-home))) .site-header .nav-link:hover { color: #155b3c; }
+body:has(main.page-shell:not(:has(.public-home))) .btn-nav-primary,
+body:has(main.page-shell:not(:has(.public-home))) .btn-nav-outline,
+body:has(main.page-shell:not(:has(.public-home))) .btn-nav-text { transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease; }
+body:has(main.page-shell:not(:has(.public-home))) .btn-nav-primary:hover,
+body:has(main.page-shell:not(:has(.public-home))) .btn-nav-outline:hover,
+body:has(main.page-shell:not(:has(.public-home))) .btn-nav-text:hover { transform: translateY(-2px); }
+body:has(main.page-shell:not(:has(.public-home))) .btn-nav-primary:hover { box-shadow: 0 8px 18px rgb(17 77 49 / 22%); }
+
+body:has(main.page-shell:not(:has(.public-home))) .site-footer {
+  padding-top: 1.8rem;
+  border-top: 3px solid #d4a536;
+  background: linear-gradient(110deg, #0e5035, #155b3c 64%, #1e6945);
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .footer-main { padding-bottom: 1.35rem; }
+body:has(main.page-shell:not(:has(.public-home))) .footer-bottom { font-size: .76rem; }
+
+/* Jerarquía sobria y tipografía de clínica en las pantallas privadas. */
+body:has(main.page-shell:not(:has(.public-home))) main.page-shell h1,
+body:has(main.page-shell:not(:has(.public-home))) main.page-shell h2,
+body:has(main.page-shell:not(:has(.public-home))) main.page-shell h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .eyebrow { color: #286a45; }
+body:has(main.page-shell:not(:has(.public-home))) .text-secondary,
+body:has(main.page-shell:not(:has(.public-home))) .text-muted { color: #5b6e62 !important; }
+
+/* La vista activa aparece con un movimiento corto; las acciones tienen respuesta táctil. */
+.login-page,
+.registration-layout,
+.account-layout,
+.booking-page,
+.payment-page,
+.confirmation-page,
+.patient-workspace,
+.staff-workspace,
+.legacy-workflow {
+  animation: sigesmed-view-enter .32s cubic-bezier(.2, .7, .25, 1) both;
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .btn,
+body:has(main.page-shell:not(:has(.public-home))) .patient-portal__button,
+body:has(main.page-shell:not(:has(.public-home))) .patient-portal__primary-action {
+  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease, border-color .18s ease, color .18s ease;
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .btn-primary:hover:not(:disabled),
+body:has(main.page-shell:not(:has(.public-home))) .patient-portal__primary-action:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 19px rgb(18 76 48 / 19%);
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .btn-outline-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgb(18 76 48 / 11%);
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .form-control,
+body:has(main.page-shell:not(:has(.public-home))) .form-select {
+  color-scheme: light;
+  background-color: #fff;
+  color: #24372c;
+}
+
+body:has(main.page-shell:not(:has(.public-home))) input:-webkit-autofill,
+body:has(main.page-shell:not(:has(.public-home))) input:-webkit-autofill:hover,
+body:has(main.page-shell:not(:has(.public-home))) input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #24372c;
+  caret-color: #24372c;
+  -webkit-box-shadow: 0 0 0 1000px #fff inset;
+  box-shadow: 0 0 0 1000px #fff inset;
+}
+
+/* Acceso: dos columnas compactas, panel institucional y formulario luminoso. */
+body:has(main.page-shell:not(:has(.public-home))) .login-page,
+body:has(main.page-shell:not(:has(.public-home))) .registration-layout,
+body:has(main.page-shell:not(:has(.public-home))) .account-layout {
+  width: min(1080px, 100%);
+  grid-template-columns: minmax(280px, .8fr) minmax(0, 1.2fr);
+  align-items: stretch;
+  gap: clamp(1rem, 2vw, 1.35rem);
+  margin-inline: auto;
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .login-page .auth-aside,
+body:has(main.page-shell:not(:has(.public-home))) .registration-layout .auth-aside,
+body:has(main.page-shell:not(:has(.public-home))) .account-layout .account-aside {
+  min-height: 470px;
+  padding: clamp(1.7rem, 3vw, 2.5rem);
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 92% 92%, rgb(132 177 116 / 24%), transparent 14rem),
+    linear-gradient(145deg, #104b33, #155b3c 66%, #286c49);
+  box-shadow: 0 16px 36px rgb(16 69 42 / 16%);
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .login-page .auth-aside h2,
+body:has(main.page-shell:not(:has(.public-home))) .registration-layout .auth-aside h1,
+body:has(main.page-shell:not(:has(.public-home))) .account-layout .account-aside h1 {
+  max-width: 12ch;
+  font-size: clamp(1.85rem, 2.8vw, 2.35rem);
+  line-height: 1.12;
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .login-page .auth-aside p:not(.eyebrow),
+body:has(main.page-shell:not(:has(.public-home))) .registration-layout .auth-aside p:not(.eyebrow),
+body:has(main.page-shell:not(:has(.public-home))) .account-layout .account-aside p:not(.eyebrow) {
+  max-width: 38ch;
+  font-size: .96rem;
+  line-height: 1.7;
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .login-page .access-card,
+body:has(main.page-shell:not(:has(.public-home))) .registration-layout .registration-card,
+body:has(main.page-shell:not(:has(.public-home))) .account-layout .account-card {
+  align-self: stretch;
+  padding: clamp(1.5rem, 2.7vw, 2.25rem);
+  border: 1px solid #d4e2d8;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 14px 34px rgb(24 65 42 / 8%);
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .login-page .access-card .page-heading h2,
+body:has(main.page-shell:not(:has(.public-home))) .registration-layout .registration-card .page-heading h2,
+body:has(main.page-shell:not(:has(.public-home))) .account-layout .account-card .page-heading h2 {
+  font-size: clamp(1.7rem, 2.5vw, 2.1rem);
+}
+
+/* Reserva: cambia el paso con una entrada suave, conserva el resumen visible. */
+body:has(main.page-shell:not(:has(.public-home))) .booking-page {
+  border-radius: 1.2rem;
+  background:
+    radial-gradient(ellipse at 4% 3%, rgb(223 237 226 / 70%), transparent 29rem),
+    linear-gradient(135deg, #f7faf7, #edf4ef 55%, #f8faf8);
+}
+
+.booking-step-panel { animation: sigesmed-step-enter .26s ease-out both; }
+.booking-specialty,
+.booking-doctor,
+.booking-type-option,
+.booking-slot,
+.payment-method {
+  outline-offset: 3px;
+}
+
+.booking-specialty:focus-visible,
+.booking-doctor:focus-visible,
+.booking-type-option:focus-visible,
+.booking-slot:focus-visible,
+.payment-method:focus-visible {
+  outline: 3px solid #a87510;
+}
+
+/* Pago y confirmación: superficies claras, estados visibles y botones centrados. */
+body:has(main.page-shell:not(:has(.public-home))) .payment-panel,
+body:has(main.page-shell:not(:has(.public-home))) .payment-summary,
+body:has(main.page-shell:not(:has(.public-home))) .confirmation-card {
+  color-scheme: light;
+  color: #24372c;
+  background-color: #fff;
+}
+
+/* El pago usa siempre el tema claro, incluso si Windows/Chrome está en modo oscuro. */
+body:has(.payment-page) {
+  color-scheme: light;
+  background: #edf3ef;
+  color: #24372c;
+}
+
+body:has(.payment-page) main.page-shell {
+  color-scheme: light;
+  background: linear-gradient(135deg, #f7faf7 0%, #edf4ef 58%, #f8faf8 100%);
+  color: #24372c;
+}
+
+body:has(.payment-page) .payment-page { color-scheme: light; color: #24372c; }
+body:has(.payment-page) .payment-heading h1 { color: #174b34; }
+body:has(.payment-page) .payment-heading > p:last-child { color: #506359; }
+body:has(.payment-page) .payment-progress li { color: #596b60; }
+body:has(.payment-page) .payment-progress li.is-complete { color: #315d42; }
+body:has(.payment-page) .payment-progress li.is-current { color: #174b34; }
+
+body:has(main.page-shell:not(:has(.public-home))) .confirmation-page { width: min(920px, 100%); }
+body:has(main.page-shell:not(:has(.public-home))) .confirmation-card { border-radius: 1.1rem; }
+body:has(main.page-shell:not(:has(.public-home))) .confirmation-card h1 { color: #174b34; font-size: clamp(1.9rem, 3.2vw, 2.5rem); }
+body:has(main.page-shell:not(:has(.public-home))) .confirmation-summary { width: min(100%, 760px); padding: clamp(1.1rem, 2.4vw, 1.65rem); border: 1px solid #d0e0d4; border-radius: .9rem; text-align: left; }
+body:has(main.page-shell:not(:has(.public-home))) .confirmation-heading { display: flex; width: min(100%, 760px); align-items: flex-start; gap: 1rem; text-align: left; }
+body:has(main.page-shell:not(:has(.public-home))) .confirmation-actions { display: flex; width: min(100%, 760px); flex-wrap: wrap; justify-content: flex-start; gap: .7rem; }
+body:has(main.page-shell:not(:has(.public-home))) .confirmation-actions .btn { min-width: 150px; }
+
+/* Área del paciente: navegación institucional verde, contenido de trabajo blanco. */
+body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__sidebar {
+  border-color: #155b3c;
+  background: linear-gradient(160deg, #104b33, #155b3c 72%, #216744);
+  box-shadow: 0 16px 34px rgb(17 69 42 / 17%);
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__brand {
+  border-bottom-color: rgb(255 255 255 / 21%);
+  background: transparent;
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__brand strong,
+body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__brand small { color: #fff; }
+
+body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__nav a {
+  color: #eef6f0;
+  transition: transform .17s ease, background-color .17s ease, border-color .17s ease, color .17s ease, box-shadow .17s ease;
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__nav a:hover,
+body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__nav a:focus-visible {
+  transform: translateX(2px);
+  border-color: rgb(255 255 255 / 20%);
+  background: rgb(255 255 255 / 11%);
+  color: #fff;
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__nav a.is-active {
+  border-color: #d3e5d7;
+  background: #e9f3eb;
+  box-shadow: inset 3px 0 #d2a238, 0 5px 14px rgb(5 42 25 / 13%);
+  color: #174b34;
+}
+
+body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__nav a > svg { color: currentColor; }
+body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__nav-arrow { color: currentColor; }
+body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__sidebar-note { border-top-color: rgb(255 255 255 / 22%); color: #e2efe5; }
+body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__shield { background: #e8f2ea; color: #155b3c; }
+body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__content { min-width: 0; }
+
+/* Recepción y administración: lectura rápida de listas, formularios y agenda. */
+body:has(main.page-shell:not(:has(.public-home))) .staff-workspace .workspace-panel { background: #fff; }
+body:has(main.page-shell:not(:has(.public-home))) .staff-workspace .workspace-panel__top h2 { color: #174b34; font-size: clamp(1.35rem, 2vw, 1.8rem); }
+body:has(main.page-shell:not(:has(.public-home))) .staff-workspace .workspace-table { font-size: .86rem; font-variant-numeric: tabular-nums; }
+body:has(main.page-shell:not(:has(.public-home))) .staff-workspace .workspace-table th { color: #174b34; font-size: .78rem; }
+body:has(main.page-shell:not(:has(.public-home))) .staff-workspace .workspace-table td { vertical-align: middle; }
+body:has(main.page-shell:not(:has(.public-home))) .staff-workspace .workspace-actions .btn { min-height: 36px; padding: .38rem .62rem; font-size: .76rem; }
+body:has(main.page-shell:not(:has(.public-home))) .staff-workspace .workspace-toolbar { flex-wrap: wrap; }
+body:has(main.page-shell:not(:has(.public-home))) .staff-workspace .workspace-empty { min-height: 220px; }
+
+@keyframes sigesmed-view-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sigesmed-step-enter {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  body:has(main.page-shell:not(:has(.public-home))) .login-page,
+  body:has(main.page-shell:not(:has(.public-home))) .registration-layout,
+  body:has(main.page-shell:not(:has(.public-home))) .account-layout {
+    grid-template-columns: minmax(235px, .78fr) minmax(0, 1.22fr);
+  }
+
+  body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__sidebar {
+    background: linear-gradient(160deg, #104b33, #155b3c);
+  }
+}
+
+@media (max-width: 760px) {
+  body:has(main.page-shell:not(:has(.public-home))) .login-page,
+  body:has(main.page-shell:not(:has(.public-home))) .registration-layout,
+  body:has(main.page-shell:not(:has(.public-home))) .account-layout { grid-template-columns: 1fr; }
+
+  body:has(main.page-shell:not(:has(.public-home))) .login-page .auth-aside,
+  body:has(main.page-shell:not(:has(.public-home))) .registration-layout .auth-aside,
+  body:has(main.page-shell:not(:has(.public-home))) .account-layout .account-aside { min-height: 0; }
+
+  body:has(main.page-shell:not(:has(.public-home))) .confirmation-heading { gap: .75rem; }
+}
+
+@media (max-width: 520px) {
+  body:has(main.page-shell:not(:has(.public-home))) .brand-copy small { max-width: 19ch; }
+  body:has(main.page-shell:not(:has(.public-home))) .site-footer { padding-top: 1.4rem; }
+  body:has(main.page-shell:not(:has(.public-home))) .confirmation-actions { flex-direction: column; }
+  body:has(main.page-shell:not(:has(.public-home))) .confirmation-actions .btn { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-page,
+  .registration-layout,
+  .account-layout,
+  .booking-page,
+  .payment-page,
+  .confirmation-page,
+  .patient-workspace,
+  .staff-workspace,
+  .legacy-workflow,
+  .booking-step-panel { animation: none; }
+
+  body:has(main.page-shell:not(:has(.public-home))) .btn,
+  body:has(main.page-shell:not(:has(.public-home))) .patient-portal__button,
+  body:has(main.page-shell:not(:has(.public-home))) .patient-portal__primary-action,
+  body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__nav a { transition: none; }
+
+  body:has(main.page-shell:not(:has(.public-home))) .btn:hover,
+  body:has(main.page-shell:not(:has(.public-home))) .patient-workspace .patient-portal__nav a:hover { transform: none; }
+}

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 380" fill="none">
+  <defs>
+    <linearGradient id="heart" x1="602" y1="58" x2="820" y2="295" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#347d50"/>
+      <stop offset="1" stop-color="#1e6840"/>
+    </linearGradient>
+  </defs>
+  <g>
+    <g fill="#82b891" opacity=".48">
+      <circle cx="790" cy="85" r="38"/><circle cx="835" cy="300" r="43"/>
+    </g>
+    <g fill="#387b50" opacity=".68">
+      <path d="M741 113c22-39 54-47 77-38-10 35-38 51-77 38Zm75 61c30-31 63-29 82-13-18 33-47 41-82 13Zm-24 112c13-35 42-48 69-42-6 36-32 55-69 42Z"/>
+    </g>
+    <g fill="#34784c" opacity=".78">
+      <circle cx="328" cy="128" r="37"/>
+      <path d="M266 316c4-91 26-151 63-151 34 0 59 60 64 151H266Z"/>
+      <circle cx="465" cy="170" r="28"/>
+      <path d="M418 316c3-70 18-117 47-117s45 47 48 117h-95Z"/>
+      <circle cx="580" cy="130" r="38"/>
+      <path d="M514 316c5-92 31-153 66-153 36 0 61 61 66 153H514Z"/>
+    </g>
+    <path d="M328 219c38 45 82 62 137 62 48 0 88-16 119-51" stroke="#256c43" stroke-width="13" stroke-linecap="round" opacity=".82"/>
+    <path d="M710 238s-97-65-97-125c0-34 22-57 52-57 22 0 38 12 45 30 8-18 25-30 47-30 29 0 50 24 50 57 0 60-97 125-97 125Z" stroke="url(#heart)" stroke-width="18" stroke-linejoin="round"/>
+    <path d="M710 107v75m-37-37h74" stroke="#347d50" stroke-width="16" stroke-linecap="round"/>
+  </g>
+</svg>

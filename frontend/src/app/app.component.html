@@ -1,0 +1,110 @@
+<a class="skip-link" href="#contenido-principal">Saltar al contenido</a>
+
+<div class="startup-splash" *ngIf="splashVisible" [class.is-leaving]="splashLeaving"
+     role="status" aria-live="polite" aria-label="Iniciando SIGESMED">
+  <div class="startup-splash__content">
+    <div class="startup-splash__emblem" aria-hidden="true">
+      <svg class="startup-splash__outline" viewBox="0 0 100 80" focusable="false">
+        <ellipse cx="50" cy="40" rx="46" ry="37" pathLength="1" />
+      </svg>
+      <img class="startup-splash__logo" src="/assets/LogoEmpresa.png" alt="">
+    </div>
+    <p class="startup-splash__eyebrow">Policlínico Infantil</p>
+    <h1 class="startup-splash__name">Nuestra Señora del<br>Sagrado Corazón</h1>
+    <div class="startup-splash__progress" aria-hidden="true"><span></span></div>
+    <p class="startup-splash__caption">Preparando el sistema</p>
+  </div>
+</div>
+
+<div class="route-transition-glow" [class.is-active]="routeTransitionActive" aria-hidden="true"></div>
+
+<header class="site-header" [class.site-header--patient]="session?.rol === 'PACIENTE'">
+  <nav class="navbar navbar-expand-lg container"
+       [attr.aria-label]="session?.rol === 'PACIENTE' ? 'Navegación del portal del paciente' : 'Navegación principal'">
+    <a class="brand" routerLink="/" aria-label="Inicio del Policlínico Sagrado Corazón">
+      <img class="brand-logo" src="/assets/LogoEmpresa.png" alt="">
+      <span class="brand-divider" aria-hidden="true"></span>
+      <span class="brand-copy">
+        <strong>Policlínico Infantil</strong>
+        <small>Nuestra Señora del Sagrado Corazón</small>
+      </span>
+    </a>
+
+    <button class="navbar-toggler" type="button" (click)="toggleNav()" aria-controls="mainNav"
+            [attr.aria-expanded]="menuOpen" aria-label="Abrir navegación">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNav" [class.show]="menuOpen">
+      <div class="navbar-nav ms-auto align-items-lg-center gap-lg-2" [class.navbar-nav--patient]="session?.rol === 'PACIENTE'">
+        <a class="nav-link" *ngIf="session?.rol !== 'PACIENTE'" routerLink="/" fragment="inicio">Inicio</a>
+        <a class="nav-link" *ngIf="session?.rol !== 'PACIENTE'" routerLink="/" fragment="especialidades">Especialidades</a>
+        <a class="nav-link" *ngIf="session?.rol !== 'PACIENTE'" routerLink="/" fragment="nosotros">Nosotros</a>
+        <a class="nav-link" *ngIf="session?.rol !== 'PACIENTE'" routerLink="/" fragment="preguntas">Preguntas</a>
+        <a class="nav-link" *ngIf="session?.rol !== 'PACIENTE'" routerLink="/" fragment="contacto">Contacto</a>
+        <a class="btn btn-nav-outline" *ngIf="!session" routerLink="/login">Iniciar sesión</a>
+        <a class="nav-link" *ngIf="session?.rol === 'PACIENTE'" routerLink="/paciente/citas">Mis citas</a>
+        <a class="nav-link" *ngIf="session?.rol === 'PACIENTE'" routerLink="/paciente/perfil">Mi perfil</a>
+        <a class="btn btn-nav-primary" *ngIf="!session" routerLink="/reservar">Reservar cita</a>
+        <a class="btn btn-nav-primary" *ngIf="session?.rol === 'PACIENTE'" routerLink="/paciente/disponibilidad">Reservar cita</a>
+        <a class="btn btn-nav-outline" *ngIf="session?.rol === 'RECEPCIONISTA'" routerLink="/recepcionista">Portal de recepción</a>
+        <a class="btn btn-nav-outline" *ngIf="session?.rol === 'ADMINISTRADOR'" routerLink="/administrador">Portal de administración</a>
+        <span class="nav-role" *ngIf="session?.rol === 'RECEPCIONISTA'">Recepción</span>
+        <span class="nav-role" *ngIf="session?.rol === 'ADMINISTRADOR'">Administración</span>
+        <button class="btn btn-nav-text" type="button" *ngIf="session" (click)="logout()">Cerrar sesión</button>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main id="contenido-principal" class="container page-shell">
+  <div class="alert alert-danger alert-dismissible fade show" role="alert" *ngIf="errorMessage$ | async as message">
+    <strong>Revisa este mensaje:</strong> {{ message }}
+    <button type="button" class="btn-close" aria-label="Cerrar mensaje" (click)="clearError()"></button>
+  </div>
+  <router-outlet></router-outlet>
+</main>
+
+<footer class="site-footer" [class.site-footer--patient]="session?.rol === 'PACIENTE'">
+  <div class="container footer-container">
+    <div class="footer-main" [class.footer-main--patient]="session?.rol === 'PACIENTE'">
+      <a class="footer-brand" routerLink="/" aria-label="Volver al inicio">
+        <span class="footer-logo-frame" aria-hidden="true">
+          <img src="/assets/LogoEmpresa.png" alt="">
+        </span>
+        <span><strong>Policlínico Infantil</strong><small>Nuestra Señora del Sagrado Corazón</small></span>
+      </a>
+
+      <nav class="footer-nav" *ngIf="session?.rol !== 'PACIENTE'" aria-label="Navegación del pie de página">
+        <a routerLink="/" fragment="inicio">Inicio</a>
+        <a routerLink="/" fragment="especialidades">Especialidades</a>
+        <a routerLink="/" fragment="nosotros">Nosotros</a>
+        <a routerLink="/" fragment="preguntas">Preguntas</a>
+        <a routerLink="/" fragment="contacto">Contacto</a>
+        <a *ngIf="!session" routerLink="/login">Acceso al sistema</a>
+      </nav>
+
+      <address class="footer-patient-contact" *ngIf="session?.rol === 'PACIENTE'">
+        <strong>Atención al paciente</strong>
+        <div>
+          <a href="tel:+5113516775">(01) 351-6775</a>
+          <a href="tel:+5113520695">(01) 352-0695</a>
+          <a href="mailto:psaludchosica@hotmail.com">psaludchosica&#64;hotmail.com</a>
+        </div>
+      </address>
+
+      <p class="footer-affiliation">Obra social de la<br>Diócesis de Chosica</p>
+    </div>
+    <div class="footer-bottom">
+      <span>Policlínico Infantil Nuestra Señora del Sagrado Corazón</span>
+      <span>Todos los derechos reservados.</span>
+    </div>
+  </div>
+</footer>
+
+<button *ngIf="showBackToTop" class="back-to-top" type="button" (click)="scrollToTop()"
+        aria-label="Volver al inicio de la página" title="Volver arriba">
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M12 19V5m-7 7 7-7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+</button>

@@ -1,0 +1,330 @@
+/* Sistema visual para vistas internas SIGESMED. El landing público no coincide con estos selectores. */
+.page-shell:not(:has(.public-home)) {
+  --view-forest: #155b3c;
+  --view-forest-deep: #103f2d;
+  --view-leaf: #3d8057;
+  --view-mint: #e8f2ea;
+  --view-mist: #edf4f6;
+  --view-gold: #c99b2e;
+  --view-ink: #24372c;
+  --view-muted: #596b60;
+  --view-line: #d4e2d8;
+}
+
+main.page-shell:has(.login-page),
+main.page-shell:has(.registration-layout),
+main.page-shell:has(.account-layout),
+main.page-shell:has(.confirmation-page),
+main.page-shell:has(.legacy-workflow) {
+  padding-top: clamp(1.4rem, 3vw, 2.5rem);
+  padding-bottom: clamp(2rem, 5vw, 4.5rem);
+}
+
+/* Acceso y registro: dos columnas, una superficie de bienvenida y un formulario luminoso. */
+.login-page,
+.registration-layout,
+.account-layout {
+  isolation: isolate;
+  gap: clamp(1rem, 2.2vw, 1.6rem);
+}
+
+.login-page .auth-aside,
+.registration-layout .auth-aside,
+.account-layout .account-aside {
+  position: relative;
+  isolation: isolate;
+  min-height: 560px;
+  padding: clamp(2rem, 4vw, 3rem);
+  border: 1px solid rgb(255 255 255 / 18%);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(circle at 100% 100%, rgb(118 164 108 / 28%), transparent 17rem),
+    linear-gradient(148deg, #0d5035 0%, #174b36 60%, #2c6948 100%);
+  box-shadow: 0 18px 42px rgb(14 62 39 / 15%);
+}
+
+.login-page .auth-aside::after,
+.registration-layout .auth-aside::after,
+.account-layout .account-aside::after {
+  z-index: -1;
+  right: -5.5rem;
+  bottom: -7rem;
+  width: 19rem;
+  height: 19rem;
+  border: 1px solid rgb(255 255 255 / 24%);
+  box-shadow: 0 0 0 1.3rem rgb(255 255 255 / 4%), 0 0 0 2.6rem rgb(255 255 255 / 3%);
+}
+
+.login-page .auth-logo-frame,
+.registration-layout .auth-logo-frame,
+.account-layout .auth-logo-frame {
+  padding: .6rem .75rem;
+  border: 1px solid rgb(255 255 255 / 55%);
+  border-radius: .9rem;
+  box-shadow: 0 9px 22px rgb(4 42 26 / 14%);
+}
+
+.login-page .auth-aside h2,
+.registration-layout .auth-aside h1,
+.account-layout .account-aside h1 {
+  max-width: 14ch;
+  margin-block: .3rem .85rem;
+  font-size: clamp(2rem, 3.25vw, 2.8rem);
+  line-height: 1.08;
+  letter-spacing: -.035em;
+}
+
+.login-page .auth-aside > p:not(.eyebrow),
+.registration-layout .auth-aside > p:not(.eyebrow),
+.account-layout .account-aside > p:not(.eyebrow) {
+  max-width: 40ch;
+  color: #e8f2eb;
+  font-size: 1rem;
+  line-height: 1.75;
+}
+
+.login-page .auth-aside__note,
+.registration-layout .auth-aside__note,
+.account-layout .account-aside__note {
+  gap: .7rem;
+  margin-top: auto;
+  padding-top: 1.5rem;
+  border-color: rgb(255 255 255 / 28%);
+}
+
+.login-page .access-card,
+.registration-layout .registration-card,
+.account-layout .account-card {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.45rem, 3.2vw, 2.5rem);
+  border-color: #d4e2d8;
+  border-radius: 1.15rem;
+  background: linear-gradient(145deg, #fff 0%, #fff 72%, #f5f9f5 100%);
+  box-shadow: 0 16px 38px rgb(24 65 42 / 8%);
+}
+
+.login-page .access-card::before,
+.registration-layout .registration-card::before,
+.account-layout .account-card::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #155b3c 0%, #66a16f 62%, #d1a13a 100%);
+  content: "";
+}
+
+.login-page .access-card .page-heading,
+.registration-layout .registration-card .page-heading,
+.account-layout .account-card .page-heading { margin-bottom: 1.55rem; }
+
+.login-page .access-card .page-heading h2,
+.registration-layout .registration-card .page-heading h2,
+.account-layout .account-card .page-heading h2 {
+  margin-bottom: .45rem;
+  color: #174b34;
+  font-size: clamp(1.75rem, 2.8vw, 2.25rem);
+  line-height: 1.16;
+}
+
+.login-page .access-card .page-heading > p:last-child,
+.registration-layout .registration-card .page-heading > p:last-child,
+.account-layout .account-card .page-heading > p:last-child {
+  color: #5a6b60;
+  line-height: 1.6;
+}
+
+.login-page .form-label,
+.registration-layout .form-label,
+.account-layout .form-label {
+  margin-bottom: .42rem;
+  color: #294a37;
+  font-size: .88rem;
+  font-weight: 720;
+}
+
+.login-page .form-control,
+.registration-layout .form-control,
+.account-layout .form-control {
+  min-height: 46px;
+  border-color: #bdcec1;
+  border-radius: .65rem;
+  background: #fff;
+  color: #20362a;
+  box-shadow: inset 0 1px 2px rgb(24 65 42 / 3%);
+}
+
+.login-page .form-control:focus,
+.registration-layout .form-control:focus,
+.account-layout .form-control:focus {
+  border-color: #377b52;
+  box-shadow: 0 0 0 4px rgb(55 123 82 / 14%) !important;
+}
+
+.login-page .form-text,
+.registration-layout .form-text,
+.account-layout .form-text { color: #617267; font-size: .78rem; line-height: 1.45; }
+
+.login-page .btn-primary,
+.registration-layout .btn-primary,
+.account-layout .btn-primary {
+  min-height: 48px;
+  border-radius: .65rem;
+  box-shadow: 0 7px 16px rgb(21 91 60 / 15%);
+}
+
+.registration-layout .registration-fields { gap: 1rem 1.15rem; }
+.registration-layout .registration-actions { margin-top: 1.4rem; }
+.account-layout .account-card { align-self: center; }
+.account-layout .account-card .page-heading h2 { font-size: clamp(1.7rem, 2.5vw, 2.15rem); }
+
+/* Reserva: claridad por paso, selección verde y acento cálido para los estados interactivos. */
+.booking-page {
+  --booking-green: #155b3c;
+  --booking-green-deep: #103f2d;
+  --booking-green-ink: #174b34;
+  --booking-gold: #c99b2e;
+}
+
+.booking-intro { max-width: 900px; }
+.booking-intro h1 { font-size: clamp(2.1rem, 3.4vw, 3rem); }
+.booking-progress { gap: clamp(.5rem, 1.5vw, 1rem); }
+.booking-progress li.is-active { border-color: var(--booking-gold); }
+.booking-progress li.is-active .booking-progress__number { box-shadow: 0 0 0 4px #f4ebd2; }
+.booking-card,
+.booking-summary {
+  border-color: #d5e3d9;
+  box-shadow: 0 17px 40px rgb(23 70 44 / 8%), 0 2px 5px rgb(23 70 44 / 3%);
+}
+.booking-step-panel { position: relative; overflow: hidden; }
+.booking-step-panel::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #17613e, #78aa78 68%, #d6aa42);
+  content: "";
+}
+.booking-specialty:hover,
+.booking-doctor:hover,
+.booking-type-option:hover { border-color: #8eae97; box-shadow: 0 10px 22px rgb(27 72 45 / 11%); }
+.booking-specialty.is-selected,
+.booking-doctor.is-selected { border-color: #36784e; box-shadow: 0 0 0 3px rgb(201 155 46 / 20%), 0 9px 22px rgb(27 72 45 / 9%); }
+.booking-slot.is-selected { box-shadow: 0 0 0 3px rgb(201 155 46 / 25%), 0 7px 18px rgb(21 91 60 / 18%); }
+.booking-summary { border-top: 3px solid #d2a238; }
+.booking-summary__top { background: linear-gradient(120deg, #e9f3eb, #f6f8f3); }
+.booking-summary__action { box-shadow: 0 7px 16px rgb(21 91 60 / 17%); }
+
+/* Pago y resultado: se mantienen como pantallas propias del flujo de reserva. */
+.payment-page { --pay-green: #155b3c; --pay-deep: #174b34; }
+.payment-panel,
+.payment-summary,
+.payment-error { border-color: #d4e2d8; box-shadow: 0 16px 38px rgb(24 65 42 / 8%); }
+.payment-method:hover:not(.is-selected) { border-color: #9dbca4; background: #f7faf7; }
+.payment-method.is-selected { box-shadow: 0 0 0 3px rgb(201 155 46 / 22%), 0 7px 18px rgb(27 69 43 / 8%); }
+.payment-field input:focus-visible { box-shadow: 0 0 0 4px rgb(55 123 82 / 14%); }
+
+.confirmation-card--success { border-color: #cddfd2; background: linear-gradient(145deg, #fff 0%, #fff 75%, #eff6f0 100%); }
+.confirmation-heading .confirmation-check { animation: sigesmed-confirmation-pop .42s cubic-bezier(.2, .8, .25, 1.15) both; }
+.confirmation-summary { border-color: #d0e0d4; background: linear-gradient(135deg, #f0f6f1, #fbfcfa); }
+.confirmation-actions .btn { box-shadow: 0 4px 12px rgb(25 78 48 / 9%); }
+
+@keyframes sigesmed-confirmation-pop {
+  from { opacity: 0; transform: scale(.78); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Portal del paciente: verde institucional, descanso claro y realce al pasar por una cita. */
+.patient-portal__sidebar { border-color: #cadccd; box-shadow: 0 16px 34px rgb(24 65 42 / 9%); }
+.patient-portal__brand { margin: -.1rem -.1rem 0; padding: .55rem .55rem 1rem; border-radius: .75rem .75rem 0 0; background: linear-gradient(120deg, #edf5ef, #f9fbf9); }
+.patient-portal__heading { position: relative; overflow: hidden; border-color: #cbded0; background: linear-gradient(105deg, #e5f1e8 0%, #f3f7f3 68%, #fff 100%); }
+.patient-portal__heading::after {
+  position: absolute;
+  right: -2.5rem;
+  bottom: -4.6rem;
+  width: 10rem;
+  height: 10rem;
+  border: 1px solid rgb(51 110 74 / 13%);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1rem rgb(51 110 74 / 3%);
+  content: "";
+  pointer-events: none;
+}
+.patient-appointment { border-color: #d4e2d8; box-shadow: 0 9px 24px rgb(24 65 42 / 6%); transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+.patient-appointment:hover,
+.patient-appointment:focus-within { transform: translateY(-2px); border-color: #96b59c; box-shadow: 0 15px 30px rgb(24 65 42 / 11%), 0 0 0 2px rgb(201 155 46 / 15%); }
+.patient-support { transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease; }
+.patient-support:hover,
+.patient-support:focus-within { transform: translateY(-2px); border-color: #a2bfa8; box-shadow: 0 14px 30px rgb(24 65 42 / 10%); }
+.patient-data-panel { border-color: #d4e2d8; box-shadow: 0 14px 32px rgb(24 65 42 / 7%); }
+.patient-table th { background: linear-gradient(100deg, #dfede2, #edf4ee); }
+.patient-profile-details > div:nth-child(3n + 2) { background: #f0f5f6; }
+
+/* Recepción y administración: menú estable, contenido por tarjetas y tablas legibles. */
+.staff-workspace .workspace-heading {
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+  padding: clamp(1.25rem, 2.4vw, 1.8rem);
+  border: 1px solid #cbded0;
+  border-left: 4px solid #3d8057;
+  border-radius: 1rem;
+  background: linear-gradient(105deg, #e6f1e8 0%, #f4f8f4 73%, #fff 100%);
+  box-shadow: 0 8px 22px rgb(24 65 42 / 5%);
+}
+.staff-workspace .workspace-heading h1 { font-size: clamp(1.9rem, 3vw, 2.6rem); }
+.staff-workspace .workspace-layout { gap: clamp(1rem, 2vw, 1.5rem); }
+.staff-workspace .workspace-sidebar { background: linear-gradient(160deg, #104b33 0%, #155b3c 72%, #2b704a 100%); box-shadow: 0 16px 34px rgb(17 69 42 / 16%); }
+.staff-workspace .workspace-brand { padding: 1.25rem 1rem; }
+.staff-workspace .workspace-nav { gap: .45rem; }
+.staff-workspace .workspace-nav a { min-height: 50px; border: 1px solid transparent; border-radius: .65rem; }
+.staff-workspace .workspace-nav a:hover,
+.staff-workspace .workspace-nav a:focus-visible { transform: translateX(2px); border-color: rgb(255 255 255 / 17%); background: rgb(255 255 255 / 11%); }
+.staff-workspace .workspace-nav a.is-active { border-color: #d4e6d8; box-shadow: inset 3px 0 #d2a238, 0 5px 14px rgb(5 42 25 / 13%); }
+.staff-workspace .workspace-nav__icon { width: 1.8rem; height: 1.8rem; flex-basis: 1.8rem; border-radius: .55rem; background: rgb(255 255 255 / 12%); color: #e2f0e5; }
+.staff-workspace .workspace-nav a.is-active .workspace-nav__icon { background: #dcecdf; color: #155b3c; }
+.staff-workspace .workspace-panel { border-color: #d1dfd5; border-top: 3px solid #3d8057; box-shadow: 0 16px 36px rgb(24 65 42 / 7%); }
+.staff-workspace .workspace-panel__top { padding-bottom: 1rem; border-bottom: 1px solid #e1ebe3; }
+.staff-workspace .workspace-toolbar { padding: .85rem; border: 1px solid #d9e6dc; border-radius: .8rem; background: #f3f7f3; }
+.staff-workspace .workspace-table-wrap { border-color: #d5e2d9; border-radius: .8rem; box-shadow: 0 5px 15px rgb(24 65 42 / 4%); }
+.staff-workspace .workspace-table th { background: linear-gradient(100deg, #deece1, #eff5f0); }
+.staff-workspace .workspace-table tbody tr { transition: background-color .16s ease; }
+.staff-workspace .workspace-table tbody tr:hover { background: #edf5ef; }
+.staff-workspace .workspace-form-card { border-color: #d5e3d9; border-radius: .85rem; background: linear-gradient(145deg, #fff, #f7faf7); box-shadow: 0 7px 18px rgb(24 65 42 / 4%); }
+.staff-workspace .workspace-form-grid { gap: 1.1rem 1.25rem; }
+.staff-workspace .workspace-form-card .form-control,
+.staff-workspace .workspace-form-card .form-select { border-radius: .62rem; }
+.staff-workspace .workspace-empty { border: 1px dashed #cbded0; border-radius: .85rem; background: linear-gradient(130deg, #f2f7f3, #fff); }
+
+/* Vistas heredadas: resumen informativo con la misma identidad, sin alterar sus rutas antiguas. */
+.legacy-workflow .workspace-heading { margin-bottom: 1.25rem; }
+.legacy-workflow .legacy-card { border-color: #d3e2d8; background: linear-gradient(145deg, #fff 0%, #fff 75%, #f0f6f1 100%); box-shadow: 0 18px 42px rgb(24 65 42 / 9%); }
+.legacy-workflow .legacy-card__icon { box-shadow: 0 0 0 5px #eef5ef; }
+
+@media (max-width: 760px) {
+  .login-page .auth-aside,
+  .registration-layout .auth-aside,
+  .account-layout .account-aside { min-height: 0; }
+  .login-page .auth-aside__note,
+  .registration-layout .auth-aside__note,
+  .account-layout .account-aside__note { margin-top: 1rem; }
+  .staff-workspace .workspace-heading { padding: 1rem; }
+  .staff-workspace .workspace-toolbar { padding: .7rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confirmation-heading .confirmation-check { animation: none; }
+  .patient-appointment,
+  .patient-support,
+  .staff-workspace .workspace-nav a,
+  .staff-workspace .workspace-table tbody tr { transition: none; }
+  .patient-appointment:hover,
+  .patient-appointment:focus-within,
+  .patient-support:hover,
+  .patient-support:focus-within,
+  .staff-workspace .workspace-nav a:hover,
+  .staff-workspace .workspace-nav a:focus-visible { transform: none; }
+}

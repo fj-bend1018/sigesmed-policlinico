@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Pago.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sigesmed-api</a> &gt; <a href="index.source.html" class="el_package">com.sigesmed.api.domain.entity</a> &gt; <span class="el_source">Pago.java</span></div><h1>Pago.java</h1><pre class="source lang-java linenums">package com.sigesmed.api.domain.entity;
+
+import java.math.BigDecimal;
+
+import com.sigesmed.api.domain.enums.EstadoPago;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = &quot;pago&quot;)
+public class Pago {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
+    @Column(nullable = false, length = 40) private String metodo;
+    @Column(nullable = false, precision = 10, scale = 2) private BigDecimal monto;
+    @Enumerated(EnumType.STRING) @Column(nullable = false, length = 20) private EstadoPago estado;
+    @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = &quot;registrado_por_usuario_id&quot;)
+    private Usuario registradoPor;
+<span class="nc" id="L27">    protected Pago() { }</span>
+<span class="nc" id="L28">    public Long getId() { return id; }</span>
+<span class="nc" id="L29">    public EstadoPago getEstado() { return estado; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>

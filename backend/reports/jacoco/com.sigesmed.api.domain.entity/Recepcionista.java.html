@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Recepcionista.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">sigesmed-api</a> &gt; <a href="index.source.html" class="el_package">com.sigesmed.api.domain.entity</a> &gt; <span class="el_source">Recepcionista.java</span></div><h1>Recepcionista.java</h1><pre class="source lang-java linenums">package com.sigesmed.api.domain.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = &quot;recepcionista&quot;)
+public class Recepcionista {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = &quot;usuario_id&quot;, nullable = false, unique = true)
+    private Usuario usuario;
+    @Column(nullable = false, length = 100) private String nombre;
+    @Column(name = &quot;apellido_paterno&quot;, nullable = false, length = 100) private String apellidoPaterno;
+    @Column(name = &quot;apellido_materno&quot;, length = 100) private String apellidoMaterno;
+    @Column(nullable = false, unique = true, length = 8) private String dni;
+    @Column(nullable = false, unique = true, length = 254) private String correo;
+    @Column(length = 30) private String celular;
+    @Column(length = 300) private String direccion;
+<span class="nc" id="L28">    @Column(nullable = false, length = 10) private String estado = &quot;ACTIVO&quot;;</span>
+
+<span class="nc" id="L30">    protected Recepcionista() { }</span>
+    public Recepcionista(Usuario usuario, String nombre, String apellidoPaterno, String apellidoMaterno,
+<span class="nc" id="L32">            String dni, String correo) {</span>
+<span class="nc" id="L33">        this.usuario = usuario; this.nombre = nombre; this.apellidoPaterno = apellidoPaterno;</span>
+<span class="nc" id="L34">        this.apellidoMaterno = apellidoMaterno; this.dni = dni; this.correo = correo;</span>
+<span class="nc" id="L35">    }</span>
+<span class="nc" id="L36">    public Long getId() { return id; }</span>
+<span class="nc" id="L37">    public Usuario getUsuario() { return usuario; }</span>
+<span class="nc" id="L38">    public String getCorreo() { return correo; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.16.202610240946</span></div></body></html>
