@@ -106,6 +106,12 @@ export class PaymentDemoComponent implements OnInit {
     }
     this.formMessage = '';
     this.simulationComplete = true;
+    // Limpiar inmediatamente datos confidenciales de prueba de la memoria del navegador
+    this.cardNumber = '';
+    this.cardHolder = '';
+    this.expiry = '';
+    this.cvv = '';
+    this.yapeCode = '';
   }
 
   get attentionName(): string {

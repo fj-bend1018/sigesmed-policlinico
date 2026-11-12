@@ -16,9 +16,15 @@
   <ng-container *ngIf="!loading && !loadError && appointment as item">
     <header class="payment-heading">
       <a class="payment-back" routerLink="/paciente/citas">← Mis citas</a>
-      <p class="eyebrow">Reserva de atención</p>
-      <h1 id="payment-title">Completa tu pago</h1>
-      <p>Elige un medio para ver cómo funcionaría el pago en SIGESMED.</p>
+      <div class="alert alert-info d-flex align-items-center gap-2 mb-3" role="note" style="border-left: 4px solid #1f4a31;">
+        <span aria-hidden="true" style="font-size: 1.25rem;">ℹ</span>
+        <div>
+          <strong>SIMULACIÓN DEMOSTRATIVA</strong> — Esta pantalla es una prueba ilustrativa. No realiza cobros reales ni guarda datos de tarjeta. Tu cita queda <strong>RESERVADA</strong> hasta la verificación en recepción.
+        </div>
+      </div>
+      <p class="eyebrow">Demostración interactiva</p>
+      <h1 id="payment-title">Simulador de pago</h1>
+      <p>Selecciona un método para explorar el flujo de pago sin realizar ningún cobro real.</p>
     </header>
 
     <ol class="payment-progress" aria-label="Pasos de la reserva">
