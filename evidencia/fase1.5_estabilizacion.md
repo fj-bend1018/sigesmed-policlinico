@@ -39,7 +39,7 @@ Se creó una base de datos aislada temporal (`sigesmed_isol_test`) en PostgreSQL
   - Administrador accede a `/api/v1/administrador/**` (200 OK).
   - Peticiones anónimas sin sesión son rechazadas con HTTP 401 Unauthorized.
 
-**Resumen Suite Backend:** `35/35` pruebas pasando exitosamente.
+**Resumen Suite Backend:** Total de `38` pruebas automatizadas (36 unitarias/mock ejecutadas por defecto con `mvn test` y 2 de integración con concurrencia real ejecutadas bajo el perfil `-Pintegration`).
 
 ---
 
@@ -47,7 +47,7 @@ Se creó una base de datos aislada temporal (`sigesmed_isol_test`) en PostgreSQL
 
 Se automatizó y verificó el recorrido completo en el navegador real Chrome utilizando Playwright (`evidencia/recorrido_e2e_tres_roles.js`):
 
-### 2.1 Rol Administrador (`90000001` / `DemoAdmin2026!`)
+### 2.1 Rol Administrador (`90000001` / `${SIGESMED_DEV_ADMIN_PASSWORD}`)
 1. **Login:** Acceso a `/login` y redirección inmediata a `/administrador/doctores`.
 2. **Formulario Doctor:** `/administrador/doctores/nuevo`
    - Validación: botón *Guardar doctor* deshabilitado si falta nombre, CMP o especialidad.
@@ -57,14 +57,14 @@ Se automatizó y verificó el recorrido completo en el navegador real Chrome uti
    - Registro de horario futuro para médico -> llamada `POST /api/v1/administrador/horarios` -> 200 OK.
 4. **Formulario Recepcionista:** `/administrador/recepcionistas/nuevo`
    - Validación: DNI 8 dígitos, celular 9 dígitos, contraseña >= 12 caracteres.
-   - Envío válido -> llamada `POST /api/v1/administracion/recepcionistas` -> 200 OK.
+   - Envío válido -> llamada `POST /api/v1/administrador/recepcionistas` -> 200 OK.
    - Recepcionista verificada en el listado.
 5. **Formulario Perfil:** `/administrador/perfil`
    - Validación celular: 8 dígitos muestra error *"Escribe exactamente 9 dígitos"*, 9 dígitos oculta el error.
    - Guardado exitoso con alerta de confirmación en verde.
 6. **Cierre de sesión:** Logout y redirección a `/login`.
 
-### 2.2 Rol Recepcionista (`90000002` / `DemoRecep2026!`)
+### 2.2 Rol Recepcionista (`90000002` / `${SIGESMED_DEV_RECEPCIONISTA_PASSWORD}`)
 1. **Login:** Acceso y redirección a `/recepcionista/citas`.
 2. **Búsqueda y Tabla:** Filtrado por nombre/DNI ejecutando `GET /api/v1/recepcionista/citas`.
 3. **Historial:** Navegación a `/recepcionista/historial` y carga de atenciones.
@@ -72,7 +72,7 @@ Se automatizó y verificó el recorrido completo en el navegador real Chrome uti
 5. **Control de Acceso (403):** Intento de navegación manual a `/administrador/doctores` bloqueado inmediatamente por `RoleGuard` y redirigido a `/recepcionista/citas`.
 6. **Cierre de sesión:** Logout y redirección a `/login`.
 
-### 2.3 Rol Paciente (`90000003` / `DemoPaciente2026!`)
+### 2.3 Rol Paciente (`90000003` / `${SIGESMED_DEV_PACIENTE_PASSWORD}`)
 1. **Login:** Acceso y redirección a `/paciente/citas`.
 2. **Formulario Perfil:** `/paciente/perfil/editar`
    - Validación reactiva de celular (8 dígitos inválido, 9 dígitos válido).
@@ -134,3 +134,18 @@ Implementado en `api-error.interceptor.ts`, `role-portal.component.ts` y `patien
   - Al completar la simulación en `PaymentDemoComponent`, las variables en memoria (`cardNumber`, `cardHolder`, `expiry`, `cvv`, `yapeCode`) se restablecen inmediatamente a cadena vacía.
   - Ningún dato de tarjeta se transmite al backend ni se almacena en `sessionStorage` o base de datos.
 - **Verificación E2E:** Comprobado mediante Playwright en `http://localhost:4200/citas/3/pago`, verificando que tras la simulación los inputs y el estado interno quedan completamente vacíos.
+
+---
+
+## 7. Limitaciones
+
+1. **Dependencia de Base de Datos para Pruebas de Integración:**
+   Las pruebas de concurrencia pesimista (`CitaConcurrenciaIntegrationTest`) requieren una instancia real de PostgreSQL (puerto 5433). Para evitar que `mvn test` falle en entornos sin PostgreSQL disponible, han sido marcadas con `@Tag("integration")` y aisladas bajo el perfil `-Pintegration`.
+2. **Simulación de Pagos Ficticia:**
+   La pasarela de pago es estrictamente un simulador demostrativo en frontend. No procesa pagos bancarios reales ni interactúa con pasarelas comerciales (Niubiz, Culqi, Stripe) para evitar responsabilidades y alcances normativos PCI-DSS.
+3. **Restricción de Eliminación de Horarios en Cascada:**
+   Un horario que posea citas en estado activo (`RESERVADA`, `CONFIRMADA`) no puede ser eliminado por el administrador. La API devuelve `409 Conflict`, obligando al personal de recepción o al paciente a cancelar o atender la cita antes de liberar o depurar el horario.
+4. **Almacenamiento de Sesión en Cliente:**
+   La autenticación frontend utiliza `sessionStorage` sincronizado con la sesión HTTP (`JSESSIONID`) y `XSRF-TOKEN`. Si el usuario abre la aplicación en una pestaña incógnita nueva o limpia el almacenamiento local, la sesión debe ser reiniciada mediante login.
+
+

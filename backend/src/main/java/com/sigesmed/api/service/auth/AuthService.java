@@ -108,7 +108,8 @@ public class AuthService {
     @Transactional
     public void solicitarRecuperacion(String email) {
         List<Usuario> candidates = usuarioRepository.findByIdentifier(email.trim());
-        if (candidates.size() != 1) return;
+        if (candidates.size() != 1)
+            return;
         Usuario usuario = candidates.getFirst();
         byte[] random = new byte[32];
         secureRandom.nextBytes(random);
@@ -118,7 +119,7 @@ public class AuthService {
                 OffsetDateTime.now(clock).plus(recoveryTtl)));
         String accountEmail = usuario.getPaciente() != null ? usuario.getPaciente().getCorreo()
                 : usuario.getRecepcionista() != null ? usuario.getRecepcionista().getCorreo()
-                : usuario.getAdministrador() == null ? email : usuario.getAdministrador().getCorreo();
+                        : usuario.getAdministrador() == null ? email : usuario.getAdministrador().getCorreo();
         recoveryLinkNotifier.notify(accountEmail, rawToken);
     }
 

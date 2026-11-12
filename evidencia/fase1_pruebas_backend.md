@@ -144,7 +144,7 @@ def run():
     recep_client = SigesmedClient()
     recep_login_payload = {
         "identificador": "90000002",
-        "clave": "DemoRecep2026!"
+        "clave": os.environ.get("SIGESMED_DEV_RECEPCIONISTA_PASSWORD", "********")
     }
     st, recep_auth = recep_client.request("/auth/login", method="POST", data=recep_login_payload)
     record_step("6.1", "Inicio de sesión de Recepcionista", "POST", "/auth/login", recep_login_payload, st, recep_auth)
@@ -157,7 +157,7 @@ def run():
     admin_client = SigesmedClient()
     admin_login_payload = {
         "identificador": "90000001",
-        "clave": "DemoAdmin2026!"
+        "clave": os.environ.get("SIGESMED_DEV_ADMIN_PASSWORD", "********")
     }
     st, admin_auth = admin_client.request("/auth/login", method="POST", data=admin_login_payload)
     record_step("7.1", "Inicio de sesión de Administrador", "POST", "/auth/login", admin_login_payload, st, admin_auth)
@@ -455,7 +455,7 @@ if __name__ == "__main__":
 ```json
 {
   "identificador": "90000002",
-  "clave": "DemoRecep2026!"
+  "clave": "********"
 }
 ```
 - **Código de Estado HTTP:** `200`
@@ -507,7 +507,7 @@ if __name__ == "__main__":
 ```json
 {
   "identificador": "90000001",
-  "clave": "DemoAdmin2026!"
+  "clave": "********"
 }
 ```
 - **Código de Estado HTTP:** `200`

@@ -183,8 +183,8 @@
               <tbody><tr *ngFor="let schedule of schedules"><td>{{ schedule.fecha | date:'d MMM y' }}</td><td>{{ schedule.hora.slice(0, 5) }}</td>
                 <td>{{ schedule.doctor || schedule.servicio || '—' }}</td><td>{{ schedule.estado }}</td><td><div class="workspace-actions">
                   <a *ngIf="schedule.disponible" class="btn btn-sm btn-outline-primary" [routerLink]="['/administrador/horarios', schedule.id, 'editar']">Editar</a>
-                  <button *ngIf="schedule.disponible" class="btn btn-sm btn-outline-danger" type="button" (click)="deleteSchedule(schedule)">Eliminar</button>
-                  <span *ngIf="!schedule.disponible" class="text-secondary">Reservado</span>
+                  <button class="btn btn-sm btn-outline-danger" type="button" (click)="deleteSchedule(schedule)">Eliminar</button>
+                  <span *ngIf="!schedule.disponible" class="badge text-bg-warning ms-1">Reservado</span>
                 </div></td></tr></tbody>
             </table>
           </div>

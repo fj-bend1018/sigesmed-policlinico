@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -46,6 +47,7 @@ import com.sigesmed.api.repository.UsuarioRepository;
 import com.sigesmed.api.service.CitaManagementService;
 import com.sigesmed.api.service.CitaService;
 
+@Tag("integration")
 @SpringBootTest
 class CitaConcurrenciaIntegrationTest {
 
@@ -95,6 +97,18 @@ class CitaConcurrenciaIntegrationTest {
         for (Long horarioId : createdHorarioIds) {
             try {
                 horarioRepository.deleteById(horarioId);
+            } catch (Exception ignored) { }
+        }
+        if (usuarioA != null) {
+            try {
+                pacienteRepository.findByUsuario_Id(usuarioA.getId()).ifPresent(pacienteRepository::delete);
+                usuarioRepository.deleteById(usuarioA.getId());
+            } catch (Exception ignored) { }
+        }
+        if (usuarioB != null) {
+            try {
+                pacienteRepository.findByUsuario_Id(usuarioB.getId()).ifPresent(pacienteRepository::delete);
+                usuarioRepository.deleteById(usuarioB.getId());
             } catch (Exception ignored) { }
         }
     }

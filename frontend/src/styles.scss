@@ -69,7 +69,11 @@ $container-max-widths: (
 .py-2 { padding-top: .5rem !important; padding-bottom: .5rem !important; }
 .px-4 { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
 .justify-content-end { justify-content: flex-end !important; }
+.align-items-center { align-items: center !important; }
 .align-self-start { align-self: flex-start !important; }
+.gap-2 { gap: .5rem !important; }
+.ms-1 { margin-left: .25rem !important; }
+.text-bg-warning { background-color: #ffc107 !important; color: #000 !important; }
 @media (min-width: 992px) {
   .align-items-lg-center { align-items: center !important; }
   .gap-lg-2 { gap: .5rem !important; }
