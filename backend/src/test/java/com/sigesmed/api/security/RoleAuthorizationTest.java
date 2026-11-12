@@ -29,14 +29,47 @@ class RoleAuthorizationTest {
     }
 
     @Test
+    @WithMockUser(roles = "PACIENTE")
+    void pacienteNoPuedeUsarRutaDeRecepcionista() throws Exception {
+        mvc.perform(get("/api/v1/recepcionista/citas")).andExpect(status().isForbidden());
+    }
+
+    @Test
     @WithMockUser(roles = "ADMINISTRADOR")
     void administradorNoPuedeUsarRutaDeRecepcionista() throws Exception {
         mvc.perform(get("/api/v1/recepcionista/citas")).andExpect(status().isForbidden());
     }
 
     @Test
+    @WithMockUser(roles = "ADMINISTRADOR")
+    void administradorNoPuedeUsarRutaDePaciente() throws Exception {
+        mvc.perform(get("/api/v1/citas/mias")).andExpect(status().isForbidden());
+    }
+
+    @Test
     @WithMockUser(roles = "RECEPCIONISTA")
     void recepcionistaNoPuedeUsarRutaDePaciente() throws Exception {
         mvc.perform(get("/api/v1/citas/mias")).andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(roles = "RECEPCIONISTA")
+    void recepcionistaNoPuedeUsarRutaDeAdministrador() throws Exception {
+        mvc.perform(get("/api/v1/administrador/doctores")).andExpect(status().isForbidden());
+    }
+
+    @Test
+    void anonimoRequiereAutenticacionEnRutaDePaciente() throws Exception {
+        mvc.perform(get("/api/v1/citas/mias")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void anonimoRequiereAutenticacionEnRutaDeRecepcionista() throws Exception {
+        mvc.perform(get("/api/v1/recepcionista/citas")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void anonimoRequiereAutenticacionEnRutaDeAdministrador() throws Exception {
+        mvc.perform(get("/api/v1/administrador/doctores")).andExpect(status().isUnauthorized());
     }
 }
