@@ -16,15 +16,21 @@
   <ng-container *ngIf="!loading && !loadError && appointment as item">
     <header class="payment-heading">
       <a class="payment-back" routerLink="/paciente/citas">← Mis citas</a>
-      <div class="alert alert-info d-flex align-items-center gap-2 mb-3" role="note" style="border-left: 4px solid #1f4a31;">
-        <span aria-hidden="true" style="font-size: 1.25rem;">ℹ</span>
+      <div class="payment-demo-banner" role="note">
+        <span class="payment-demo-banner__badge">SIMULACIÓN DEMOSTRATIVA</span>
+        <p>Esta pantalla es una prueba ilustrativa. No realiza cobros reales ni guarda datos de tarjeta. Tu cita queda <strong>RESERVADA</strong> hasta la verificación en recepción.</p>
+      </div>
+      <div class="payment-hero-banner">
         <div>
-          <strong>SIMULACIÓN DEMOSTRATIVA</strong> — Esta pantalla es una prueba ilustrativa. No realiza cobros reales ni guarda datos de tarjeta. Tu cita queda <strong>RESERVADA</strong> hasta la verificación en recepción.
+          <p class="eyebrow">Demostración interactiva · SIGESMED PAY</p>
+          <h1 id="payment-title">Simulador de pago</h1>
+          <p>Selecciona un método para explorar el flujo de pago sin realizar ningún cobro real.</p>
+        </div>
+        <div class="payment-hero-banner__ref">
+          <span>CITA REGISTRADA</span>
+          <strong>#{{ item.id }} · RESERVADA</strong>
         </div>
       </div>
-      <p class="eyebrow">Demostración interactiva</p>
-      <h1 id="payment-title">Simulador de pago</h1>
-      <p>Selecciona un método para explorar el flujo de pago sin realizar ningún cobro real.</p>
     </header>
 
     <ol class="payment-progress" aria-label="Pasos de la reserva">
@@ -67,6 +73,25 @@
 
         <ng-container [ngSwitch]="selectedMethod">
           <div *ngSwitchCase="'CARD'" class="payment-form-view">
+            <!-- TARJETA 3D INTERACTIVA EN VIVO -->
+            <div class="credit-card-3d" aria-hidden="true">
+              <div class="credit-card-3d__top">
+                <span class="credit-card-3d__chip"></span>
+                <span class="credit-card-3d__brand">{{ cardNetwork || 'SIGESMED PAY · DEMO' }}</span>
+              </div>
+              <div class="credit-card-3d__num">{{ cardNumber || '4557 •••• •••• 8921' }}</div>
+              <div class="credit-card-3d__bottom">
+                <div>
+                  <small>TITULAR FICTICIO</small>
+                  <strong>{{ cardHolder || 'FAMILIA SAGRADO CORAZÓN' }}</strong>
+                </div>
+                <div>
+                  <small>VENCE</small>
+                  <strong>{{ expiry || '08/28' }}</strong>
+                </div>
+              </div>
+            </div>
+
             <div class="payment-security-note" role="note">
               <span aria-hidden="true">⌑</span>
               <p>En un pago real, estos datos se ingresarían directamente en el checkout seguro del proveedor.</p>
@@ -166,32 +191,32 @@
           </div>
         </ng-container>
 
-          <div class="payment-result" *ngIf="simulationComplete" role="status" aria-live="polite">
-            <span class="payment-result__icon" aria-hidden="true">✓</span>
-            <p class="eyebrow">Simulación completada</p>
-            <h3>No se realizó ningún cobro</h3>
-            <p>Tu cita sigue <strong>RESERVADA</strong>. Recepción debe verificar el pago para cambiarla a confirmada.</p>
-            <a class="btn btn-primary" routerLink="/paciente/citas">Ir a Mis citas</a>
-          </div>
-        </section>
+        <div class="payment-result" *ngIf="simulationComplete" role="status" aria-live="polite">
+          <span class="payment-result__icon" aria-hidden="true">✓</span>
+          <p class="eyebrow">Simulación completada</p>
+          <h3>No se realizó ningún cobro</h3>
+          <p>Tu cita sigue <strong>RESERVADA</strong>. Recepción debe verificar el pago para cambiarla a confirmada.</p>
+          <a class="btn btn-primary" routerLink="/paciente/citas">Ir a Mis citas</a>
+        </div>
+      </section>
 
-        <aside class="payment-summary surface-card" aria-labelledby="payment-summary-title">
-          <div class="payment-summary__heading">
-            <span class="payment-summary__icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>
-            </span>
-            <div><p class="eyebrow">Tu cita</p><h2 id="payment-summary-title">Resumen de la reserva</h2></div>
-          </div>
-          <dl class="payment-summary__details">
-            <div><dt>Atención</dt><dd>{{ attentionName }}</dd></div>
-            <div><dt>Profesional</dt><dd>{{ providerName }}</dd></div>
-            <div><dt>Fecha</dt><dd>{{ item.fecha | date:'d MMM y':'':'es' }}</dd></div>
-            <div><dt>Hora</dt><dd>{{ item.hora.slice(0, 5) }}</dd></div>
-            <div><dt>Tarifa</dt><dd>Por confirmar</dd></div>
-          </dl>
-          <div class="payment-summary__status"><span aria-hidden="true">●</span><div><strong>RESERVADA</strong><small>El horario está asociado a tu cuenta.</small></div></div>
-          <p class="payment-summary__note">Recepción verifica el pago y confirma la cita.</p>
-        </aside>
-      </div>
-    </ng-container>
+      <aside class="payment-summary surface-card" aria-labelledby="payment-summary-title">
+        <div class="payment-summary__heading">
+          <span class="payment-summary__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>
+          </span>
+          <div><p class="eyebrow">Pase Clínico</p><h2 id="payment-summary-title">Resumen de la reserva</h2></div>
+        </div>
+        <dl class="payment-summary__details">
+          <div><dt>Atención</dt><dd>{{ attentionName }}</dd></div>
+          <div><dt>Profesional</dt><dd>{{ providerName }}</dd></div>
+          <div><dt>Fecha</dt><dd>{{ item.fecha | date:'d MMM y':'':'es' }}</dd></div>
+          <div><dt>Hora</dt><dd>{{ item.hora.slice(0, 5) }}</dd></div>
+          <div><dt>Tarifa</dt><dd>Por confirmar</dd></div>
+        </dl>
+        <div class="payment-summary__status"><span aria-hidden="true">●</span><div><strong>RESERVADA</strong><small>El horario está asociado a tu cuenta.</small></div></div>
+        <p class="payment-summary__note">Recepción verifica el pago y confirma la cita.</p>
+      </aside>
+    </div>
+  </ng-container>
 </section>
