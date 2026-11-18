@@ -1,28 +1,32 @@
 <section class="account-layout auth-glass-stage" aria-labelledby="reset-title">
   <aside class="account-aside account-aside--glass">
-    <div class="auth-aside__brand-row">
-      <span class="auth-logo-frame"><img class="brand-logo" src="assets/LogoEmpresa.png" alt="Logo del Policlínico Infantil Nuestra Señora del Sagrado Corazón"></span>
-      <div class="auth-aside__brand-text">
-        <strong>SIGESMED · Seguridad</strong>
-        <span>Policlínico Infantil Sagrado Corazón</span>
+    <div class="auth-brand-inner">
+      <a routerLink="/" class="auth-back-home-link">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+        Volver al inicio
+      </a>
+
+      <div class="auth-aside__brand-row">
+        <span class="auth-logo-frame"><img class="brand-logo" src="assets/LogoEmpresa.png" alt="Logo del Policlínico Infantil Nuestra Señora del Sagrado Corazón"></span>
+        <div class="auth-aside__brand-text">
+          <strong>Policlínico Infantil Nuestra Señora del Sagrado Corazón</strong>
+          <span>Diócesis de Chosica · SIGESMED</span>
+        </div>
       </div>
-    </div>
 
-    <p class="eyebrow auth-aside__eyebrow">Seguridad de la cuenta</p>
-    <h1>Elige una contraseña nueva</h1>
-    <p>Actualiza tus credenciales para volver a gestionar la atención de tu familia.</p>
-
-    <div class="auth-photo-card" aria-hidden="true">
-      <img src="/assets/rediseno/spec-familiar.jpg" alt="" loading="lazy">
-      <div class="auth-photo-card__caption">
-        <strong>Actualización segura</strong>
-        <span>Validación automática de enlace temporal</span>
+      <div class="auth-brand-copy">
+        <span class="auth-gold-pill">Seguridad de la Cuenta</span>
+        <h1>Elige una contraseña nueva.</h1>
+        <p>Actualiza tus credenciales para volver a gestionar tus citas y la atención de tu familia.</p>
       </div>
-    </div>
 
-    <div class="account-aside__note">
-      <span class="account-aside__mark" aria-hidden="true">✓</span>
-      <span>El enlace de recuperación se valida antes de guardar el cambio.</span>
+      <div class="auth-hero-photo-card" aria-hidden="true">
+        <img src="/assets/rediseno/hero-slide-2.jpg" alt="" loading="lazy">
+      </div>
+
+      <div class="auth-aside__note">
+        <span>Urb. San Gregorio, Ate · Lun a Sáb 8:00 a. m. – 8:00 p. m.</span>
+      </div>
     </div>
   </aside>
 
@@ -50,11 +54,11 @@
       <div class="mb-4">
         <label class="form-label" for="passwordReset">Nueva contraseña</label>
         <input id="passwordReset" class="form-control" type="password" formControlName="nuevaClave"
-               autocomplete="new-password" maxlength="72" placeholder="Escribe tu nueva contraseña"
+               autocomplete="new-password" maxlength="18" placeholder="Escribe tu nueva contraseña"
                [attr.aria-invalid]="form.controls.nuevaClave.touched && form.controls.nuevaClave.invalid"
                aria-describedby="reset-help reset-error">
-        <small id="reset-help" class="form-text">Máximo 72 caracteres.</small>
-        <small id="reset-error" class="invalid-feedback d-block" *ngIf="form.controls.nuevaClave.touched && form.controls.nuevaClave.invalid">Ingresa una contraseña de máximo 72 caracteres.</small>
+        <small id="reset-help" class="form-text">Máximo 18 caracteres.</small>
+        <small id="reset-error" class="invalid-feedback d-block" *ngIf="form.controls.nuevaClave.touched && form.controls.nuevaClave.invalid">Ingresa una contraseña de máximo 18 caracteres.</small>
       </div>
       <button class="btn btn-primary w-100 py-2 auth-submit-btn" type="submit" [disabled]="loading" [attr.aria-busy]="loading">
         {{ loading ? 'Actualizando contraseña…' : 'Restablecer contraseña' }}

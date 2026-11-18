@@ -1,50 +1,101 @@
 <section class="confirmation-page" aria-labelledby="confirmation-title">
-  <div class="confirmation-card surface-card" *ngIf="loading" role="status" aria-live="polite">
+  <div
+    class="confirmation-card surface-card"
+    *ngIf="loading"
+    role="status"
+    aria-live="polite"
+  >
     <span class="spinner-border text-primary" aria-hidden="true"></span>
     <span>Cargando los datos de tu cita…</span>
   </div>
 
-  <div class="confirmation-card confirmation-card--success surface-card" *ngIf="!loading && appointment as item">
+  <div
+    class="confirmation-card confirmation-card--success surface-card"
+    *ngIf="!loading && appointment as item"
+  >
     <header class="confirmation-heading">
       <span class="confirmation-check" aria-hidden="true">✓</span>
       <div>
         <p class="eyebrow">Reserva registrada · Pase Clínico SIGESMED</p>
         <h1 id="confirmation-title">Tu cita está reservada</h1>
-        <p class="confirmation-lead">La cita quedó asociada a tu cuenta. Consulta sus detalles cuando quieras desde <strong>Mis citas</strong>.</p>
-        <span class="confirmation-reference">Referencia de cita · #{{ item.id }}</span>
+        <p class="confirmation-lead">
+          La cita quedó asociada a tu cuenta. Consulta sus detalles cuando
+          quieras desde <strong>Mis citas</strong>.
+        </p>
+        <span class="confirmation-reference"
+          >Referencia de cita · #{{ item.id }}</span
+        >
       </div>
     </header>
 
-    <section class="confirmation-summary" aria-labelledby="confirmation-summary-title">
+    <section
+      class="confirmation-summary"
+      aria-labelledby="confirmation-summary-title"
+    >
       <div class="confirmation-summary__heading">
         <div>
           <p class="eyebrow">Próxima atención · San Gregorio, Ate</p>
           <h2 id="confirmation-summary-title">Resumen de la cita</h2>
         </div>
-        <span class="confirmation-status">{{ item.estado === 'RESERVADA' ? 'Reservada' : item.estado }}</span>
+        <span class="confirmation-status">{{
+          item.estado === "RESERVADA" ? "Reservada" : item.estado
+        }}</span>
       </div>
       <dl class="confirmation-details">
-        <div><dt>Paciente</dt><dd>{{ item.paciente }}</dd></div>
-        <div><dt>{{ item.servicio ? 'Servicio' : 'Especialidad' }}</dt><dd>{{ item.servicio || item.especialidades.join(', ') }}</dd></div>
-        <div *ngIf="item.doctor"><dt>Médico</dt><dd>{{ item.doctor }}</dd></div>
-        <div><dt>Tipo de atención</dt><dd>{{ item.servicio ? 'Servicio complementario' : 'Consulta médica' }}</dd></div>
-        <div class="confirmation-details__date"><dt>Fecha de atención</dt><dd>{{ item.fecha | date:'EEEE d MMMM y':'':'es' }}</dd></div>
-        <div class="confirmation-details__time"><dt>Hora</dt><dd>{{ item.hora.slice(0, 5) }}</dd></div>
+        <div>
+          <dt>Paciente</dt>
+          <dd>{{ item.paciente }}</dd>
+        </div>
+        <div>
+          <dt>{{ item.servicio ? "Servicio" : "Especialidad" }}</dt>
+          <dd>{{ item.servicio || item.especialidades.join(", ") }}</dd>
+        </div>
+        <div *ngIf="item.doctor">
+          <dt>Médico</dt>
+          <dd>{{ item.doctor }}</dd>
+        </div>
+        <div>
+          <dt>Tipo de atención</dt>
+          <dd>
+            {{ item.servicio ? "Servicio complementario" : "Consulta médica" }}
+          </dd>
+        </div>
+        <div class="confirmation-details__date">
+          <dt>Fecha de atención</dt>
+          <dd>{{ item.fecha | date: "EEEE d MMMM y" : "" : "es" }}</dd>
+        </div>
+        <div class="confirmation-details__time">
+          <dt>Hora</dt>
+          <dd>{{ item.hora.slice(0, 5) }}</dd>
+        </div>
       </dl>
-      <p class="confirmation-service-note" *ngIf="item.servicio">Esta reserva corresponde al servicio seleccionado y utiliza sus propios horarios disponibles.</p>
+      <p class="confirmation-service-note" *ngIf="item.servicio">
+        Esta reserva corresponde al servicio seleccionado y utiliza sus propios
+        horarios disponibles.
+      </p>
     </section>
 
     <nav class="confirmation-actions" aria-label="Acciones para continuar">
       <a class="btn btn-primary" routerLink="/paciente/citas">Ir a Mis citas</a>
-      <a class="btn btn-outline-primary" routerLink="/paciente/disponibilidad">Reservar otra cita</a>
+      <a class="btn btn-outline-primary" routerLink="/paciente/disponibilidad"
+        >Reservar otra cita</a
+      >
     </nav>
   </div>
 
   <div class="confirmation-card surface-card" *ngIf="!loading && !appointment">
-    <span class="confirmation-check confirmation-check--error" aria-hidden="true">!</span>
+    <span
+      class="confirmation-check confirmation-check--error"
+      aria-hidden="true"
+      >!</span
+    >
     <p class="eyebrow">No se encontró la reserva</p>
     <h1 id="confirmation-title">No pudimos cargar esta cita</h1>
-    <p class="confirmation-lead">Comprueba que la cita pertenezca a tu cuenta o inténtalo de nuevo.</p>
-    <a class="btn btn-outline-primary" routerLink="/paciente/disponibilidad">Volver a disponibilidad</a>
+    <p class="confirmation-lead">
+      Comprueba que la cita pertenezca a tu cuenta o inténtalo de nuevo.
+    </p>
+    <a class="btn btn-outline-primary" routerLink="/paciente/disponibilidad"
+      >Volver a disponibilidad</a
+    >
   </div>
 </section>

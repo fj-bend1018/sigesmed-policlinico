@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Appointment, AppointmentApiService } from '../../core/appointments/appointment-api.service';
 
 type PaymentMethod = 'CARD' | 'YAPE' | 'PLIN';
@@ -13,7 +13,7 @@ type PaymentMethod = 'CARD' | 'YAPE' | 'PLIN';
   templateUrl: './payment-demo.component.html',
   styleUrl: './payment-demo.component.scss'
 })
-export class PaymentDemoComponent implements OnInit {
+export class PaymentDemoComponent implements OnInit, OnDestroy {
   appointment: Appointment | null = null;
   loading = true;
   loadError = false;
@@ -27,8 +27,17 @@ export class PaymentDemoComponent implements OnInit {
   simulationComplete = false;
   formMessage = '';
   private appointmentId = 0;
+  private redirectTimer: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(private readonly route: ActivatedRoute, private readonly api: AppointmentApiService) { }
+  constructor(
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly api: AppointmentApiService
+  ) { }
+
+  ngOnDestroy(): void {
+    if (this.redirectTimer !== null) clearTimeout(this.redirectTimer);
+  }
 
   ngOnInit(): void {
     this.appointmentId = Number(this.route.snapshot.paramMap.get('id'));
@@ -63,7 +72,7 @@ export class PaymentDemoComponent implements OnInit {
     return Boolean(this.cardNetwork) && digits.length === this.cardLength
       && this.cardHolder.trim().length >= 2
       && /^(0[1-9]|1[0-2])\/\d{2}$/.test(this.expiry)
-      && /^\d{3,4}$/.test(this.cvv);
+      && /^\d{3}$/.test(this.cvv);
   }
 
   get yapeReady(): boolean {
@@ -112,6 +121,16 @@ export class PaymentDemoComponent implements OnInit {
     this.expiry = '';
     this.cvv = '';
     this.yapeCode = '';
+    if (this.redirectTimer !== null) clearTimeout(this.redirectTimer);
+    this.redirectTimer = setTimeout(() => this.goToPatientDashboard(), 4000);
+  }
+
+  goToPatientDashboard(): void {
+    if (this.redirectTimer !== null) {
+      clearTimeout(this.redirectTimer);
+      this.redirectTimer = null;
+    }
+    this.router.navigate(['/paciente/citas']);
   }
 
   get attentionName(): string {

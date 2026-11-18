@@ -1,76 +1,153 @@
-<section class="workspace-page staff-workspace" aria-labelledby="staff-page-title">
-  <div class="workspace-heading workspace-heading--photo">
-    <div class="workspace-heading__copy">
-      <p class="eyebrow mb-2">SIGESMED · {{ roleLabel }}</p>
-      <h1 id="staff-page-title">{{ portalTitle }}</h1>
-      <p>Espacio de trabajo del Policlínico Infantil Nuestra Señora del Sagrado Corazón.</p>
-    </div>
-    <div class="workspace-hero-pills" aria-hidden="true">
-      <div class="workspace-hero-pill">
-        <span class="workspace-hero-pill__dot"></span>
+<section class="v7-staff-shell staff-workspace" aria-labelledby="staff-page-title">
+  <div class="v7-staff-layout">
+    <aside class="v7-staff-sidebar" [attr.aria-label]="'Navegación de ' + portalTitle">
+      <div class="v7-staff-brand">
+        <span class="v7-staff-brand__logo"><img src="/assets/LogoEmpresa.png" alt=""></span>
         <div>
-          <strong>Consola Operativa Activa</strong>
-          <span>Lun–Sáb · 8:00 a. m. a 8:00 p. m.</span>
+          <strong>{{ portalTitle }}</strong>
+          <small>SIGESMED · {{ roleLabel }}</small>
         </div>
       </div>
-      <div class="workspace-hero-pill workspace-hero-pill--gold">
-        <div>
-          <strong>San Gregorio, Ate</strong>
-          <span>Lima · Atención presencial</span>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="workspace-layout">
-    <aside class="workspace-sidebar" [attr.aria-label]="'Navegación de ' + portalTitle">
-      <div class="workspace-brand">
-        <span class="workspace-brand__logo"><img src="assets/LogoEmpresa.png" alt=""></span>
-        <span><strong>{{ portalTitle }}</strong><small>Panel de gestión</small></span>
-      </div>
-      <nav class="workspace-nav" aria-label="Secciones del portal">
+      <nav class="v7-staff-nav" aria-label="Secciones del portal">
         <a *ngFor="let item of navigation" [routerLink]="item.link" [class.is-active]="activeSection === item.key"
            [attr.aria-current]="activeSection === item.key ? 'page' : null">
-          <span class="workspace-nav__icon" aria-hidden="true">{{ item.icon }}</span>{{ item.label }}
+          <span class="v7-staff-nav__icon" aria-hidden="true">{{ item.icon }}</span>
+          <span>{{ item.label }}</span>
         </a>
       </nav>
-      <div class="workspace-sidebar__note">Acceso de {{ roleLabel.toLowerCase() }}.</div>
+
+      <div class="v7-staff-sidebar__footer">
+        <div class="v7-staff-sidebar__note">
+          Nuestra Señora del Sagrado Corazón · San Gregorio, Ate
+        </div>
+        <button type="button" class="v7-staff-logout" (click)="logout()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Cerrar sesión
+        </button>
+      </div>
     </aside>
 
-    <div class="workspace-panel">
-      <div class="workspace-panel__top">
-        <div><p class="eyebrow mb-1">Gestión</p><h2>{{ sectionTitle }}</h2><p>{{ sectionDescription }}</p></div>
-        <span class="workspace-role">{{ roleLabel }}</span>
+    <div class="v7-staff-main">
+      <div class="v7-staff-topbar">
+        <div class="v7-staff-topbar__crumbs">
+          <span class="v7-staff-role-pill">{{ roleLabel }}</span>
+          <span class="v7-staff-topbar__sep">/</span>
+          <strong>{{ sectionTitle }}</strong>
+        </div>
+        <div class="v7-staff-topbar__meta">
+          <span>Lun–Sáb · 8:00 a. m. – 8:00 p. m.</span>
+        </div>
       </div>
 
-      <div *ngIf="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
-      <div *ngIf="successMessage" class="alert alert-success" role="status">{{ successMessage }}</div>
-      <p *ngIf="loading" class="workspace-loading" role="status" aria-live="polite">Cargando información…</p>
+      <header class="v7-staff-hero">
+        <div>
+          <p class="v7-staff-hero__eyebrow">SIGESMED · {{ portalTitle }}</p>
+          <h1 id="staff-page-title">{{ sectionTitle }}</h1>
+          <p class="v7-staff-hero__desc">{{ sectionDescription }}</p>
+        </div>
+      </header>
+
+      <div class="v7-staff-panel">
+        <div *ngIf="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
+        <div *ngIf="successMessage" class="alert alert-success" role="status">{{ successMessage }}</div>
+        <div *ngIf="loading" class="v7-skeleton-wrap" role="status" aria-live="polite" aria-label="Cargando información">
+          <div class="v7-skeleton-kpis">
+            <span class="v7-skeleton-box"></span>
+            <span class="v7-skeleton-box"></span>
+            <span class="v7-skeleton-box"></span>
+            <span class="v7-skeleton-box"></span>
+          </div>
+          <div class="v7-skeleton-table"></div>
+        </div>
 
       <ng-container [ngSwitch]="activeSection">
         <ng-container *ngSwitchCase="'appointments'">
-          <div class="staff-kpi-strip" aria-label="Indicadores rápidos de recepción">
-            <div class="staff-kpi-card">
-              <span class="staff-kpi-card__label">Citas en bandeja</span>
-              <strong class="staff-kpi-card__value">{{ visibleAppointments.length }}</strong>
-              <span class="staff-kpi-card__hint">Registros visibles según filtro</span>
+          <div class="staff-kpi-strip staff-kpi-strip--4" aria-label="Indicadores rápidos de recepción">
+            <div class="staff-kpi-card v7-anim-card" style="--d:0ms">
+              <span class="staff-kpi-card__label">Total en agenda</span>
+              <strong class="staff-kpi-card__value">{{ receptionStats.total }}</strong>
+              <span class="staff-kpi-card__hint">Registros cargados</span>
             </div>
-            <div class="staff-kpi-card staff-kpi-card--gold">
-              <span class="staff-kpi-card__label">Control de asistencia</span>
-              <strong class="staff-kpi-card__value">Atendida / No asistió</strong>
-              <span class="staff-kpi-card__hint">Actualización inmediata en recepción</span>
+            <div class="staff-kpi-card staff-kpi-card--gold v7-anim-card" style="--d:70ms">
+              <span class="staff-kpi-card__label">Por atender</span>
+              <strong class="staff-kpi-card__value">{{ receptionStats.pending }}</strong>
+              <span class="staff-kpi-card__hint">Reservadas y confirmadas</span>
             </div>
-            <div class="staff-kpi-card">
-              <span class="staff-kpi-card__label">Regla de cancelación</span>
-              <strong class="staff-kpi-card__value">Mín. 2 horas antes</strong>
-              <span class="staff-kpi-card__hint">Solo citas en estado RESERVADA</span>
+            <div class="staff-kpi-card v7-anim-card" style="--d:140ms">
+              <span class="staff-kpi-card__label">Atendidas</span>
+              <strong class="staff-kpi-card__value">{{ receptionStats.attended }}</strong>
+              <span class="staff-kpi-card__hint">Consultas completadas</span>
             </div>
+            <div class="staff-kpi-card v7-anim-card" style="--d:210ms">
+              <span class="staff-kpi-card__label">Canceladas / Inasist.</span>
+              <strong class="staff-kpi-card__value">{{ receptionStats.cancelledOrMissed }}</strong>
+              <span class="staff-kpi-card__hint">Histórico del filtro</span>
+            </div>
+          </div>
+
+          <div class="v7-analytics-grid" *ngIf="!loading">
+            <article class="v7-chart-card v7-anim-card" style="--d:120ms">
+              <div class="v7-chart-card__head">
+                <div>
+                  <h3>Citas por franja horaria</h3>
+                  <small>Distribución entre 08:00 a. m. y 08:00 p. m.</small>
+                </div>
+                <span class="v7-chart-badge">{{ receptionStats.total }} citas</span>
+              </div>
+              <div class="v7-bar-chart">
+                <div class="v7-bar-col" *ngFor="let bucket of receptionTimeBuckets; let i = index" [style.--i]="i">
+                  <span class="v7-bar-val">{{ bucket.count }}</span>
+                  <div class="v7-bar-track">
+                    <div class="v7-bar-fill" [class.is-peak]="bucket.peak" [style.height.%]="bucket.pct"></div>
+                  </div>
+                  <span class="v7-bar-label">{{ bucket.label }}</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="v7-chart-card v7-anim-card" style="--d:180ms">
+              <div class="v7-chart-card__head">
+                <div>
+                  <h3>Estado del día</h3>
+                  <small>Proporción actual de la agenda</small>
+                </div>
+              </div>
+              <div class="v7-donut-wrap" *ngIf="receptionStatusDonut.length; else emptyDonut">
+                <svg class="v7-donut-svg" viewBox="0 0 100 100" aria-hidden="true">
+                  <circle class="v7-donut-bg" cx="50" cy="50" r="38" />
+                  <circle *ngFor="let seg of receptionStatusDonut" class="v7-donut-seg"
+                          cx="50" cy="50" r="38"
+                          [attr.stroke]="seg.color"
+                          [attr.stroke-dasharray]="seg.dashArray"
+                          [attr.stroke-dashoffset]="seg.dashOffset" />
+                </svg>
+                <div class="v7-donut-center">
+                  <strong>{{ receptionStats.total }}</strong>
+                  <span>citas</span>
+                </div>
+              </div>
+              <ng-template #emptyDonut>
+                <p class="v7-chart-empty">Sin citas registradas todavía en este filtro.</p>
+              </ng-template>
+              <ul class="v7-donut-legend" *ngIf="receptionStatusDonut.length">
+                <li *ngFor="let seg of receptionStatusDonut">
+                  <span class="v7-legend-dot" [style.background]="seg.color"></span>
+                  <span>{{ seg.label }}</span>
+                  <strong>{{ seg.count }}</strong>
+                </li>
+              </ul>
+            </article>
           </div>
 
           <div class="workspace-toolbar">
             <label class="visually-hidden" for="appointment-search">Buscar paciente o cita</label>
-            <input id="appointment-search" name="searchText" class="form-control" type="search" placeholder="Buscar paciente, DNI o médico"
-                   [(ngModel)]="searchText" (keyup.enter)="loadAppointments()">
+            <input id="appointment-search" name="searchText" class="form-control" type="search" maxlength="100"
+                   placeholder="Buscar paciente, DNI o médico"
+                   [ngModel]="searchText"
+                   (ngModelChange)="searchText = normalizeSearchInput($event)"
+                   (input)="searchText = normalizeSearchInputEvent($event)"
+                   (keyup.enter)="loadAppointments()">
             <label class="visually-hidden" for="appointment-date">Filtrar por fecha</label>
             <input id="appointment-date" name="appointmentDate" class="form-control" type="date" [(ngModel)]="appointmentDate">
             <button class="btn btn-outline-primary" type="button" (click)="loadAppointments()" [disabled]="loading">Buscar</button>
@@ -112,8 +189,12 @@
         <ng-container *ngSwitchCase="'history'">
           <div class="workspace-toolbar">
             <label class="visually-hidden" for="history-search">Buscar en el historial</label>
-            <input id="history-search" name="searchText" class="form-control" type="search" placeholder="Buscar paciente, DNI o médico"
-                   [(ngModel)]="searchText" (keyup.enter)="loadAppointments()">
+            <input id="history-search" name="searchText" class="form-control" type="search" maxlength="100"
+                   placeholder="Buscar paciente, DNI o médico"
+                   [ngModel]="searchText"
+                   (ngModelChange)="searchText = normalizeSearchInput($event)"
+                   (input)="searchText = normalizeSearchInputEvent($event)"
+                   (keyup.enter)="loadAppointments()">
             <button class="btn btn-outline-primary" type="button" (click)="loadAppointments()" [disabled]="loading">Buscar</button>
           </div>
           <div class="workspace-table-wrap" *ngIf="!loading && visibleAppointments.length">
@@ -183,32 +264,97 @@
         </ng-container>
 
         <ng-container *ngSwitchCase="'doctors'">
-          <div class="staff-kpi-strip" aria-label="Resumen de médicos">
-            <div class="staff-kpi-card">
+          <div class="staff-kpi-strip staff-kpi-strip--4" aria-label="Resumen de médicos">
+            <div class="staff-kpi-card v7-anim-card" style="--d:0ms">
               <span class="staff-kpi-card__label">Staff médico registrado</span>
               <strong class="staff-kpi-card__value">{{ doctors.length }}</strong>
               <span class="staff-kpi-card__hint">Profesionales en el directorio</span>
             </div>
-            <div class="staff-kpi-card staff-kpi-card--gold">
+            <div class="staff-kpi-card staff-kpi-card--gold v7-anim-card" style="--d:70ms">
               <span class="staff-kpi-card__label">Médicos activos</span>
               <strong class="staff-kpi-card__value">{{ activeDoctors.length }}</strong>
               <span class="staff-kpi-card__hint">Habilitados para programación</span>
             </div>
-            <div class="staff-kpi-card">
+            <div class="staff-kpi-card v7-anim-card" style="--d:140ms">
               <span class="staff-kpi-card__label">Especialidades oficiales</span>
-              <strong class="staff-kpi-card__value">6</strong>
+              <strong class="staff-kpi-card__value">{{ specialtyFilterOptions.length || 6 }}</strong>
               <span class="staff-kpi-card__hint">Cobertura integral del policlínico</span>
+            </div>
+            <div class="staff-kpi-card v7-anim-card" style="--d:210ms">
+              <span class="staff-kpi-card__label">Servicios compl.</span>
+              <strong class="staff-kpi-card__value">2</strong>
+              <span class="staff-kpi-card__hint">Laboratorio y ecografías</span>
             </div>
           </div>
 
-          <div class="workspace-toolbar"><span class="workspace-toolbar__label">Directorio de médicos</span>
-            <a class="btn btn-primary" routerLink="/administrador/doctores/nuevo">Agregar doctor</a></div>
-          <div class="workspace-table-wrap" *ngIf="!loading && doctors.length">
+          <div class="v7-analytics-grid" *ngIf="!loading && doctorSpecialtyStats.length">
+            <article class="v7-chart-card v7-anim-card" style="--d:120ms">
+              <div class="v7-chart-card__head">
+                <div>
+                  <h3>Médicos por especialidad</h3>
+                  <small>Distribución del staff clínico activo</small>
+                </div>
+                <span class="v7-chart-badge">{{ doctors.length }} médicos</span>
+              </div>
+              <div class="v7-bar-chart">
+                <div class="v7-bar-col" *ngFor="let item of doctorSpecialtyStats; let i = index" [style.--i]="i">
+                  <span class="v7-bar-val">{{ item.count }}</span>
+                  <div class="v7-bar-track">
+                    <div class="v7-bar-fill" [class.is-peak]="i === 0" [style.height.%]="item.barPct"></div>
+                  </div>
+                  <span class="v7-bar-label" [title]="item.label">{{ item.label.split(' ')[0] }}</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="v7-chart-card v7-anim-card" style="--d:180ms">
+              <div class="v7-chart-card__head">
+                <div>
+                  <h3>Cobertura por área</h3>
+                  <small>Participación por especialidad</small>
+                </div>
+              </div>
+              <div class="v7-donut-wrap">
+                <svg class="v7-donut-svg" viewBox="0 0 100 100" aria-hidden="true">
+                  <circle class="v7-donut-bg" cx="50" cy="50" r="38" />
+                  <circle *ngFor="let seg of doctorSpecialtyStats" class="v7-donut-seg"
+                          cx="50" cy="50" r="38"
+                          [attr.stroke]="seg.color"
+                          [attr.stroke-dasharray]="seg.dashArray"
+                          [attr.stroke-dashoffset]="seg.dashOffset" />
+                </svg>
+                <div class="v7-donut-center">
+                  <strong>{{ doctors.length }}</strong>
+                  <span>médicos</span>
+                </div>
+              </div>
+              <ul class="v7-donut-legend">
+                <li *ngFor="let seg of doctorSpecialtyStats">
+                  <span class="v7-legend-dot" [style.background]="seg.color"></span>
+                  <span>{{ seg.label }}</span>
+                  <strong>{{ seg.count }}</strong>
+                </li>
+              </ul>
+            </article>
+          </div>
+
+          <div class="workspace-toolbar">
+            <label class="visually-hidden" for="admin-doc-search">Buscar médico por nombre o CMP</label>
+            <input id="admin-doc-search" name="doctorSearch" class="form-control" type="search" maxlength="160"
+                   placeholder="Buscar por nombre o CMP…" [(ngModel)]="doctorSearch">
+            <label class="visually-hidden" for="admin-doc-spec">Filtrar por especialidad</label>
+            <select id="admin-doc-spec" name="doctorSpecialtyFilter" class="form-select" [(ngModel)]="doctorSpecialtyFilter">
+              <option value="">Todas las especialidades</option>
+              <option *ngFor="let spec of specialtyFilterOptions" [value]="spec">{{ spec }}</option>
+            </select>
+            <a class="btn btn-primary" routerLink="/administrador/doctores/nuevo">Agregar doctor</a>
+          </div>
+          <div class="workspace-table-wrap" *ngIf="!loading && filteredDoctors.length">
             <table class="workspace-table"><thead><tr><th>Nombre</th><th>CMP</th><th>Especialidades</th><th>Estado</th><th>Acciones</th></tr></thead>
-              <tbody><tr *ngFor="let doctor of doctors; let idx = index">
+              <tbody><tr *ngFor="let doctor of filteredDoctors; let idx = index">
                 <td>
                   <div class="admin-doctor-cell">
-                    <img class="admin-doctor-cell__photo" [src]="idx % 2 === 0 ? 'assets/rediseno/spec-pediatria.jpg' : 'assets/rediseno/doc-male.jpg'" alt="">
+                    <img class="admin-doctor-cell__photo" [src]="doctorAvatar(doctor.nombre, idx)" alt="">
                     <strong>{{ doctor.nombre }}</strong>
                   </div>
                 </td>
@@ -228,7 +374,7 @@
           <p class="eyebrow mb-2">Personal médico</p><h3>Registrar doctor</h3>
           <div class="workspace-form-grid mt-4">
             <div><label class="form-label" for="doctor-name">Nombre completo</label><input id="doctor-name" name="nombre" class="form-control" required pattern=".*\S.*" maxlength="160" [(ngModel)]="doctorForm.nombre"></div>
-            <div><label class="form-label" for="doctor-cmp">CMP</label><input id="doctor-cmp" name="cmp" class="form-control" required pattern=".*\S.*" maxlength="40" [(ngModel)]="doctorForm.cmp"></div>
+            <div><label class="form-label" for="doctor-cmp">CMP</label><input id="doctor-cmp" name="cmp" class="form-control" required pattern="DEV-CMP-[0-9]{1,8}" maxlength="16" placeholder="DEV-CMP-0037" [ngModel]="doctorForm.cmp" (ngModelChange)="doctorForm.cmp = normalizeCmpInput($event)" (input)="doctorForm.cmp = normalizeCmpInputEvent($event)"><small class="form-text">Estructura fija DEV-CMP- seguida de solo números.</small></div>
             <div class="workspace-form-grid__wide"><label class="form-label" for="doctor-specialties">Especialidades</label>
               <select id="doctor-specialties" name="especialidadIds" class="form-select" multiple size="6" required [(ngModel)]="doctorForm.especialidadIds">
                 <option *ngFor="let specialty of specialties" [ngValue]="specialty.id">{{ specialty.nombre }}</option>
@@ -242,7 +388,7 @@
           <p class="eyebrow mb-2">Personal médico</p><h3>Editar doctor</h3>
           <div class="workspace-form-grid mt-4">
             <div><label class="form-label" for="doctor-edit-name">Nombre completo</label><input id="doctor-edit-name" name="nombre" class="form-control" required pattern=".*\S.*" maxlength="160" [(ngModel)]="doctorForm.nombre"></div>
-            <div><label class="form-label" for="doctor-edit-cmp">CMP</label><input id="doctor-edit-cmp" name="cmp" class="form-control" required pattern=".*\S.*" maxlength="40" [(ngModel)]="doctorForm.cmp"></div>
+            <div><label class="form-label" for="doctor-edit-cmp">CMP</label><input id="doctor-edit-cmp" name="cmp" class="form-control" required pattern="DEV-CMP-[0-9]{1,8}" maxlength="16" placeholder="DEV-CMP-0037" [ngModel]="doctorForm.cmp" (ngModelChange)="doctorForm.cmp = normalizeCmpInput($event)" (input)="doctorForm.cmp = normalizeCmpInputEvent($event)"><small class="form-text">Estructura fija DEV-CMP- seguida de solo números.</small></div>
             <div class="workspace-form-grid__wide"><label class="form-label" for="doctor-edit-specialties">Especialidades</label>
               <select id="doctor-edit-specialties" name="especialidadIds" class="form-select" multiple size="6" required [(ngModel)]="doctorForm.especialidadIds">
                 <option *ngFor="let specialty of specialties" [ngValue]="specialty.id">{{ specialty.nombre }}</option>
@@ -253,6 +399,48 @@
         </form></ng-container>
 
         <ng-container *ngSwitchCase="'schedules'">
+          <div class="staff-kpi-strip staff-kpi-strip--4" *ngIf="!loading" aria-label="Resumen de horarios">
+            <div class="staff-kpi-card v7-anim-card" style="--d:0ms">
+              <span class="staff-kpi-card__label">Total horarios</span>
+              <strong class="staff-kpi-card__value">{{ scheduleStats.total }}</strong>
+              <span class="staff-kpi-card__hint">Próximos 30 días</span>
+            </div>
+            <div class="staff-kpi-card staff-kpi-card--gold v7-anim-card" style="--d:70ms">
+              <span class="staff-kpi-card__label">Disponibles</span>
+              <strong class="staff-kpi-card__value">{{ scheduleStats.available }}</strong>
+              <span class="staff-kpi-card__hint">{{ scheduleStats.pctAvailable }}% de la agenda libre</span>
+            </div>
+            <div class="staff-kpi-card v7-anim-card" style="--d:140ms">
+              <span class="staff-kpi-card__label">Reservados</span>
+              <strong class="staff-kpi-card__value">{{ scheduleStats.reserved }}</strong>
+              <span class="staff-kpi-card__hint">Con cita asignada</span>
+            </div>
+            <div class="staff-kpi-card v7-anim-card" style="--d:210ms">
+              <span class="staff-kpi-card__label">Protección 409</span>
+              <strong class="staff-kpi-card__value">Activa</strong>
+              <span class="staff-kpi-card__hint">Impide borrar franjas con cita</span>
+            </div>
+          </div>
+
+          <article class="v7-chart-card v7-anim-card mb-4" *ngIf="!loading && schedules.length" style="--d:120ms">
+            <div class="v7-chart-card__head">
+              <div>
+                <h3>Franjas programadas por horario</h3>
+                <small>Distribución de turnos entre 08:00 y 20:00</small>
+              </div>
+              <span class="v7-chart-badge">{{ scheduleStats.total }} franjas</span>
+            </div>
+            <div class="v7-bar-chart">
+              <div class="v7-bar-col" *ngFor="let bucket of scheduleTimeBuckets; let i = index" [style.--i]="i">
+                <span class="v7-bar-val">{{ bucket.count }}</span>
+                <div class="v7-bar-track">
+                  <div class="v7-bar-fill" [class.is-peak]="bucket.peak" [style.height.%]="bucket.pct"></div>
+                </div>
+                <span class="v7-bar-label">{{ bucket.label }}</span>
+              </div>
+            </div>
+          </article>
+
           <div class="admin-schedule-banner" role="note">
             <span class="admin-schedule-banner__icon" aria-hidden="true">🛡️</span>
             <div>
@@ -364,7 +552,7 @@
         <ng-container *ngSwitchCase="'receptionistForm'"><form class="workspace-form-card" (ngSubmit)="saveReceptionist()">
           <p class="eyebrow mb-2">Personal de recepción</p><h3>Registrar recepcionista</h3>
           <div class="workspace-form-grid mt-4">
-            <div><label class="form-label" for="new-rec-dni">DNI</label><input id="new-rec-dni" name="dni" class="form-control" type="text" inputmode="numeric" pattern="[0-9]{8}" minlength="8" maxlength="8" required [(ngModel)]="receptionistForm.dni"></div>
+            <div><label class="form-label" for="new-rec-dni">DNI</label><input id="new-rec-dni" name="dni" class="form-control" type="text" inputmode="numeric" pattern="[0-9]{8}" minlength="8" maxlength="8" required [ngModel]="receptionistForm.dni" (ngModelChange)="receptionistForm.dni = normalizeDniInput($event)" (input)="receptionistForm.dni = normalizeDniInputEvent($event)"></div>
             <div><label class="form-label" for="new-rec-name">Nombre</label><input id="new-rec-name" name="nombre" class="form-control" type="text" maxlength="100" required [(ngModel)]="receptionistForm.nombre"></div>
             <div><label class="form-label" for="new-rec-last">Apellido paterno</label><input id="new-rec-last" name="apellidoPaterno" class="form-control" type="text" maxlength="100" required [(ngModel)]="receptionistForm.apellidoPaterno"></div>
             <div><label class="form-label" for="new-rec-second-last">Apellido materno</label><input id="new-rec-second-last" name="apellidoMaterno" class="form-control" type="text" maxlength="100" [(ngModel)]="receptionistForm.apellidoMaterno"></div>
@@ -372,7 +560,7 @@
             <div><label class="form-label" for="new-rec-phone">Celular</label><input id="new-rec-phone" name="celular" class="form-control" type="tel" inputmode="numeric" pattern="[0-9]{9}" minlength="9" maxlength="9" [ngModel]="receptionistForm.celular" (ngModelChange)="receptionistForm.celular = normalizeCellularInput($event)" (input)="receptionistForm.celular = normalizeCellularInputEvent($event)" (focus)="selectInvalidCellular($event, receptionistForm.celular)"><small class="invalid-feedback d-block" *ngIf="isInvalidCellular(receptionistForm.celular)">Escribe exactamente 9 dígitos.</small></div>
             <div class="workspace-form-grid__wide"><label class="form-label" for="new-rec-address">Dirección</label><input id="new-rec-address" name="direccion" class="form-control" maxlength="300" [(ngModel)]="receptionistForm.direccion"></div>
             <div class="workspace-form-grid__wide"><label class="form-label" for="new-rec-password">Contraseña temporal (mínimo 12 caracteres)</label>
-              <input id="new-rec-password" name="claveTemporal" class="form-control" type="password" autocomplete="new-password" minlength="12" maxlength="72" required [(ngModel)]="receptionistForm.claveTemporal"></div>
+              <input id="new-rec-password" name="claveTemporal" class="form-control" type="password" autocomplete="new-password" minlength="12" maxlength="18" required [(ngModel)]="receptionistForm.claveTemporal"></div>
           </div>
           <div class="workspace-actions mt-4"><button class="btn btn-primary" type="submit" [disabled]="saving">{{ saving ? 'Guardando…' : 'Crear cuenta' }}</button>
             <a class="btn btn-outline-secondary" routerLink="/administrador/recepcionistas">Volver</a></div>
@@ -393,6 +581,7 @@
             <a class="btn btn-outline-secondary" routerLink="/administrador/recepcionistas">Volver</a></div>
         </form></ng-container>
       </ng-container>
+      </div>
     </div>
   </div>
 </section>

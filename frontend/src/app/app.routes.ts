@@ -56,6 +56,11 @@ export const routes: Routes = [
     loadChildren: () => import('./features/portal/administrador.routes').then(m => m.ADMINISTRADOR_ROUTES)
   },
 
+  {
+    path: 'doctor', canActivate: [roleGuard], data: { roles: ['DOCTOR'] },
+    loadChildren: () => import('./features/doctor/doctor.routes').then(m => m.DOCTOR_ROUTES)
+  },
+
   { path: 'portalPaciente', redirectTo: 'paciente/citas', pathMatch: 'full' },
   { path: 'pruebaportalpaciente', redirectTo: 'paciente/citas', pathMatch: 'full' },
   { path: 'portalRecepcionista', redirectTo: 'recepcionista/citas', pathMatch: 'full' },

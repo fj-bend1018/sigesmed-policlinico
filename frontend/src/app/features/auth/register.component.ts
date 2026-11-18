@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { ErrorMessageService } from '../../core/http/error-message.service';
 
 @Component({
   standalone: true,
@@ -23,13 +24,14 @@ export class RegisterComponent implements OnInit {
       return !value || value < this.today ? null : { past: true };
     }] }),
     correo: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.email, Validators.maxLength(254)] }),
-    clave: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(72)] })
+    celular: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.pattern(/^\d{9}$/)] }),
+    clave: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(18)] })
   });
   loading = false;
   returnUrl = '';
 
   constructor(private readonly auth: AuthService, private readonly router: Router,
-      private readonly route: ActivatedRoute) { }
+      private readonly route: ActivatedRoute, private readonly errors: ErrorMessageService) { }
 
   ngOnInit(): void {
     const requestedUrl = this.route.snapshot.queryParamMap.get('returnUrl') ?? '';
@@ -38,18 +40,33 @@ export class RegisterComponent implements OnInit {
 
   submit(): void {
     if (this.form.invalid || this.loading) { this.form.markAllAsTouched(); return; }
+    this.errors.clear();
     this.loading = true;
     const payload = this.form.getRawValue();
     payload.nombre = payload.nombre.trim();
     payload.apellidoPaterno = payload.apellidoPaterno.trim();
     payload.apellidoMaterno = payload.apellidoMaterno.trim();
     payload.correo = payload.correo.trim();
+    payload.celular = payload.celular.trim();
     this.auth.register(payload).subscribe({
-      next: () => this.router.navigate(['/login'], {
-        queryParams: { registrado: '1', ...(this.returnUrl ? { returnUrl: this.returnUrl } : {}) }
-      }),
+      next: () => {
+        this.errors.clear();
+        this.router.navigate(['/login'], {
+          queryParams: { registrado: '1', ...(this.returnUrl ? { returnUrl: this.returnUrl } : {}) }
+        });
+      },
       error: () => this.loading = false
     });
+  }
+
+  normalizeDigits(controlName: 'dni' | 'celular', maxLen: number, event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    if (!input) return;
+    const digits = input.value.replace(/\D+/g, '').slice(0, maxLen);
+    if (input.value !== digits) {
+      input.value = digits;
+    }
+    this.form.controls[controlName].setValue(digits, { emitEvent: false });
   }
 
   private localDate(date: Date): string {

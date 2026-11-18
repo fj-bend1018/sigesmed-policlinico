@@ -66,7 +66,6 @@ class CitaConcurrenciaIntegrationTest {
     private Usuario usuarioA;
     private Usuario usuarioB;
     private Paciente pacienteA;
-    private Paciente pacienteB;
     private final List<Long> createdCitaIds = new ArrayList<>();
     private final List<Long> createdHorarioIds = new ArrayList<>();
 
@@ -84,7 +83,7 @@ class CitaConcurrenciaIntegrationTest {
         pacienteA = pacienteRepository.findByUsuario_Id(usuarioA.getId()).orElseThrow();
 
         usuarioB = obtenerOCrearPaciente("88880002", "pacienteB@sigesmed.test", "Paciente B");
-        pacienteB = pacienteRepository.findByUsuario_Id(usuarioB.getId()).orElseThrow();
+        pacienteRepository.findByUsuario_Id(usuarioB.getId()).orElseThrow();
     }
 
     @AfterEach

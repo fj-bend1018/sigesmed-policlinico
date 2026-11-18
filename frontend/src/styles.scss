@@ -138,25 +138,30 @@ $container-max-widths: (
 
 :root {
   color-scheme: light;
-  --clinic-brand: #165e3b;
-  --clinic-brand-deep: #0f3c26;
-  --clinic-brand-dark: #072215;
-  --clinic-mint: #e8f3ec;
-  --clinic-canvas: #f4f7f5;
+  --clinic-brand: #0A4D2E;
+  --clinic-brand-deep: #06331E;
+  --clinic-brand-dark: #042113;
+  --clinic-emerald-700: #0F633B;
+  --clinic-emerald-600: #147A49;
+  --clinic-mint: #DCF0E5;
+  --clinic-mint-soft: #F0F8F4;
+  --clinic-mint-border: #BFE3CF;
+  --clinic-canvas: #EEF4F0;
   --clinic-surface: #ffffff;
-  --clinic-ink: #13251b;
-  --clinic-heading: #0f3c26;
-  --clinic-muted: #4b6154;
-  --clinic-line: #d4e0d8;
-  --clinic-gold: #c99b2e;
-  --clinic-gold-light: #e5be5c;
-  --clinic-gold-pale: #fdf7e7;
+  --clinic-ink: #0B2518;
+  --clinic-heading: #06331E;
+  --clinic-muted: #4C6357;
+  --clinic-line: #D4E4DA;
+  --clinic-gold: #D4AF37;
+  --clinic-gold-light: #E6C86E;
+  --clinic-gold-dark: #B8860B;
+  --clinic-gold-pale: #FBF4DE;
   --clinic-focus: #8a4f00;
   --clinic-success: #166534;
   --clinic-warning: #795000;
   --clinic-danger: #9e2a2b;
   --bs-primary: var(--clinic-brand);
-  --bs-primary-rgb: 22, 94, 59;
+  --bs-primary-rgb: 10, 77, 46;
   --bs-body-color: var(--clinic-ink);
   --bs-body-bg: var(--clinic-canvas);
   --bs-link-color: var(--clinic-brand-deep);
@@ -182,7 +187,7 @@ body {
 
 h1, h2, h3, h4, .display-title {
   color: var(--clinic-heading);
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Outfit", "Plus Jakarta Sans", system-ui, sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
   text-wrap: balance;
@@ -242,6 +247,13 @@ a:hover { color: var(--clinic-brand); }
   padding-top: 2rem;
   padding-bottom: 3.5rem;
 }
+.page-shell--full {
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+}
 .eyebrow {
   display: inline-flex;
   align-items: center;
@@ -284,44 +296,51 @@ a:hover { color: var(--clinic-brand); }
 .field-optional { color: var(--clinic-muted); font-size: .82em; font-weight: 500; }
 
 /* =========================================================
-   CABECERA INSTITUCIONAL GLASSMORPHISM (ESMERALDA Y ORO)
+   CABECERA INSTITUCIONAL GLASSMORPHISM (BLANCO, ESMERALDA Y ORO)
    ========================================================= */
 .site-header {
   position: sticky;
   top: 0;
   z-index: 1020;
-  border-bottom: 1px solid rgba(229, 190, 92, 0.25);
-  background: rgba(7, 34, 21, 0.94);
+  border-bottom: 1px solid var(--clinic-line);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(16px);
-  color: #fff;
-  box-shadow: 0 10px 30px rgba(4, 22, 13, 0.24);
+  color: var(--clinic-ink);
+  box-shadow: 0 8px 26px rgba(4, 33, 19, 0.06);
+  transition: box-shadow .25s ease, background-color .25s ease;
 }
 .site-header .navbar {
-  width: min(1380px, calc(100% - 3rem));
+  width: min(1240px, calc(100% - 2rem));
   max-width: none;
-  min-height: 4.8rem;
+  min-height: 4.35rem;
   margin-inline: auto;
   padding-inline: 0;
-  gap: 1rem;
+  gap: .75rem;
 }
 .brand, .footer-brand {
   display: inline-flex;
   align-items: center;
   gap: .85rem;
-  color: #fff;
+  color: var(--clinic-ink);
   text-decoration: none;
 }
+.footer-brand { color: #fff; }
 .brand-logo-wrap {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 3.15rem;
-  height: 3.15rem;
-  padding: .32rem;
-  border: 2px solid var(--clinic-gold);
-  border-radius: .8rem;
-  background: #fff;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+  width: 3rem;
+  height: 3rem;
+  padding: .28rem;
+  border: 1px solid var(--clinic-mint-border);
+  border-radius: .75rem;
+  background: var(--clinic-mint-soft);
+  box-shadow: 0 4px 12px rgba(6, 51, 30, 0.08);
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.brand:hover .brand-logo-wrap {
+  transform: translateY(-1px) scale(1.03);
+  box-shadow: 0 8px 18px rgba(6, 51, 30, 0.14);
 }
 .brand-logo {
   display: block;
@@ -331,114 +350,117 @@ a:hover { color: var(--clinic-brand); }
 }
 .brand-divider {
   width: 1px;
-  height: 2.3rem;
-  background: rgba(255, 255, 255, 0.2);
+  height: 2.1rem;
+  background: var(--clinic-line);
 }
 .brand-copy strong, .brand-copy small, .footer-brand strong, .footer-brand small {
   display: block;
   line-height: 1.2;
 }
 .brand-copy strong {
-  color: #fff;
-  font-family: "Playfair Display", Georgia, serif;
-  font-size: 1.04rem;
+  color: var(--clinic-brand-deep);
+  font-family: "Outfit", "Plus Jakarta Sans", sans-serif;
+  font-size: .9rem;
   font-weight: 700;
-  letter-spacing: 0.01em;
+  letter-spacing: -0.01em;
 }
 .brand-copy small {
-  margin-top: .18rem;
-  color: var(--clinic-gold-light);
-  font-size: .72rem;
-  font-weight: 700;
-  letter-spacing: .04em;
-  text-transform: uppercase;
+  margin-top: .14rem;
+  color: var(--clinic-emerald-700);
+  font-size: .7rem;
+  font-weight: 600;
 }
 .site-header .nav-link {
   position: relative;
-  padding: .55rem .8rem;
-  border-radius: 999px;
-  color: rgba(255, 255, 255, 0.86);
-  font-size: .88rem;
+  padding: .42rem .62rem;
+  border-radius: 10px;
+  color: var(--clinic-muted);
+  font-size: .84rem;
   font-weight: 600;
-  transition: color .2s ease, background-color .2s ease;
+  white-space: nowrap;
+  transition: color .2s ease, background-color .2s ease, transform .2s ease;
 }
 .site-header .nav-link:hover,
 .site-header .nav-link:focus-visible {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--clinic-mint-soft);
+  color: var(--clinic-brand);
 }
 .btn-nav-primary, .btn-nav-outline, .btn-nav-text {
   display: inline-flex;
-  min-height: 40px;
+  min-height: 37px;
   align-items: center;
   justify-content: center;
-  padding: .5rem 1.1rem;
-  border-radius: 999px;
-  font-size: .85rem;
-  font-weight: 750;
+  padding: .42rem .95rem;
+  border-radius: 10px;
+  font-size: .83rem;
+  font-weight: 700;
   text-decoration: none;
+  white-space: nowrap;
   transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease;
 }
 .btn-nav-primary {
-  border: 1px solid var(--clinic-gold-light);
-  background: linear-gradient(135deg, #e5be5c 0%, #c99b2e 100%);
-  color: #072215 !important;
-  box-shadow: 0 6px 18px rgba(201, 155, 46, 0.32);
+  border: 1.5px solid var(--clinic-brand);
+  background: var(--clinic-brand);
+  color: #fff !important;
+  box-shadow: 0 8px 20px rgba(10, 77, 46, 0.22);
 }
 .btn-nav-primary:hover {
-  transform: translateY(-1px);
-  background: linear-gradient(135deg, #edd07b 0%, #d4a638 100%);
-  color: #072215 !important;
+  transform: translateY(-2px);
+  background: var(--clinic-brand-deep);
+  border-color: var(--clinic-brand-deep);
+  box-shadow: 0 12px 24px rgba(6, 51, 30, 0.28);
+  color: #fff !important;
 }
 .btn-nav-outline {
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff !important;
+  border: 1.5px solid var(--clinic-mint-border);
+  background: var(--clinic-mint-soft);
+  color: var(--clinic-brand) !important;
 }
 .btn-nav-outline:hover {
-  border-color: #fff;
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff !important;
+  transform: translateY(-1px);
+  border-color: var(--clinic-emerald-700);
+  background: var(--clinic-mint);
+  color: var(--clinic-brand-deep) !important;
 }
 .btn-nav-text {
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  background: rgba(255, 255, 255, 0.06);
-  color: #e8f3ec !important;
+  border: 1.5px solid var(--clinic-line);
+  background: #fff;
+  color: var(--clinic-muted) !important;
 }
 .btn-nav-text:hover {
-  border-color: rgba(255, 255, 255, 0.48);
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff !important;
+  border-color: var(--clinic-brand);
+  background: var(--clinic-mint-soft);
+  color: var(--clinic-brand-deep) !important;
 }
 .nav-role {
-  padding: .38rem .78rem;
-  border: 1px solid rgba(229, 190, 92, 0.4);
+  padding: .36rem .78rem;
+  border: 1px solid var(--clinic-gold);
   border-radius: 999px;
-  background: rgba(201, 155, 46, 0.16);
-  color: var(--clinic-gold-light);
+  background: var(--clinic-gold-pale);
+  color: var(--clinic-gold-dark);
   font-size: .74rem;
   font-weight: 800;
   letter-spacing: .04em;
   text-transform: uppercase;
 }
 .navbar-toggler {
-  border-color: rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--clinic-line);
+  background: var(--clinic-mint-soft);
 }
-.navbar-toggler-icon { filter: invert(1) brightness(1.8); }
+.navbar-toggler-icon { filter: none; }
 
 /* =========================================================
    PIE DE PÁGINA INSTITUCIONAL
    ========================================================= */
 .site-footer {
   position: relative;
-  padding: 2.2rem 0 1.2rem;
-  border-top: 4px solid var(--clinic-gold);
-  background: linear-gradient(125deg, #072215 0%, #0f3c26 60%, #165e3b 100%);
-  color: #fff;
+  padding: 2.2rem 0 1.25rem;
+  border-top: 3px solid var(--clinic-gold);
+  background: var(--clinic-brand-dark);
+  color: #B9D4C5;
 }
 .site-footer .footer-container {
-  width: min(1380px, calc(100% - 3rem));
+  width: min(1240px, calc(100% - 2.5rem));
   max-width: none;
   margin-inline: auto;
   padding-inline: 0;
@@ -449,6 +471,51 @@ a:hover { color: var(--clinic-brand); }
   align-items: center;
   gap: 2rem;
   padding-bottom: 1.5rem;
+}
+.footer-main--info {
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.6fr);
+  align-items: start;
+}
+.footer-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.75rem;
+  padding-left: 1.75rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+}
+.footer-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.footer-info-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--clinic-gold-light);
+}
+.footer-info-value {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #e8f3ec;
+  line-height: 1.4;
+}
+@media (max-width: 900px) {
+  .footer-main--info {
+    grid-template-columns: 1fr;
+  }
+  .footer-info-grid {
+    padding-left: 0;
+    padding-top: 1rem;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.16);
+  }
+}
+@media (max-width: 560px) {
+  .footer-info-grid {
+    grid-template-columns: 1fr;
+  }
 }
 .footer-logo-frame {
   display: inline-flex;

@@ -9,7 +9,7 @@ import { AuthService } from '../../core/auth/auth.service';
   templateUrl: './reset.component.html'
 })
 export class ResetComponent {
-  readonly form = new FormGroup({ nuevaClave: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(72)] }) });
+  readonly form = new FormGroup({ nuevaClave: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(18)] }) });
   readonly token: string;
   loading = false;
   completed = false;

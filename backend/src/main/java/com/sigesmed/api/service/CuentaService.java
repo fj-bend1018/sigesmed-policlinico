@@ -15,6 +15,7 @@ import com.sigesmed.api.dto.cuenta.ActualizarPerfilRequest;
 import com.sigesmed.api.dto.cuenta.PerfilResponse;
 import com.sigesmed.api.exception.ApiException;
 import com.sigesmed.api.repository.AdministradorRepository;
+import com.sigesmed.api.repository.DoctorRepository;
 import com.sigesmed.api.repository.PacienteRepository;
 import com.sigesmed.api.repository.RecepcionistaRepository;
 import com.sigesmed.api.repository.UsuarioRepository;
@@ -25,13 +26,16 @@ public class CuentaService {
     private final PacienteRepository pacienteRepository;
     private final RecepcionistaRepository recepcionistaRepository;
     private final AdministradorRepository administradorRepository;
+    private final DoctorRepository doctorRepository;
 
     public CuentaService(UsuarioRepository usuarioRepository, PacienteRepository pacienteRepository,
-            RecepcionistaRepository recepcionistaRepository, AdministradorRepository administradorRepository) {
+            RecepcionistaRepository recepcionistaRepository, AdministradorRepository administradorRepository,
+            DoctorRepository doctorRepository) {
         this.usuarioRepository = usuarioRepository;
         this.pacienteRepository = pacienteRepository;
         this.recepcionistaRepository = recepcionistaRepository;
         this.administradorRepository = administradorRepository;
+        this.doctorRepository = doctorRepository;
     }
 
     @Transactional(readOnly = true)
@@ -51,6 +55,11 @@ public class CuentaService {
         if (a != null) {
             return new PerfilResponse(usuario.getRol(), usuario.getDni(), null, null, null,
                     a.getCorreo(), a.getCelular(), a.getDireccion());
+        }
+        if (usuario.getDoctor() != null) {
+            var d = usuario.getDoctor();
+            return new PerfilResponse(usuario.getRol(), usuario.getDni(), d.getNombre(), null, null,
+                    d.getCorreo(), null, null);
         }
         throw new ApiException(HttpStatus.NOT_FOUND, "Perfil no encontrado");
     }
@@ -79,6 +88,10 @@ public class CuentaService {
             Administrador a = usuario.getAdministrador();
             a.actualizar(correo, celular, direccion);
             administradorRepository.save(a);
+        } else if (usuario.getDoctor() != null) {
+            var d = usuario.getDoctor();
+            d.actualizarCorreo(correo);
+            doctorRepository.save(d);
         } else {
             throw new ApiException(HttpStatus.NOT_FOUND, "Perfil no encontrado");
         }

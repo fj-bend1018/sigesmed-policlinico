@@ -10,17 +10,17 @@ import com.sigesmed.api.service.CitaService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(CitaController.class)
 @Import(SecurityConfiguration.class)
 class RoleAuthorizationTest {
     @Autowired private MockMvc mvc;
-    @MockBean private CitaService citaService;
-    @MockBean private CitaManagementService citaManagementService;
+    @MockitoBean private CitaService citaService;
+    @MockitoBean private CitaManagementService citaManagementService;
 
     @Test
     @WithMockUser(roles = "PACIENTE")

@@ -16,19 +16,33 @@
   </div>
 </div>
 
+<div class="session-transition" *ngIf="sessionTransition$ | async as transition"
+     [class.is-leaving]="transition.leaving" [class.is-logout]="transition.kind === 'logout'"
+     role="status" aria-live="polite">
+  <div class="session-transition__card">
+    <div class="session-transition__ring" aria-hidden="true">
+      <img src="/assets/LogoEmpresa.png" alt="">
+    </div>
+    <p class="session-transition__eyebrow">{{ transition.eyebrow }}</p>
+    <h2 class="session-transition__title">{{ transition.title }}</h2>
+    <div class="session-transition__bar" aria-hidden="true"><span></span></div>
+    <p class="session-transition__subtitle">{{ transition.subtitle }}</p>
+  </div>
+</div>
+
 <div class="route-transition-glow" [class.is-active]="routeTransitionActive" aria-hidden="true"></div>
 
-<header class="site-header" [class.site-header--patient]="session?.rol === 'PACIENTE'">
+<header class="site-header" *ngIf="showPublicChrome" [class.site-header--patient]="session?.rol === 'PACIENTE'">
   <nav class="navbar navbar-expand-lg container"
        [attr.aria-label]="session?.rol === 'PACIENTE' ? 'Navegación del portal del paciente' : 'Navegación principal'">
-    <a class="brand" routerLink="/" aria-label="Inicio del Policlínico Sagrado Corazón">
+    <a class="brand" routerLink="/" aria-label="Inicio del Policlínico Infantil Nuestra Señora del Sagrado Corazón">
       <span class="brand-logo-wrap" aria-hidden="true">
         <img class="brand-logo" src="/assets/LogoEmpresa.png" alt="">
       </span>
       <span class="brand-divider" aria-hidden="true"></span>
       <span class="brand-copy">
-        <strong>Policlínico Infantil</strong>
-        <small>Nuestra Señora del Sagrado Corazón</small>
+        <strong>Policlínico Infantil Nuestra Señora del Sagrado Corazón</strong>
+        <small>Diócesis de Chosica · Atención médica integral</small>
       </span>
     </a>
 
@@ -41,7 +55,8 @@
       <div class="navbar-nav ms-auto align-items-lg-center gap-lg-2" [class.navbar-nav--patient]="session?.rol === 'PACIENTE'">
         <a class="nav-link" *ngIf="session?.rol !== 'PACIENTE'" routerLink="/" fragment="inicio">Inicio</a>
         <a class="nav-link" *ngIf="session?.rol !== 'PACIENTE'" routerLink="/" fragment="especialidades">Especialidades</a>
-        <a class="nav-link" *ngIf="session?.rol !== 'PACIENTE'" routerLink="/" fragment="nosotros">Nosotros</a>
+        <a class="nav-link" *ngIf="session?.rol !== 'PACIENTE'" routerLink="/" fragment="servicios">Servicios</a>
+        <a class="nav-link" *ngIf="session?.rol !== 'PACIENTE'" routerLink="/" fragment="nosotros">Misión</a>
         <a class="nav-link" *ngIf="session?.rol !== 'PACIENTE'" routerLink="/" fragment="preguntas">Preguntas</a>
         <a class="nav-link" *ngIf="session?.rol !== 'PACIENTE'" routerLink="/" fragment="contacto">Contacto</a>
         <a class="btn btn-nav-outline" *ngIf="!session" routerLink="/login">Iniciar sesión</a>
@@ -51,55 +66,59 @@
         <a class="btn btn-nav-primary" *ngIf="session?.rol === 'PACIENTE'" routerLink="/paciente/disponibilidad">Reservar cita</a>
         <a class="btn btn-nav-outline" *ngIf="session?.rol === 'RECEPCIONISTA'" routerLink="/recepcionista">Portal de recepción</a>
         <a class="btn btn-nav-outline" *ngIf="session?.rol === 'ADMINISTRADOR'" routerLink="/administrador">Portal de administración</a>
+        <a class="btn btn-nav-outline" *ngIf="session?.rol === 'DOCTOR'" routerLink="/doctor">Portal médico</a>
         <span class="nav-role" *ngIf="session?.rol === 'RECEPCIONISTA'">Recepción</span>
         <span class="nav-role" *ngIf="session?.rol === 'ADMINISTRADOR'">Administración</span>
+        <span class="nav-role" *ngIf="session?.rol === 'DOCTOR'">Médico</span>
         <button class="btn btn-nav-text" type="button" *ngIf="session" (click)="logout()">Cerrar sesión</button>
       </div>
     </div>
   </nav>
 </header>
 
-<main id="contenido-principal" class="container page-shell">
-  <div class="alert alert-danger alert-dismissible fade show" role="alert" *ngIf="errorMessage$ | async as message">
+<main id="contenido-principal" [class.container]="!isFullBleed" [class.page-shell]="!isFullBleed" [class.page-shell--full]="isFullBleed">
+  <div class="alert alert-danger alert-dismissible fade show" [class.container]="isFullBleed" [class.mt-3]="isFullBleed" role="alert" *ngIf="errorMessage$ | async as message">
     <strong>Revisa este mensaje:</strong> {{ message }}
     <button type="button" class="btn-close" aria-label="Cerrar mensaje" (click)="clearError()"></button>
   </div>
   <router-outlet></router-outlet>
 </main>
 
-<footer class="site-footer" [class.site-footer--patient]="session?.rol === 'PACIENTE'">
+<footer class="site-footer" *ngIf="showPublicChrome" [class.site-footer--patient]="session?.rol === 'PACIENTE'">
   <div class="container footer-container">
-    <div class="footer-main" [class.footer-main--patient]="session?.rol === 'PACIENTE'">
-      <a class="footer-brand" routerLink="/" aria-label="Volver al inicio">
+    <div class="footer-main footer-main--info">
+      <div class="footer-brand">
         <span class="footer-logo-frame" aria-hidden="true">
           <img src="/assets/LogoEmpresa.png" alt="">
         </span>
-        <span><strong>Policlínico Infantil</strong><small>Nuestra Señora del Sagrado Corazón</small></span>
-      </a>
+        <span>
+          <strong>Policlínico Infantil Nuestra Señora del Sagrado Corazón</strong>
+          <small>Obra social de la Diócesis de Chosica</small>
+        </span>
+      </div>
 
-      <nav class="footer-nav" *ngIf="session?.rol !== 'PACIENTE'" aria-label="Navegación del pie de página">
-        <a routerLink="/" fragment="inicio">Inicio</a>
-        <a routerLink="/" fragment="especialidades">Especialidades</a>
-        <a routerLink="/" fragment="nosotros">Nosotros</a>
-        <a routerLink="/" fragment="preguntas">Preguntas</a>
-        <a routerLink="/" fragment="contacto">Contacto</a>
-        <a *ngIf="!session" routerLink="/login">Acceso al sistema</a>
-      </nav>
-
-      <address class="footer-patient-contact" *ngIf="session?.rol === 'PACIENTE'">
-        <strong>Atención al paciente</strong>
-        <div>
-          <a href="tel:+5113516775">(01) 351-6775</a>
-          <a href="tel:+5113520695">(01) 352-0695</a>
-          <a href="mailto:psaludchosica@hotmail.com">psaludchosica&#64;hotmail.com</a>
+      <div class="footer-info-grid">
+        <div class="footer-info-item">
+          <span class="footer-info-label">Dirección</span>
+          <span class="footer-info-value">Av. Alfonso Ugarte con Av. La Esperanza, Urb. San Gregorio, Ate, Lima</span>
         </div>
-      </address>
-
-      <p class="footer-affiliation">Obra social de la<br>Diócesis de Chosica</p>
+        <div class="footer-info-item">
+          <span class="footer-info-label">Horario de atención</span>
+          <span class="footer-info-value">Lunes a sábado · 8:00 a. m. – 8:00 p. m.</span>
+        </div>
+        <div class="footer-info-item">
+          <span class="footer-info-label">Teléfonos</span>
+          <span class="footer-info-value">(01) 351-6775 / (01) 352-0695</span>
+        </div>
+        <div class="footer-info-item">
+          <span class="footer-info-label">Correo</span>
+          <span class="footer-info-value">psaludchosica&#64;hotmail.com</span>
+        </div>
+      </div>
     </div>
     <div class="footer-bottom">
       <span>Policlínico Infantil Nuestra Señora del Sagrado Corazón</span>
-      <span>Todos los derechos reservados.</span>
+      <span>Diócesis de Chosica · Todos los derechos reservados.</span>
     </div>
   </div>
 </footer>

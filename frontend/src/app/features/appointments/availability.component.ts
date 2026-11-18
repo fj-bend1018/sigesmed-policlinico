@@ -2,13 +2,22 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 import { AppointmentApiService, AvailableSlot, ComplementaryService, Doctor, Specialty } from '../../core/appointments/appointment-api.service';
 import { AppointmentDraft, AppointmentDraftService, ServiceAppointmentDraft } from '../../core/appointments/appointment-draft.service';
 import { ErrorMessageService } from '../../core/http/error-message.service';
 import { isValidIsoDate } from '../../core/forms/field-rules';
+import { doctorAvatarUrl } from '../../core/utils/doctor-avatar';
+
+interface CalendarDayCell {
+  iso: string;
+  dayNumber: number;
+  inCurrentMonth: boolean;
+  disabled: boolean;
+  isToday: boolean;
+}
 
 @Component({
   standalone: true, selector: 'app-availability', imports: [CommonModule, FormsModule, RouterLink],
@@ -45,6 +54,56 @@ export class AvailabilityComponent implements OnInit {
   private restoredSpecialtyName = '';
   private restoredServiceName = '';
   private restoredDoctorName = '';
+  private initialSpecialtyParam = '';
+  private initialServiceParam = '';
+  calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  readonly calendarWeekdays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+
+  doctorAvatar(name: string, index: number): string {
+    return doctorAvatarUrl(name, index, this.doctors);
+  }
+
+  get calendarMonthLabel(): string {
+    return this.calendarMonth.toLocaleDateString('es-PE', { month: 'long', year: 'numeric' });
+  }
+
+  get canPrevCalendarMonth(): boolean {
+    const now = new Date();
+    return this.calendarMonth.getFullYear() > now.getFullYear()
+      || (this.calendarMonth.getFullYear() === now.getFullYear() && this.calendarMonth.getMonth() > now.getMonth());
+  }
+
+  prevCalendarMonth(): void {
+    if (!this.canPrevCalendarMonth) return;
+    this.calendarMonth = new Date(this.calendarMonth.getFullYear(), this.calendarMonth.getMonth() - 1, 1);
+  }
+
+  nextCalendarMonth(): void {
+    this.calendarMonth = new Date(this.calendarMonth.getFullYear(), this.calendarMonth.getMonth() + 1, 1);
+  }
+
+  get calendarDays(): CalendarDayCell[] {
+    const year = this.calendarMonth.getFullYear();
+    const month = this.calendarMonth.getMonth();
+    const firstOfMonth = new Date(year, month, 1);
+    const startOffset = (firstOfMonth.getDay() + 6) % 7; // Monday = 0
+    const gridStart = new Date(year, month, 1 - startOffset);
+    const cells: CalendarDayCell[] = [];
+    for (let i = 0; i < 42; i++) {
+      const d = new Date(gridStart.getFullYear(), gridStart.getMonth(), gridStart.getDate() + i);
+      const iso = this.localDate(d);
+      const isSunday = d.getDay() === 0;
+      const isPast = iso < this.minDate;
+      cells.push({
+        iso,
+        dayNumber: d.getDate(),
+        inCurrentMonth: d.getMonth() === month,
+        disabled: isPast || isSunday || d.getMonth() !== month,
+        isToday: iso === this.minDate
+      });
+    }
+    return cells;
+  }
 
   get selectedSpecialtyName(): string {
     return this.specialties.find(item => String(item.id) === this.specialtyId)?.nombre ?? this.restoredSpecialtyName;
@@ -105,8 +164,8 @@ export class AvailabilityComponent implements OnInit {
   }
 
   constructor(private readonly api: AppointmentApiService, private readonly router: Router,
-      private readonly auth: AuthService, private readonly drafts: AppointmentDraftService,
-      private readonly errors: ErrorMessageService) { }
+      private readonly route: ActivatedRoute, private readonly auth: AuthService,
+      private readonly drafts: AppointmentDraftService, private readonly errors: ErrorMessageService) { }
 
   ngOnInit(): void {
     this.errors.clear();
@@ -116,7 +175,11 @@ export class AvailabilityComponent implements OnInit {
       return;
     }
 
-    const draft = this.drafts.read();
+    this.initialSpecialtyParam = this.route.snapshot.queryParamMap.get('especialidad') ?? '';
+    this.initialServiceParam = this.route.snapshot.queryParamMap.get('servicio') ?? '';
+    const hasQuerySelection = Boolean(this.initialSpecialtyParam || this.initialServiceParam);
+
+    const draft = hasQuerySelection ? null : this.drafts.read();
     if (draft) {
       this.bookingType = draft.tipoAtencion === 'SERVICIO_COMPLEMENTARIO' ? 'SERVICIO_COMPLEMENTARIO' : 'CONSULTA';
       if (draft.tipoAtencion === 'SERVICIO_COMPLEMENTARIO') {
@@ -461,7 +524,16 @@ export class AvailabilityComponent implements OnInit {
       next: items => {
         this.specialties = items;
         this.loadingSpecialties = false;
-        if (draft && draft.tipoAtencion !== 'SERVICIO_COMPLEMENTARIO') this.restoreDraft(draft);
+        if (draft && draft.tipoAtencion !== 'SERVICIO_COMPLEMENTARIO') {
+          this.restoreDraft(draft);
+        } else if (this.initialSpecialtyParam) {
+          const targetKey = this.normalizeMatchKey(this.initialSpecialtyParam);
+          const match = items.find(item => this.normalizeMatchKey(item.nombre) === targetKey);
+          if (match) {
+            this.bookingType = 'CONSULTA';
+            this.onSpecialtyChange(String(match.id));
+          }
+        }
       },
       error: () => {
         this.loadingSpecialties = false;
@@ -481,7 +553,16 @@ export class AvailabilityComponent implements OnInit {
       next: items => {
         this.complementaryServices = items;
         this.loadingServices = false;
-        if (draft) this.restoreDraft(draft);
+        if (draft) {
+          this.restoreDraft(draft);
+        } else if (this.initialServiceParam) {
+          const targetKey = this.normalizeMatchKey(this.initialServiceParam);
+          const match = items.find(item => this.normalizeMatchKey(item.nombre) === targetKey);
+          if (match) {
+            this.bookingType = 'SERVICIO_COMPLEMENTARIO';
+            this.onServiceChange(String(match.id));
+          }
+        }
       },
       error: () => {
         this.loadingServices = false;
@@ -522,5 +603,15 @@ export class AvailabilityComponent implements OnInit {
 
   private localDate(value: Date): string {
     return `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
+  }
+
+  private normalizeMatchKey(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
   }
 }

@@ -3,6 +3,7 @@ import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { NavigationCancel, NavigationEnd, NavigationError, NavigationStart, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/auth/auth.service';
 import { AuthSession } from './core/auth/auth.models';
+import { SessionTransitionService } from './core/auth/session-transition.service';
 import { AppointmentDraftService } from './core/appointments/appointment-draft.service';
 import { ErrorMessageService } from './core/http/error-message.service';
 
@@ -20,22 +21,31 @@ export class AppComponent implements OnInit, OnDestroy {
   splashLeaving = false;
   showBackToTop = false;
   routeTransitionActive = false;
+  showPublicChrome = true;
+  isFullBleed = false;
   readonly errorMessage$ = this.errors.message$;
+  readonly sessionTransition$ = this.sessionTransition.state$;
   private readonly splashTimers: ReturnType<typeof setTimeout>[] = [];
   private routeTransitionTimer: ReturnType<typeof setTimeout> | null = null;
   private lastRoutePath = '/';
 
   constructor(private readonly auth: AuthService, private readonly errors: ErrorMessageService,
-      private readonly router: Router, private readonly appointmentDraft: AppointmentDraftService) {
+      private readonly router: Router, private readonly appointmentDraft: AppointmentDraftService,
+      private readonly sessionTransition: SessionTransitionService) {
     this.session = auth.currentSession();
     this.lastRoutePath = this.routePath(this.router.url);
+    this.updateLayoutFlags(this.lastRoutePath);
     auth.session$.subscribe(session => this.session = session);
     this.router.events.subscribe(event => {
       if (event instanceof NavigationStart) {
         if (this.routePath(event.url) !== this.lastRoutePath) this.beginRouteTransition();
       } else if (event instanceof NavigationEnd) {
+        const nextPath = this.routePath(event.urlAfterRedirects);
+        if (nextPath !== this.lastRoutePath) this.errors.clear();
         this.updateBackToTopVisibility();
-        this.lastRoutePath = this.routePath(event.urlAfterRedirects);
+        this.lastRoutePath = nextPath;
+        this.updateLayoutFlags(this.lastRoutePath);
+        this.menuOpen = false;
         this.finishRouteTransition();
       } else if (event instanceof NavigationCancel || event instanceof NavigationError) {
         this.clearRouteTransition();
@@ -83,6 +93,16 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private routePath(url: string): string {
     return url.split(/[?#]/, 1)[0] || '/';
+  }
+
+  private updateLayoutFlags(path: string): void {
+    const clean = path || '/';
+    const isAuth = clean.startsWith('/login') || clean.startsWith('/registro')
+      || clean.startsWith('/recuperar') || clean.startsWith('/restablecer');
+    const isPortal = clean.startsWith('/paciente') || clean.startsWith('/recepcionista')
+      || clean.startsWith('/administrador') || clean.startsWith('/doctor');
+    this.showPublicChrome = !isAuth && !isPortal;
+    this.isFullBleed = clean === '/' || isAuth || isPortal;
   }
 
   private beginRouteTransition(): void {

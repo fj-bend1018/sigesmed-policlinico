@@ -152,7 +152,7 @@
                     [attr.aria-pressed]="doctorId === '' + doctor.id"
                     (click)="onDoctorChange('' + doctor.id)">
               <span class="booking-doctor__avatar booking-doctor__avatar--photo" aria-hidden="true">
-                <img [src]="idx % 2 === 0 ? '/assets/rediseno/spec-pediatria.jpg' : '/assets/rediseno/doc-male.jpg'" alt="" loading="lazy">
+                <img [src]="doctorAvatar(doctor.nombre, idx)" alt="" loading="lazy">
               </span>
               <span class="booking-doctor__copy">
                 <strong>{{ doctor.nombre }}</strong>
@@ -174,11 +174,31 @@
             <h2 id="service-date-step-title">Elige una fecha</h2>
             <p>Selecciona el día para consultar los horarios disponibles del servicio.</p>
           </div>
-          <div class="booking-date-picker">
-            <label for="service-booking-date">Fecha de atención</label>
-            <div class="booking-date-picker__control">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
-              <input id="service-booking-date" class="form-control" type="date" [ngModel]="date" (ngModelChange)="onDateChange($event)" [min]="minDate" required>
+          <div class="booking-calendar" role="group" aria-labelledby="service-date-step-title">
+            <div class="booking-calendar__header">
+              <strong class="booking-calendar__title">{{ calendarMonthLabel }}</strong>
+              <div class="booking-calendar__nav">
+                <button type="button" class="booking-calendar__nav-btn" (click)="prevCalendarMonth()" [disabled]="!canPrevCalendarMonth" aria-label="Mes anterior">‹</button>
+                <button type="button" class="booking-calendar__nav-btn" (click)="nextCalendarMonth()" aria-label="Mes siguiente">›</button>
+              </div>
+            </div>
+            <div class="booking-calendar__weekdays">
+              <span *ngFor="let wd of calendarWeekdays">{{ wd }}</span>
+            </div>
+            <div class="booking-calendar__grid">
+              <button *ngFor="let cell of calendarDays" type="button" class="booking-calendar__day"
+                      [class.is-outside]="!cell.inCurrentMonth"
+                      [class.is-today]="cell.isToday"
+                      [class.is-selected]="date === cell.iso"
+                      [disabled]="cell.disabled"
+                      [attr.aria-pressed]="date === cell.iso"
+                      (click)="onDateChange(cell.iso)">
+                {{ cell.dayNumber }}
+              </button>
+            </div>
+            <div class="booking-calendar__footer">
+              <span>Fecha elegida: <strong>{{ date | date:'EEEE d MMMM, y':'':'es' }}</strong></span>
+              <small>Atención de lunes a sábado (domingos cerrado).</small>
             </div>
           </div>
           <div class="booking-step-actions">
@@ -195,13 +215,32 @@
             <h2 id="date-step-title">¿Qué día te queda mejor?</h2>
             <p>Elige una fecha para consultar los horarios disponibles con {{ selectedDoctorName || 'el médico seleccionado' }}.</p>
           </div>
-          <div class="booking-date-picker">
-            <label for="booking-date">Fecha de atención</label>
-            <div class="booking-date-picker__control">
-              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>
-              <input id="booking-date" class="form-control" type="date" [ngModel]="date" (ngModelChange)="onDateChange($event)" [min]="minDate" required aria-describedby="booking-date-help">
+          <div class="booking-calendar" role="group" aria-labelledby="date-step-title">
+            <div class="booking-calendar__header">
+              <strong class="booking-calendar__title">{{ calendarMonthLabel }}</strong>
+              <div class="booking-calendar__nav">
+                <button type="button" class="booking-calendar__nav-btn" (click)="prevCalendarMonth()" [disabled]="!canPrevCalendarMonth" aria-label="Mes anterior">‹</button>
+                <button type="button" class="booking-calendar__nav-btn" (click)="nextCalendarMonth()" aria-label="Mes siguiente">›</button>
+              </div>
             </div>
-            <small id="booking-date-help">Puedes consultar desde hoy en adelante. Los horarios se verifican en línea.</small>
+            <div class="booking-calendar__weekdays">
+              <span *ngFor="let wd of calendarWeekdays">{{ wd }}</span>
+            </div>
+            <div class="booking-calendar__grid">
+              <button *ngFor="let cell of calendarDays" type="button" class="booking-calendar__day"
+                      [class.is-outside]="!cell.inCurrentMonth"
+                      [class.is-today]="cell.isToday"
+                      [class.is-selected]="date === cell.iso"
+                      [disabled]="cell.disabled"
+                      [attr.aria-pressed]="date === cell.iso"
+                      (click)="onDateChange(cell.iso)">
+                {{ cell.dayNumber }}
+              </button>
+            </div>
+            <div class="booking-calendar__footer">
+              <span>Fecha elegida: <strong>{{ date | date:'EEEE d MMMM, y':'':'es' }}</strong></span>
+              <small>Atención de lunes a sábado. Los horarios se verifican en línea.</small>
+            </div>
           </div>
           <div class="booking-step-actions">
             <button class="btn btn-link booking-back" type="button" (click)="selectStep(2)">← Cambiar médico</button>

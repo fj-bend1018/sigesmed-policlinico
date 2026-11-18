@@ -67,9 +67,11 @@ public class AuthService {
         }
         Usuario usuario = usuarioRepository.save(new Usuario(
                 dni, passwordEncoder.encode(request.clave()), RolUsuario.PACIENTE));
-        return pacienteRepository.save(new Paciente(usuario, request.nombre().trim(),
+        Paciente paciente = new Paciente(usuario, request.nombre().trim(),
                 request.apellidoPaterno().trim(), blankToNull(request.apellidoMaterno()),
-                dni, request.fechaNacimiento(), correo));
+                dni, request.fechaNacimiento(), correo);
+        paciente.setCelular(blankToNull(request.celular()));
+        return pacienteRepository.save(paciente);
     }
 
     @Transactional(noRollbackFor = ApiException.class)
@@ -119,7 +121,8 @@ public class AuthService {
                 OffsetDateTime.now(clock).plus(recoveryTtl)));
         String accountEmail = usuario.getPaciente() != null ? usuario.getPaciente().getCorreo()
                 : usuario.getRecepcionista() != null ? usuario.getRecepcionista().getCorreo()
-                        : usuario.getAdministrador() == null ? email : usuario.getAdministrador().getCorreo();
+                        : usuario.getDoctor() != null ? usuario.getDoctor().getCorreo()
+                                : usuario.getAdministrador() == null ? email : usuario.getAdministrador().getCorreo();
         recoveryLinkNotifier.notify(accountEmail, rawToken);
     }
 

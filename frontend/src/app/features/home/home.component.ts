@@ -1,18 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-
-export interface HeroSlideItem {
-  readonly number: string;
-  readonly tag: string;
-  readonly deckCategory: string;
-  readonly deckTitle: string;
-  readonly deckSubtitle: string;
-  readonly title: string;
-  readonly description: string;
-  readonly imageUrl: string;
-  readonly imageClass: string;
-}
 
 export interface SpecialtyItem {
   readonly code: string;
@@ -20,191 +8,121 @@ export interface SpecialtyItem {
   readonly schedule: string;
   readonly description: string;
   readonly imageUrl: string;
-  readonly imageClass: string;
 }
 
 export interface ComplementaryServiceItem {
   readonly badge: string;
   readonly name: string;
   readonly description: string;
+  readonly ctaLabel: string;
   readonly imageUrl: string;
-  readonly imageClass: string;
+}
+
+export interface FaqItem {
+  readonly question: string;
+  readonly answer: string;
+  open: boolean;
 }
 
 @Component({
   standalone: true,
   selector: 'app-home',
   imports: [CommonModule, RouterLink],
-  templateUrl: './home.component.html'
+  templateUrl: './home.component.html',
+  styleUrl: './home.component.scss'
 })
-export class HomeComponent implements OnInit, OnDestroy {
-  readonly heroSlides: readonly HeroSlideItem[] = [
-    {
-      number: '01',
-      tag: 'Policlínico Infantil · Obra Social de la Diócesis de Chosica',
-      deckCategory: 'SLIDE 01 · ATENCIÓN ACTIVA',
-      deckTitle: 'Pediatría general y crecimiento infantil',
-      deckSubtitle: 'Consultorios especializados · San Gregorio, Ate',
-      title: 'Cuidamos la salud de tu familia con cercanía y vocación.',
-      description: 'Atención a niñas, niños y sus familias en San Gregorio, Ate. Conoce las seis especialidades, el laboratorio clínico, las ecografías y cómo contactar a recepción.',
-      imageUrl: '/assets/rediseno/hero-slide-1.jpg',
-      imageClass: 'hero-scene--one'
-    },
-    {
-      number: '02',
-      tag: 'Apoyo Diagnóstico · Laboratorio y Ecografías',
-      deckCategory: 'SLIDE 02 · APOYO DIAGNÓSTICO',
-      deckTitle: 'Laboratorio clínico y ecografías de precisión',
-      deckSubtitle: 'Resultados confiables para el médico tratante',
-      title: 'Una atención cercana para cada familia.',
-      description: 'Explora nuestras seis áreas de atención y los servicios complementarios de laboratorio clínico y ecografías.',
-      imageUrl: '/assets/rediseno/hero-slide-2.jpg',
-      imageClass: 'hero-scene--two'
-    },
-    {
-      number: '03',
-      tag: 'Comunidad y Vocación · San Gregorio, Ate',
-      deckCategory: 'SLIDE 03 · COMUNIDAD Y VOCACIÓN',
-      deckTitle: 'Obra social al servicio de cada familia',
-      deckSubtitle: 'Lunes a sábado · 8:00 a. m. a 8:00 p. m.',
-      title: 'Calidad y calidez humana al servicio de la comunidad.',
-      description: 'Estamos en San Gregorio, Ate. Revisa la dirección, el horario y los teléfonos para comunicarte con recepción.',
-      imageUrl: '/assets/rediseno/spec-familiar.jpg',
-      imageClass: 'hero-scene--three'
-    }
-  ];
-
+export class HomeComponent {
   readonly specialties: readonly SpecialtyItem[] = [
     {
-      code: '01 · INFANCIA',
+      code: 'PEDIATRIA_GENERAL',
       name: 'Pediatría general',
-      schedule: 'Lun – Sáb',
-      description: 'Atención de salud infantil con orientación sobre crecimiento, desarrollo y consultas frecuentes.',
-      imageUrl: '/assets/rediseno/spec-pediatria.jpg',
-      imageClass: 'photo-pediatrics'
+      schedule: 'Lunes a sábado · 8:00 a. m. – 8:00 p. m.',
+      description: 'Control del crecimiento, desarrollo infantil, vacunación y atención integral para niños y adolescentes.',
+      imageUrl: '/assets/rediseno/spec-pediatria.jpg'
     },
     {
-      code: '02 · INTEGRAL',
+      code: 'MEDICINA_FAMILIAR',
       name: 'Medicina familiar',
-      schedule: 'Lun – Sáb',
-      description: 'Atención médica general que considera las necesidades de cada persona y su entorno familiar.',
-      imageUrl: '/assets/rediseno/spec-familiar.jpg',
-      imageClass: 'photo-family'
+      schedule: 'Lunes a sábado · 8:00 a. m. – 8:00 p. m.',
+      description: 'Atención primaria continua y preventiva orientada al cuidado integral de cada miembro de la familia.',
+      imageUrl: '/assets/rediseno/spec-familiar.jpg'
     },
     {
-      code: '03 · CRECIMIENTO',
+      code: 'NUTRICION',
       name: 'Nutrición',
-      schedule: 'Lun – Sáb',
-      description: 'Orientación sobre alimentación equilibrada y hábitos saludables, según la etapa de crecimiento infantil.',
-      imageUrl: '/assets/rediseno/spec-nutricion.jpg',
-      imageClass: 'photo-nutrition'
+      schedule: 'Lunes a sábado · 8:00 a. m. – 8:00 p. m.',
+      description: 'Evaluación nutricional personalizada y planes de alimentación saludable para todas las etapas de la vida.',
+      imageUrl: '/assets/rediseno/spec-nutricion.jpg'
     },
     {
-      code: '04 · BIENESTAR',
+      code: 'PSICOLOGIA_INFANTIL',
       name: 'Psicología infantil',
-      schedule: 'Lun – Sáb',
-      description: 'Acompañamiento y orientación sobre bienestar emocional y conductual durante la infancia.',
-      imageUrl: '/assets/rediseno/spec-psicologia.jpg',
-      imageClass: 'photo-psychology'
+      schedule: 'Lunes a sábado · 8:00 a. m. – 8:00 p. m.',
+      description: 'Acompañamiento emocional, conductual y psicopedagógico para el bienestar y desarrollo de los menores.',
+      imageUrl: '/assets/rediseno/spec-psicologia.jpg'
     },
     {
-      code: '05 · PREVENCIÓN',
+      code: 'ODONTOLOGIA_PEDIATRICA',
       name: 'Odontología pediátrica',
-      schedule: 'Lun – Sáb',
-      description: 'Cuidado preventivo de la salud bucal infantil y orientación sobre hábitos de higiene en casa.',
-      imageUrl: '/assets/rediseno/spec-odontologia.jpg',
-      imageClass: 'photo-dentistry'
+      schedule: 'Lunes a sábado · 8:00 a. m. – 8:00 p. m.',
+      description: 'Prevención, diagnóstico y tratamiento odontológico especializado en un entorno cálido para los niños.',
+      imageUrl: '/assets/rediseno/spec-odontologia.jpg'
     },
     {
-      code: '06 · ESPECIALIDAD',
+      code: 'OTORRINOLARINGOLOGIA',
       name: 'Otorrinolaringología',
-      schedule: 'Lun – Sáb',
-      description: 'Evaluación de oído, nariz y garganta, con atención especializada para niñas y niños.',
-      imageUrl: '/assets/rediseno/spec-otorrino.jpg',
-      imageClass: 'photo-ent'
+      schedule: 'Lunes a sábado · 8:00 a. m. – 8:00 p. m.',
+      description: 'Diagnóstico y manejo clínico de afecciones de oído, nariz, garganta y vías respiratorias altas.',
+      imageUrl: '/assets/rediseno/spec-otorrino.jpg'
     }
   ];
 
   readonly complementaryServices: readonly ComplementaryServiceItem[] = [
     {
-      badge: 'SERVICIO COMPLEMENTARIO 01',
+      badge: 'Diagnóstico Clínico',
       name: 'Laboratorio clínico',
-      description: 'Análisis clínicos que complementan la evaluación médica, según indicación del profesional tratante.',
-      imageUrl: '/assets/rediseno/hero-slide-2.jpg',
-      imageClass: 'photo-laboratory'
+      description: 'Análisis hematológicos, bioquímicos y pruebas clínicas de rutina con entrega oportuna de resultados para el seguimiento de tu consulta.',
+      ctaLabel: 'Agendar análisis',
+      imageUrl: '/assets/rediseno/hero-slide-2.jpg'
     },
     {
-      badge: 'SERVICIO COMPLEMENTARIO 02',
+      badge: 'Diagnóstico por Imágenes',
       name: 'Ecografías',
-      description: 'Estudios por imágenes que apoyan la evaluación médica según indicación profesional.',
-      imageUrl: '/assets/rediseno/diag-ecografia.jpg',
-      imageClass: 'photo-ultrasound'
+      description: 'Estudios ecográficos generales y especializados realizados con equipamiento adecuado y lectura médica confiable.',
+      ctaLabel: 'Agendar ecografía',
+      imageUrl: '/assets/rediseno/diag-ecografia.jpg'
     }
   ];
 
-  activeHeroSlide = 0;
-  private autoAdvanceTimer?: number;
-  private pointerInsideHero = false;
-  private focusWithinHero = false;
-  private readonly prefersReducedMotion = typeof window !== 'undefined'
-    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  ngOnInit(): void {
-    this.scheduleAutoAdvance();
-  }
-
-  ngOnDestroy(): void {
-    this.clearAutoAdvance();
-  }
-
-  showHeroSlide(index: number): void {
-    if (index < 0 || index >= this.heroSlides.length) { return; }
-    this.activeHeroSlide = index;
-    this.scheduleAutoAdvance();
-  }
-
-  previousHeroSlide(): void {
-    this.showHeroSlide((this.activeHeroSlide - 1 + this.heroSlides.length) % this.heroSlides.length);
-  }
-
-  nextHeroSlide(): void {
-    this.showHeroSlide((this.activeHeroSlide + 1) % this.heroSlides.length);
-  }
-
-  onHeroMouseEnter(): void {
-    this.pointerInsideHero = true;
-    this.scheduleAutoAdvance();
-  }
-
-  onHeroMouseLeave(): void {
-    this.pointerInsideHero = false;
-    this.scheduleAutoAdvance();
-  }
-
-  onHeroFocusIn(): void {
-    this.focusWithinHero = true;
-    this.scheduleAutoAdvance();
-  }
-
-  onHeroFocusOut(event: FocusEvent): void {
-    const hero = event.currentTarget as HTMLElement;
-    if (!hero.contains(event.relatedTarget as Node | null)) {
-      this.focusWithinHero = false;
-      this.scheduleAutoAdvance();
+  readonly faqs: FaqItem[] = [
+    {
+      question: '¿Cómo reservo una cita médica?',
+      answer: 'Puedes reservar en línea ingresando a "Reservar cita" o desde tu Portal del Paciente eligiendo la especialidad, fecha y horario disponible.',
+      open: true
+    },
+    {
+      question: '¿Qué especialidades médicas y servicios ofrecen?',
+      answer: 'Contamos con 6 especialidades médicas (Pediatría general, Medicina familiar, Nutrición, Psicología infantil, Odontología pediátrica y Otorrinolaringología) y 2 servicios de diagnóstico (Laboratorio clínico y Ecografías).',
+      open: false
+    },
+    {
+      question: '¿Con cuánta anticipación puedo cancelar o reprogramar?',
+      answer: 'Las citas pueden cancelarse o reprogramarse hasta con 2 horas de anticipación directamente desde tu panel de paciente o comunicándote con recepción.',
+      open: false
+    },
+    {
+      question: '¿Cuál es la dirección exacta y el horario de atención?',
+      answer: 'Estamos en Av. Alfonso Ugarte con Av. La Esperanza, Urb. San Gregorio, Ate, Lima. Atendemos de lunes a sábado de 8:00 a. m. a 8:00 p. m.',
+      open: false
+    },
+    {
+      question: '¿Cómo me comunico con recepción o administración?',
+      answer: 'Puedes llamarnos a los teléfonos (01) 351-6775 o (01) 352-0695, o escribirnos al correo oficial psaludchosica@hotmail.com.',
+      open: false
     }
-  }
+  ];
 
-  private scheduleAutoAdvance(): void {
-    this.clearAutoAdvance();
-    if (this.pointerInsideHero || this.focusWithinHero || this.prefersReducedMotion || typeof window === 'undefined') { return; }
-
-    this.autoAdvanceTimer = window.setTimeout(() => this.nextHeroSlide(), 5000);
-  }
-
-  private clearAutoAdvance(): void {
-    if (this.autoAdvanceTimer !== undefined && typeof window !== 'undefined') {
-      window.clearTimeout(this.autoAdvanceTimer);
-      this.autoAdvanceTimer = undefined;
-    }
+  toggleFaq(index: number): void {
+    this.faqs[index].open = !this.faqs[index].open;
   }
 }

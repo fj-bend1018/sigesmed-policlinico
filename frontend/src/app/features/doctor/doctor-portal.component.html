@@ -1,0 +1,239 @@
+<section class="v7-doc-shell" aria-labelledby="doc-portal-title">
+  <div class="v7-doc-layout">
+    <aside class="v7-doc-sidebar" aria-label="Navegación del Portal del Médico">
+      <div class="v7-doc-brand">
+        <span class="v7-doc-brand__logo"><img src="/assets/LogoEmpresa.png" alt=""></span>
+        <div>
+          <strong>Nuestra Señora del Sagrado Corazón</strong>
+          <small>PORTAL DEL MÉDICO</small>
+        </div>
+      </div>
+
+      <nav class="v7-doc-nav" aria-label="Secciones del médico">
+        <a *ngFor="let item of navigation" [routerLink]="item.link" [class.is-active]="activeSection === item.key"
+           [attr.aria-current]="activeSection === item.key ? 'page' : null">
+          <span class="v7-doc-nav__icon" aria-hidden="true">{{ item.icon }}</span>
+          <span>{{ item.label }}</span>
+        </a>
+      </nav>
+
+      <div class="v7-doc-sidebar__footer">
+        <div class="v7-doc-profile-card" *ngIf="summary">
+          <img [src]="avatarUrl" [alt]="summary.nombre">
+          <strong>{{ summary.nombre }}</strong>
+          <span>{{ summary.especialidades.join(', ') || 'Staff Médico' }}</span>
+          <small>{{ summary.cmp }}</small>
+        </div>
+        <button type="button" class="v7-doc-logout" (click)="logout()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Cerrar sesión
+        </button>
+      </div>
+    </aside>
+
+    <div class="v7-doc-main">
+      <header class="v7-doc-hero">
+        <div>
+          <p class="v7-doc-hero__eyebrow">SIGESMED · AGENDA MÉDICA</p>
+          <h1 id="doc-portal-title">Mi agenda médica — Bienvenido(a), {{ summary?.nombre || 'Doctor(a)' }}</h1>
+          <p class="v7-doc-hero__desc">Especialidad: {{ summary?.especialidades?.join(', ') || 'Consultorio externo' }}</p>
+        </div>
+      </header>
+
+      <div *ngIf="errorMessage" class="alert alert-danger" role="alert">{{ errorMessage }}</div>
+      <div *ngIf="successMessage" class="alert alert-success" role="status">{{ successMessage }}</div>
+
+      <div *ngIf="loading" class="v7-doc-skeleton" role="status" aria-live="polite" aria-label="Cargando agenda">
+        <div class="v7-doc-skeleton__kpis"><span></span><span></span><span></span><span></span></div>
+        <div class="v7-doc-skeleton__body"></div>
+      </div>
+
+      <ng-container *ngIf="!loading" [ngSwitch]="activeSection">
+        <ng-container *ngSwitchCase="'agenda'">
+          <div class="v7-doc-kpis">
+            <div class="v7-doc-kpi v7-doc-anim" style="--d:0ms">
+              <span class="v7-doc-kpi__label">Citas registradas</span>
+              <strong class="v7-doc-kpi__val">{{ stats.total }}</strong>
+              <small>Total en tu agenda</small>
+            </div>
+            <div class="v7-doc-kpi v7-doc-kpi--gold v7-doc-anim" style="--d:70ms">
+              <span class="v7-doc-kpi__label">Pendientes</span>
+              <strong class="v7-doc-kpi__val">{{ stats.pending }}</strong>
+              <small>Por atender</small>
+            </div>
+            <div class="v7-doc-kpi v7-doc-anim" style="--d:140ms">
+              <span class="v7-doc-kpi__label">Atendidas</span>
+              <strong class="v7-doc-kpi__val">{{ stats.attended }}</strong>
+              <small>Consultas finalizadas</small>
+            </div>
+            <div class="v7-doc-kpi v7-doc-kpi--gold v7-doc-anim" style="--d:210ms">
+              <span class="v7-doc-kpi__label">Próxima cita</span>
+              <strong class="v7-doc-kpi__val v7-doc-kpi__val--sm">{{ nextAppointmentTime }}</strong>
+              <small>Horario más cercano</small>
+            </div>
+          </div>
+
+          <div class="v7-doc-grid">
+            <section class="v7-doc-card v7-doc-anim" style="--d:120ms">
+              <div class="v7-doc-card__head">
+                <div>
+                  <h2>Pacientes programados</h2>
+                  <small>Control de atención y asistencia</small>
+                </div>
+                <input class="form-control v7-doc-search" type="search" maxlength="100"
+                       placeholder="Buscar paciente o DNI…"
+                       [ngModel]="searchText"
+                       (ngModelChange)="searchText = normalizeSearchInput($event)"
+                       (input)="searchText = normalizeSearchInputEvent($event)">
+              </div>
+
+              <div class="table-responsive" *ngIf="activeAppointments.length; else emptyAgenda">
+                <table class="v7-doc-table">
+                  <thead><tr><th>Fecha y hora</th><th>Paciente</th><th>Especialidad</th><th>Estado</th><th>Acción</th></tr></thead>
+                  <tbody>
+                    <tr *ngFor="let item of activeAppointments">
+                      <td><span class="v7-doc-time">{{ item.fecha | date:'d MMM' }} · {{ item.hora.slice(0, 5) }}</span></td>
+                      <td><strong>{{ item.paciente }}</strong><small class="d-block text-secondary">DNI {{ item.pacienteDni }}</small></td>
+                      <td>{{ item.especialidades.join(', ') }}</td>
+                      <td><span class="badge-status" [attr.data-status]="item.estado">{{ statusLabel(item.estado) }}</span></td>
+                      <td>
+                        <div class="v7-doc-actions">
+                          <button type="button" class="btn btn-sm btn-primary" (click)="markStatus(item, 'ATENDIDA')">Atender</button>
+                          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="markStatus(item, 'NO_ASISTIO')">No asistió</button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <ng-template #emptyAgenda>
+                <div class="v7-doc-empty">
+                  <strong>No tienes citas pendientes por atender</strong>
+                  <p>Cuando un paciente reserve una consulta contigo, aparecerá automáticamente aquí.</p>
+                </div>
+              </ng-template>
+            </section>
+
+            <aside class="v7-doc-side-charts">
+              <article class="v7-doc-card v7-doc-anim" style="--d:160ms">
+                <div class="v7-doc-card__head"><div><h3>Atenciones por franja</h3><small>Distribución horaria</small></div></div>
+                <div class="v7-doc-bars">
+                  <div class="v7-doc-bar-col" *ngFor="let b of timeBuckets; let i = index" [style.--i]="i">
+                    <span>{{ b.count }}</span>
+                    <div class="v7-doc-bar-track"><div class="v7-doc-bar-fill" [class.is-peak]="b.peak" [style.height.%]="b.pct"></div></div>
+                    <small>{{ b.label }}</small>
+                  </div>
+                </div>
+              </article>
+
+              <article class="v7-doc-card v7-doc-anim" style="--d:220ms">
+                <div class="v7-doc-card__head"><div><h3>Resumen de consultas</h3><small>Estado general</small></div></div>
+                <div class="v7-doc-donut" *ngIf="statusDonut.length; else emptyDocDonut">
+                  <svg viewBox="0 0 100 100" aria-hidden="true">
+                    <circle class="v7-doc-donut__bg" cx="50" cy="50" r="38" />
+                    <circle *ngFor="let seg of statusDonut" class="v7-doc-donut__seg" cx="50" cy="50" r="38"
+                            [attr.stroke]="seg.color" [attr.stroke-dasharray]="seg.dashArray" [attr.stroke-dashoffset]="seg.dashOffset" />
+                  </svg>
+                  <div class="v7-doc-donut__center"><strong>{{ stats.total }}</strong><span>citas</span></div>
+                </div>
+                <ng-template #emptyDocDonut><p class="v7-doc-empty-note">Sin consultas registradas aún.</p></ng-template>
+                <ul class="v7-doc-legend" *ngIf="statusDonut.length">
+                  <li *ngFor="let seg of statusDonut"><span [style.background]="seg.color"></span>{{ seg.label }}<strong>{{ seg.count }}</strong></li>
+                </ul>
+              </article>
+            </aside>
+          </div>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'schedules'">
+          <section class="v7-doc-card v7-doc-anim">
+            <div class="v7-doc-card__head"><div><h2>Mis horarios (próximos 30 días)</h2><small>{{ schedules.length }} franjas registradas</small></div></div>
+            <div class="table-responsive" *ngIf="schedules.length; else noSchedules">
+              <table class="v7-doc-table">
+                <thead><tr><th>Fecha</th><th>Hora</th><th>Disponibilidad</th><th>Estado</th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let h of schedules">
+                    <td>{{ h.fecha | date:'EEEE d MMM y' }}</td>
+                    <td><span class="v7-doc-time">{{ h.hora.slice(0, 5) }}</span></td>
+                    <td>{{ h.disponible ? 'Disponible para reserva' : 'Reservado por paciente' }}</td>
+                    <td><span class="badge-status" [attr.data-status]="h.disponible ? 'RESERVADA' : 'CONFIRMADA'">{{ h.estado }}</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <ng-template #noSchedules><div class="v7-doc-empty"><strong>No tienes horarios programados</strong><p>Administración asigna tus turnos desde el panel administrativo.</p></div></ng-template>
+          </section>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'history'">
+          <section class="v7-doc-card v7-doc-anim">
+            <div class="v7-doc-card__head">
+              <div><h2>Historial de pacientes</h2><small>Atenciones completadas, inasistencias y cancelaciones</small></div>
+              <input class="form-control v7-doc-search" type="search" maxlength="100"
+                     placeholder="Buscar paciente o DNI…"
+                     [ngModel]="searchText"
+                     (ngModelChange)="searchText = normalizeSearchInput($event)"
+                     (input)="searchText = normalizeSearchInputEvent($event)">
+            </div>
+            <div class="table-responsive" *ngIf="historyAppointments.length; else noHistory">
+              <table class="v7-doc-table">
+                <thead><tr><th>Fecha y hora</th><th>Paciente</th><th>Especialidad</th><th>Estado</th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let item of historyAppointments">
+                    <td><span class="v7-doc-time">{{ item.fecha | date:'d MMM y' }} · {{ item.hora.slice(0, 5) }}</span></td>
+                    <td><strong>{{ item.paciente }}</strong><small class="d-block text-secondary">DNI {{ item.pacienteDni }}</small></td>
+                    <td>{{ item.especialidades.join(', ') }}</td>
+                    <td><span class="badge-status" [attr.data-status]="item.estado">{{ statusLabel(item.estado) }}</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <ng-template #noHistory><div class="v7-doc-empty"><strong>Aún no hay historial de consultas</strong><p>Las atenciones finalizadas aparecerán aquí.</p></div></ng-template>
+          </section>
+        </ng-container>
+
+        <ng-container *ngSwitchCase="'profile'">
+          <section class="v7-doc-card v7-doc-anim" *ngIf="summary">
+            <div class="v7-doc-profile-detail mb-4">
+              <img [src]="avatarUrl" [alt]="summary.nombre">
+              <div>
+                <h2>{{ summary.nombre }}</h2>
+                <p>{{ summary.especialidades.join(', ') }}</p>
+                <div class="v7-doc-meta-pills">
+                  <span>CMP: <strong>{{ summary.cmp }}</strong></span>
+                  <span>DNI: <strong>{{ profile?.dni || '—' }}</strong></span>
+                  <span>Rol: <strong>{{ profile?.rol || 'DOCTOR' }}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <form class="workspace-form-grid" (ngSubmit)="saveProfile()">
+              <div>
+                <label class="form-label" for="doc-profile-dni">DNI</label>
+                <input id="doc-profile-dni" class="form-control" [value]="profile?.dni || '—'" readonly>
+              </div>
+              <div>
+                <label class="form-label" for="doc-profile-cmp">CMP</label>
+                <input id="doc-profile-cmp" class="form-control" [value]="summary.cmp" readonly>
+              </div>
+              <div>
+                <label class="form-label" for="doc-profile-name">Nombre completo</label>
+                <input id="doc-profile-name" class="form-control" [value]="summary.nombre" readonly>
+              </div>
+              <div>
+                <label class="form-label" for="doc-profile-email">Correo electrónico</label>
+                <input id="doc-profile-email" name="correo" class="form-control" type="email" required maxlength="254"
+                       [(ngModel)]="profileForm.correo">
+              </div>
+              <div class="workspace-form-grid__wide">
+                <button class="btn btn-primary" type="submit" [disabled]="savingProfile">
+                  {{ savingProfile ? 'Guardando…' : 'Guardar cambios' }}
+                </button>
+              </div>
+            </form>
+          </section>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+</section>

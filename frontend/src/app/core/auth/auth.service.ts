@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, finalize, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthSession, MessageResponse } from './auth.models';
+import { SessionTransitionService } from './session-transition.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -11,13 +12,16 @@ export class AuthService {
   readonly session$ = this.sessionSubject.asObservable();
   private readonly baseUrl = environment.apiBaseUrl;
 
-  constructor(private readonly http: HttpClient) { }
+  constructor(private readonly http: HttpClient, private readonly transition: SessionTransitionService) { }
 
   currentSession(): AuthSession | null { return this.sessionSubject.value; }
 
   login(identificador: string, clave: string): Observable<AuthSession> {
     return this.http.post<AuthSession>(`${this.baseUrl}/auth/login`, { identificador, clave })
-      .pipe(tap(session => this.setSession(session)));
+      .pipe(tap(session => {
+        this.setSession(session);
+        this.transition.showLogin(session);
+      }));
   }
   register(data: Record<string, unknown>): Observable<MessageResponse> {
     return this.http.post<MessageResponse>(`${this.baseUrl}/auth/registro`, data);
@@ -29,6 +33,7 @@ export class AuthService {
     return this.http.post<MessageResponse>(`${this.baseUrl}/auth/restablecer`, { token, nuevaClave });
   }
   logout(): Observable<void> {
+    this.transition.showLogout(this.currentSession());
     return this.http.post<void>(`${this.baseUrl}/auth/logout`, {}).pipe(finalize(() => this.clearSession()));
   }
   clearSession(): void {
@@ -44,7 +49,7 @@ export class AuthService {
       const raw = sessionStorage.getItem(this.storageKey);
       if (!raw) return null;
       const session = JSON.parse(raw) as AuthSession;
-      return session && ['PACIENTE', 'RECEPCIONISTA', 'ADMINISTRADOR'].includes(session.rol) ? session : null;
+      return session && ['PACIENTE', 'RECEPCIONISTA', 'ADMINISTRADOR', 'DOCTOR'].includes(session.rol) ? session : null;
     } catch { return null; }
   }
 }

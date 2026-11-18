@@ -2,8 +2,8 @@
 
 **Sistema Integral de Gestión de Citas Médicas**  
 **Policlínico Infantil Nuestra Señora del Sagrado Corazón**  
-**Fecha de emisión:** 12 de noviembre de 2026  
-**Versión / Hito:** Fase 3 — Verificación Final (`fase3-ok`)
+**Fecha de emisión:** 16 de noviembre de 2026  
+**Versión / Hito:** Verificación Final Actualizada (`finales_v2`)
 
 ---
 
@@ -33,14 +33,14 @@ El backend cuenta con un total de **123 pruebas automatizadas**, distribuidas en
 - **Limpieza de datos de prueba:** Las pruebas de integración limpian de forma autónoma todos los registros generados (`usuario`, `paciente`, `cita`, `horario`) en su método `@AfterEach tearDown()`.
 
 ### 2.2. Reporte de Cobertura JaCoCo (HTML)
-El reporte HTML de cobertura se regeneró exitosamente en [backend/reports/jacoco/index.html](file:///c:/Users/FABRIZIO/OneDrive/Vault/Sistemas%20de%20Informacion%20Empresarial/sistema_migracion/backend/reports/jacoco/index.html):
+El reporte HTML de cobertura se regeneró exitosamente en [backend/target/site/jacoco/index.html](file:///c:/Users/FABRIZIO/OneDrive/Vault/Sistemas%20de%20Informacion%20Empresarial/sistema_migracion/backend/target/site/jacoco/index.html) (66 clases analizadas):
 
 | Métrica JaCoCo | Cubierto | Total Analizado | Porcentaje |
 | :--- | :---: | :---: | :---: |
-| **Instrucciones (C0)** | 4,061 | 5,924 | **68.5%** (68% en tabla JaCoCo) |
-| **Ramas (Branches / C1)** | 220 | 411 | **53.5%** (53% en tabla JaCoCo) |
-| **Líneas de Código** | 745 | 1,049 | **71.0%** (71% en tabla JaCoCo) |
-| **Clases Analizadas** | 52 | 65 | **80.0%** (80% en tabla JaCoCo) |
+| **Instrucciones (C0)** | 4,096 | 6,545 | **62.58%** |
+| **Ramas (Branches / C1)** | 220 | 436 | **50.46%** |
+| **Líneas de Código** | 759 | 1,181 | **64.27%** |
+| **Clases Analizadas** | 52 | 66 | **78.79%** |
 
 *Aspectos destacados de cobertura:*
 - Capa de enumeraciones y modelos de dominio: **100% de cobertura**.
@@ -57,27 +57,27 @@ El reporte HTML de cobertura se regeneró exitosamente en [backend/reports/jacoc
 
 Para garantizar una experiencia móvil fluida incluso en conexiones 3G/4G, se estableció un presupuesto estricto de bundle inicial **menor a 520 kB**.
 
-### 3.1. Auditoría del Build de Producción (`ng build`)
+### 3.1. Auditoría del Build de Producción (`ng build` — 16/11/2026)
 
 ```text
 Initial chunk files   | Names                     |  Raw size | Estimated transfer size (gzip)
-styles-T5LBLYYM.css   | styles                    | 180.90 kB |                25.73 kB
-chunk-Y7XOUQ3I.js     | -                         | 144.40 kB |                41.97 kB
-chunk-B4MQBTJ4.js     | -                         |  96.91 kB |                24.49 kB
+chunk-ADY3YUE7.js     | -                         | 238.92 kB |                64.51 kB
+styles-25M5UCE5.css   | styles                    | 116.45 kB |                17.71 kB
 polyfills-FFHMD2TL.js | polyfills                 |  33.71 kB |                11.02 kB
-main-7Q4P3PZB.js      | main                      |  24.47 kB |                 6.63 kB
-chunk-D2LVVWCQ.js     | -                         |   1.38 kB |               523 bytes
-chunk-JJGCVIMJ.js     | -                         |   1.38 kB |               579 bytes
+main-NMQFEJFC.js      | main                      |  28.28 kB |                 7.39 kB
+chunk-PUVJQEDG.js     | -                         |   2.92 kB |                 1.02 kB
+chunk-ZEJSRFRA.js     | -                         |   1.07 kB |               458 bytes
 chunk-POLL2CVR.js     | -                         | 661 bytes |               661 bytes
+chunk-G64OO52Z.js     | -                         | 368 bytes |               368 bytes
 chunk-UKU4RC6J.js     | -                         |  80 bytes |                80 bytes
 
-                      | Initial total             | 483.87 kB |               111.63 kB
+                      | Initial total             | 422.43 kB |               103.17 kB
 ```
 
 | Parámetro | Límite Presupuestado | Valor Real | Margen de Seguridad (Headroom) | Estado |
 | :--- | :---: | :---: | :---: | :---: |
-| **Raw Initial Bundle** | `< 520.00 kB` | **483.87 kB** | **+36.13 kB** | ✅ CUMPLIDO |
-| **Transfer Size (Gzip)**| — | **111.63 kB** | Excelente compresión | ✅ CUMPLIDO |
+| **Raw Initial Bundle** | `< 520.00 kB` | **422.43 kB** | **+97.57 kB** | ✅ CUMPLIDO |
+| **Transfer Size (Gzip)**| — | **103.17 kB** | Excelente compresión | ✅ CUMPLIDO |
 
 ### 3.2. Carga Diferida (Lazy Loading Chunks)
 Los portales de usuario pesados fueron desacoplados del bundle principal y se descargan bajo demanda:

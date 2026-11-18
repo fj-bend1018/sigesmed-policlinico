@@ -10,7 +10,8 @@ import org.springframework.data.repository.query.Param;
 import com.sigesmed.api.domain.entity.Doctor;
 
 public interface DoctorRepository extends JpaRepository<Doctor, Long> {
-    java.util.Optional<Doctor> findByIdAndEstado(Long id, String estado);
+    Optional<Doctor> findByIdAndEstado(Long id, String estado);
+    Optional<Doctor> findByUsuario_Id(Long usuarioId);
     List<Doctor> findAllByOrderByNombreAsc();
     Optional<Doctor> findByCmpIgnoreCase(String cmp);
     boolean existsByCmpIgnoreCase(String cmp);

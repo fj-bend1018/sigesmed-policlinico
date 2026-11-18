@@ -1,28 +1,32 @@
 <section class="registration-layout auth-glass-stage" aria-labelledby="register-title">
   <aside class="auth-aside registration-aside auth-aside--glass">
-    <div class="auth-aside__brand-row">
-      <span class="auth-logo-frame"><img class="brand-logo" src="assets/LogoEmpresa.png" alt="Logo del Policlínico Infantil Nuestra Señora del Sagrado Corazón"></span>
-      <div class="auth-aside__brand-text">
-        <strong>SIGESMED · Nuevo Paciente</strong>
-        <span>Policlínico Infantil Sagrado Corazón</span>
+    <div class="auth-brand-inner">
+      <a routerLink="/" class="auth-back-home-link">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+        Volver al inicio
+      </a>
+
+      <div class="auth-aside__brand-row">
+        <span class="auth-logo-frame"><img class="brand-logo" src="assets/LogoEmpresa.png" alt="Logo del Policlínico Infantil Nuestra Señora del Sagrado Corazón"></span>
+        <div class="auth-aside__brand-text">
+          <strong>Policlínico Infantil Nuestra Señora del Sagrado Corazón</strong>
+          <span>Diócesis de Chosica · SIGESMED</span>
+        </div>
       </div>
-    </div>
 
-    <p class="eyebrow auth-aside__eyebrow">Portal del paciente</p>
-    <h1 id="register-title">Crea tu cuenta</h1>
-    <p>Registra tus datos para consultar disponibilidad y organizar las citas de tu familia.</p>
-
-    <div class="auth-photo-card" aria-hidden="true">
-      <img src="/assets/rediseno/spec-pediatria.jpg" alt="" loading="lazy">
-      <div class="auth-photo-card__caption">
-        <strong>Atención infantil y familiar</strong>
-        <span>Reserva en línea con validación de DNI (8 dígitos)</span>
+      <div class="auth-brand-copy">
+        <span class="auth-gold-pill">Portal del Paciente</span>
+        <h1 id="register-title">Crea tu cuenta en minutos.</h1>
+        <p>Registra tus datos para consultar disponibilidad, elegir tu médico y organizar las citas de tu familia.</p>
       </div>
-    </div>
 
-    <div class="auth-aside__note">
-      <strong>¿Ya tienes cuenta?</strong>
-      <a routerLink="/login" [queryParams]="returnUrl ? { returnUrl: returnUrl } : null">Inicia sesión →</a>
+      <div class="auth-hero-photo-card" aria-hidden="true">
+        <img src="/assets/rediseno/clinic-bg.jpg" alt="" loading="lazy">
+      </div>
+
+      <div class="auth-aside__note">
+        <span>Urb. San Gregorio, Ate · Lun a Sáb 8:00 a. m. – 8:00 p. m.</span>
+      </div>
     </div>
   </aside>
 
@@ -60,6 +64,7 @@
         <div>
           <label class="form-label" for="dni">DNI *</label>
           <input id="dni" class="form-control" type="text" formControlName="dni" inputmode="numeric" pattern="[0-9]{8}" maxlength="8" autocomplete="off" placeholder="8 dígitos"
+                 (input)="normalizeDigits('dni', 8, $event)"
                  [attr.aria-invalid]="form.controls.dni.touched && form.controls.dni.invalid" aria-describedby="dni-help dni-error">
           <small id="dni-help" class="form-text">Escribe los ocho números, sin espacios.</small>
           <small id="dni-error" class="invalid-feedback d-block" *ngIf="form.controls.dni.touched && form.controls.dni.invalid">El DNI debe tener 8 dígitos numéricos.</small>
@@ -76,12 +81,19 @@
                  [attr.aria-invalid]="form.controls.correo.touched && form.controls.correo.invalid" aria-describedby="email-error">
           <small id="email-error" class="invalid-feedback d-block" *ngIf="form.controls.correo.touched && form.controls.correo.invalid">Ingresa un correo válido.</small>
         </div>
+        <div>
+          <label class="form-label" for="celular">Celular *</label>
+          <input id="celular" class="form-control" type="tel" formControlName="celular" inputmode="numeric" pattern="[0-9]{9}" minlength="9" maxlength="9" autocomplete="tel" placeholder="9 dígitos"
+                 (input)="normalizeDigits('celular', 9, $event)"
+                 [attr.aria-invalid]="form.controls.celular.touched && form.controls.celular.invalid" aria-describedby="celular-error">
+          <small id="celular-error" class="invalid-feedback d-block" *ngIf="form.controls.celular.touched && form.controls.celular.invalid">El celular debe tener 9 dígitos numéricos.</small>
+        </div>
         <div class="registration-password">
           <label class="form-label" for="newPassword">Contraseña *</label>
-          <input id="newPassword" class="form-control" type="password" formControlName="clave" autocomplete="new-password" maxlength="72"
+          <input id="newPassword" class="form-control" type="password" formControlName="clave" autocomplete="new-password" maxlength="18"
                  [attr.aria-invalid]="form.controls.clave.touched && form.controls.clave.invalid" aria-describedby="password-help password-register-error">
-          <small id="password-help" class="form-text">Hasta 72 caracteres.</small>
-          <small id="password-register-error" class="invalid-feedback d-block" *ngIf="form.controls.clave.touched && form.controls.clave.invalid">Ingresa una contraseña.</small>
+          <small id="password-help" class="form-text">Hasta 18 caracteres.</small>
+          <small id="password-register-error" class="invalid-feedback d-block" *ngIf="form.controls.clave.touched && form.controls.clave.invalid">Ingresa una contraseña de hasta 18 caracteres.</small>
         </div>
       </div>
       <div class="registration-actions">

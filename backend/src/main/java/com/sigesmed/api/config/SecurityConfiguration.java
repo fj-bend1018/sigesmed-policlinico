@@ -51,12 +51,13 @@ public class SecurityConfiguration {
                                 "/api/v1/auth/registro", "/api/v1/auth/login",
                                 "/api/v1/auth/recuperar", "/api/v1/auth/restablecer").permitAll()
                         .requestMatchers("/api/v1/auth/logout").authenticated()
-                        .requestMatchers("/api/v1/cuenta/**").hasAnyRole("PACIENTE", "RECEPCIONISTA", "ADMINISTRADOR")
+                        .requestMatchers("/api/v1/cuenta/**").hasAnyRole("PACIENTE", "RECEPCIONISTA", "ADMINISTRADOR", "DOCTOR")
                         .requestMatchers("/api/v1/pacientes/**", "/api/v1/citas/**").hasRole("PACIENTE")
                         .requestMatchers("/api/v1/recepcionista/**").hasRole("RECEPCIONISTA")
                         .requestMatchers("/api/v1/administrador/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers("/api/v1/doctor/**").hasRole("DOCTOR")
                         .requestMatchers("/api/v1/especialidades/**", "/api/v1/medicos/**")
-                                .hasAnyRole("PACIENTE", "RECEPCIONISTA", "ADMINISTRADOR")
+                                .hasAnyRole("PACIENTE", "RECEPCIONISTA", "ADMINISTRADOR", "DOCTOR")
                         .anyRequest().denyAll())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)

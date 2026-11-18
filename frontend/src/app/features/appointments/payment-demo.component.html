@@ -22,9 +22,9 @@
       </div>
       <div class="payment-hero-banner">
         <div>
-          <p class="eyebrow">Demostración interactiva · SIGESMED PAY</p>
-          <h1 id="payment-title">Simulador de pago</h1>
-          <p>Selecciona un método para explorar el flujo de pago sin realizar ningún cobro real.</p>
+          <p class="eyebrow">Pasarela de pagos · SIGESMED PAY</p>
+          <h1 id="payment-title">Realizar pago</h1>
+          <p>Selecciona un método para completar el pago de tu cita médica.</p>
         </div>
         <div class="payment-hero-banner__ref">
           <span>CITA REGISTRADA</span>
@@ -136,7 +136,8 @@
               <div class="payment-field">
                 <label for="demo-card-cvv">Código de seguridad</label>
                 <input id="demo-card-cvv" name="cvv" type="password" inputmode="numeric" autocomplete="new-password"
-                       maxlength="4" placeholder="3 o 4 dígitos" [(ngModel)]="cvv">
+                       maxlength="3" placeholder="3 dígitos" [ngModel]="cvv"
+                       (ngModelChange)="cvv = limitDigits($event, 3)">
               </div>
               <p class="payment-inline-alert" *ngIf="formMessage" role="alert">{{ formMessage }}</p>
               <div class="payment-demo-notice" role="note">
@@ -144,7 +145,7 @@
                 <p><strong>Modo demostración.</strong> No se realizará ningún cobro. Usa únicamente datos ficticios; nunca ingreses información bancaria real.</p>
               </div>
               <button class="btn btn-primary payment-submit" type="submit" [disabled]="simulationComplete">
-                Simular pago <span aria-hidden="true">→</span>
+                Realizar pago <span aria-hidden="true">→</span>
               </button>
             </form>
           </div>
@@ -171,7 +172,7 @@
               </div>
               <div class="payment-demo-notice" role="note"><span aria-hidden="true">i</span><p><strong>Modo demostración.</strong> Los datos no se envían ni se guardan.</p></div>
               <p class="payment-inline-alert" *ngIf="formMessage" role="alert">{{ formMessage }}</p>
-              <button class="btn btn-primary payment-submit" type="submit" [disabled]="simulationComplete">Simular pago con Yape <span aria-hidden="true">→</span></button>
+              <button class="btn btn-primary payment-submit" type="submit" [disabled]="simulationComplete">Realizar pago con Yape <span aria-hidden="true">→</span></button>
             </form>
           </div>
 
@@ -187,16 +188,27 @@
             </div>
             <div class="payment-demo-notice" role="note"><span aria-hidden="true">i</span><p><strong>Modo demostración.</strong> No se solicitará tu celular ni se realizará un cobro.</p></div>
             <p class="payment-inline-alert" *ngIf="formMessage" role="alert">{{ formMessage }}</p>
-            <button class="btn btn-primary payment-submit" type="button" [disabled]="simulationComplete" (click)="simulatePayment()">Simular pago con Plin <span aria-hidden="true">→</span></button>
+            <button class="btn btn-primary payment-submit" type="button" [disabled]="simulationComplete" (click)="simulatePayment()">Realizar pago con Plin <span aria-hidden="true">→</span></button>
           </div>
         </ng-container>
 
-        <div class="payment-result" *ngIf="simulationComplete" role="status" aria-live="polite">
-          <span class="payment-result__icon" aria-hidden="true">✓</span>
-          <p class="eyebrow">Simulación completada</p>
-          <h3>No se realizó ningún cobro</h3>
-          <p>Tu cita sigue <strong>RESERVADA</strong>. Recepción debe verificar el pago para cambiarla a confirmada.</p>
-          <a class="btn btn-primary" routerLink="/paciente/citas">Ir a Mis citas</a>
+        <div class="payment-modal-backdrop" *ngIf="simulationComplete" role="dialog" aria-modal="true" aria-labelledby="payment-confirmed-title">
+          <div class="payment-modal">
+            <span class="payment-modal__icon" aria-hidden="true">✓</span>
+            <p class="eyebrow">Pago registrado</p>
+            <h3 id="payment-confirmed-title">¡Cita confirmada!</h3>
+            <p class="payment-modal__subtitle">Tu cita quedó registrada correctamente. No se realizó ningún cobro real.</p>
+            <dl class="payment-modal__summary">
+              <div><dt>Código</dt><dd>CITA #{{ item.id }}</dd></div>
+              <div><dt>Atención</dt><dd>{{ attentionName }}</dd></div>
+              <div><dt>Profesional</dt><dd>{{ providerName }}</dd></div>
+              <div><dt>Fecha y hora</dt><dd>{{ item.fecha | date:'d MMM y':'':'es' }} · {{ item.hora.slice(0, 5) }}</dd></div>
+            </dl>
+            <button class="btn btn-primary w-100" type="button" (click)="goToPatientDashboard()">
+              Ir a mi panel de citas →
+            </button>
+            <small class="payment-modal__redirect">Redirigiendo a tu panel en unos segundos…</small>
+          </div>
         </div>
       </section>
 

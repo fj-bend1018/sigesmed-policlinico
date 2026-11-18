@@ -66,4 +66,14 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
         order by c.horario.fecha desc, c.horario.hora desc
         """)
     List<Cita> findAgenda(@Param("estado") EstadoCita estado, @Param("fecha") LocalDate fecha);
+
+    @Query("""
+        select c from Cita c
+        where c.horario.doctor.id = :doctorId
+          and (:estado is null or c.estado = :estado)
+          and (:fecha is null or c.horario.fecha = :fecha)
+        order by c.horario.fecha desc, c.horario.hora desc
+        """)
+    List<Cita> findByDoctor(@Param("doctorId") Long doctorId,
+            @Param("estado") EstadoCita estado, @Param("fecha") LocalDate fecha);
 }

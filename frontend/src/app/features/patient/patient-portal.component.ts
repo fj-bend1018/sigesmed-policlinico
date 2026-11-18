@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Appointment, AppointmentApiService, AvailableSlot } from '../../core/appointments/appointment-api.service';
 import { AccountProfile, AppointmentView, WorkspaceApiService } from '../../core/workspaces/workspace-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { hasValidEmail, hasValidOptionalLength, hasValidOptionalPeruMobile, isValidIsoDate } from '../../core/forms/field-rules';
+import { doctorAvatarUrl } from '../../core/utils/doctor-avatar';
 
 type PatientSection = 'appointments' | 'history' | 'cancelled' | 'profile' | 'editProfile' | 'reschedule';
 
@@ -33,6 +34,10 @@ export class PatientPortalComponent implements OnInit {
   profileForm = { correo: '', celular: '', direccion: '' };
   appointment: Appointment | null = null;
   slots: AvailableSlot[] = [];
+
+  doctorAvatar(name: string | null | undefined, index: number): string {
+    return doctorAvatarUrl(name, index);
+  }
   selectedSlotId = '';
   rescheduleDate = '';
   loading = false;
@@ -40,8 +45,8 @@ export class PatientPortalComponent implements OnInit {
   errorMessage = '';
   successMessage = '';
 
-  constructor(route: ActivatedRoute, auth: AuthService, private readonly workspaceApi: WorkspaceApiService,
-      private readonly appointmentApi: AppointmentApiService) {
+  constructor(route: ActivatedRoute, private readonly auth: AuthService, private readonly router: Router,
+      private readonly workspaceApi: WorkspaceApiService, private readonly appointmentApi: AppointmentApiService) {
     this.section = (route.snapshot.data['section'] as PatientSection | undefined) ?? 'appointments';
     this.fallbackDni = auth.currentSession()?.dni ?? '';
     this.appointmentId = Number(route.snapshot.paramMap.get('id'));
@@ -227,6 +232,19 @@ export class PatientPortalComponent implements OnInit {
   }
 
   specialties(appointment: Appointment): string { return appointment.servicio ?? appointment.especialidades.join(', '); }
+  get nextAppointmentSummary(): string {
+    const first = this.appointments[0];
+    if (!first) return 'Sin citas programadas';
+    return `${first.fecha} · ${first.hora.slice(0, 5)}`;
+  }
+
+  logout(): void {
+    this.auth.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: () => this.router.navigate(['/login'])
+    });
+  }
+
   statusLabel(status: string): string {
     const labels: Record<string, string> = {
       RESERVADA: 'Reservada', CONFIRMADA: 'Confirmada', ATENDIDA: 'Atendida',

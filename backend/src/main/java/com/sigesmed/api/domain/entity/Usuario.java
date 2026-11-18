@@ -37,6 +37,8 @@ public class Usuario {
     private Recepcionista recepcionista;
     @OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY)
     private Administrador administrador;
+    @OneToOne(mappedBy = "usuario", fetch = FetchType.LAZY)
+    private Doctor doctor;
 
     protected Usuario() { }
 
@@ -60,4 +62,5 @@ public class Usuario {
     public Paciente getPaciente() { return paciente; }
     public Recepcionista getRecepcionista() { return recepcionista; }
     public Administrador getAdministrador() { return administrador; }
+    public Doctor getDoctor() { return doctor; }
 }

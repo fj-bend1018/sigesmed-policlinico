@@ -20,6 +20,7 @@ import com.sigesmed.api.dto.cuenta.ActualizarPerfilRequest;
 import com.sigesmed.api.dto.cuenta.PerfilResponse;
 import com.sigesmed.api.exception.ApiException;
 import com.sigesmed.api.repository.AdministradorRepository;
+import com.sigesmed.api.repository.DoctorRepository;
 import com.sigesmed.api.repository.PacienteRepository;
 import com.sigesmed.api.repository.RecepcionistaRepository;
 import com.sigesmed.api.repository.UsuarioRepository;
@@ -38,12 +39,13 @@ class CuentaServiceTest {
     @Mock private PacienteRepository pacientes;
     @Mock private RecepcionistaRepository recepcionistas;
     @Mock private AdministradorRepository administradores;
+    @Mock private DoctorRepository doctores;
 
     private CuentaService service;
 
     @BeforeEach
     void setUp() {
-        service = new CuentaService(usuarios, pacientes, recepcionistas, administradores);
+        service = new CuentaService(usuarios, pacientes, recepcionistas, administradores, doctores);
     }
 
     @Test

@@ -3,5 +3,6 @@ package com.sigesmed.api.domain.enums;
 public enum RolUsuario {
     PACIENTE,
     RECEPCIONISTA,
-    ADMINISTRADOR
+    ADMINISTRADOR,
+    DOCTOR
 }

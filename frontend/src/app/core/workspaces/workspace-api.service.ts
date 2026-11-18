@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 import { Appointment } from '../appointments/appointment-api.service';
 
 export interface AccountProfile {
-  rol: 'PACIENTE' | 'RECEPCIONISTA' | 'ADMINISTRADOR';
+  rol: 'PACIENTE' | 'RECEPCIONISTA' | 'ADMINISTRADOR' | 'DOCTOR';
   dni: string;
   nombre: string | null;
   apellidoPaterno: string | null;
@@ -169,5 +169,21 @@ export class WorkspaceApiService {
 
   setReceptionistState(id: number, estado: 'ACTIVO' | 'INACTIVO'): Observable<ReceptionistRecord> {
     return this.http.patch<ReceptionistRecord>(`${this.baseUrl}/administrador/recepcionistas/${id}/estado`, { estado });
+  }
+
+  doctorSummary(): Observable<{ id: number; nombre: string; cmp: string; correo: string | null; imagen: string | null; especialidades: string[] }> {
+    return this.http.get<{ id: number; nombre: string; cmp: string; correo: string | null; imagen: string | null; especialidades: string[] }>(`${this.baseUrl}/doctor/resumen`);
+  }
+
+  doctorAppointments(): Observable<Appointment[]> {
+    return this.http.get<Appointment[]>(`${this.baseUrl}/doctor/citas`);
+  }
+
+  doctorSchedules(): Observable<ScheduleRecord[]> {
+    return this.http.get<ScheduleRecord[]>(`${this.baseUrl}/doctor/horarios`);
+  }
+
+  changeDoctorAppointmentStatus(id: number, estado: 'ATENDIDA' | 'NO_ASISTIO'): Observable<Appointment> {
+    return this.http.patch<Appointment>(`${this.baseUrl}/doctor/citas/${id}/estado`, { estado });
   }
 }

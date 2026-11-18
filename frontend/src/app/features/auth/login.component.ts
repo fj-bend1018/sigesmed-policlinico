@@ -4,12 +4,14 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { DNI_PATTERN } from '../../core/forms/field-rules';
+import { ErrorMessageService } from '../../core/http/error-message.service';
 
 @Component({
   standalone: true,
   selector: 'app-login',
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  templateUrl: './login.component.html'
+  templateUrl: './login.component.html',
+  styleUrl: './login.component.scss'
 })
 export class LoginComponent implements OnInit {
   readonly form = new FormGroup({
@@ -18,14 +20,15 @@ export class LoginComponent implements OnInit {
         const value = String(control.value ?? '');
         return !value || DNI_PATTERN.test(value) ? null : Validators.email(control);
       }] }),
-    clave: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(72)] })
+    clave: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.maxLength(18)] })
   });
   loading = false;
   registered = false;
+  showPassword = false;
   returnUrl = '';
 
   constructor(private readonly auth: AuthService, private readonly router: Router,
-      private readonly route: ActivatedRoute) { }
+      private readonly route: ActivatedRoute, private readonly errors: ErrorMessageService) { }
 
   ngOnInit(): void {
     this.registered = this.route.snapshot.queryParamMap.get('registrado') === '1';
@@ -34,10 +37,12 @@ export class LoginComponent implements OnInit {
 
   submit(): void {
     if (this.form.invalid || this.loading) { this.form.markAllAsTouched(); return; }
+    this.errors.clear();
     this.loading = true;
     const { identificador, clave } = this.form.getRawValue();
     this.auth.login(identificador.trim(), clave).subscribe({
       next: session => {
+        this.errors.clear();
         const safeUrl = this.returnUrl.startsWith('/') && !this.returnUrl.startsWith('//') ? this.returnUrl : `/${session.portal}`;
         this.router.navigateByUrl(safeUrl);
       },

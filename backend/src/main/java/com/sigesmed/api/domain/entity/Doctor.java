@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -19,8 +20,12 @@ import jakarta.persistence.Table;
 public class Doctor {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", unique = true)
+    private Usuario usuario;
     @Column(nullable = false, length = 160) private String nombre;
     @Column(nullable = false, unique = true, length = 40) private String cmp;
+    @Column(unique = true, length = 254) private String correo;
     @Column(length = 500) private String imagen;
     @Column(nullable = false, length = 10) private String estado = "ACTIVO";
     @ManyToMany(fetch = FetchType.LAZY)
@@ -34,15 +39,23 @@ public class Doctor {
         this.nombre = nombre; this.cmp = cmp; this.especialidades = new HashSet<>(especialidades);
     }
     public Long getId() { return id; }
+    public Usuario getUsuario() { return usuario; }
     public String getNombre() { return nombre; }
     public String getCmp() { return cmp; }
+    public String getCorreo() { return correo; }
     public String getEstado() { return estado; }
     public Set<Especialidad> getEspecialidades() { return especialidades; }
     public String getImagen() { return imagen; }
+    public void vincularUsuario(Usuario usuario, String correo) {
+        this.usuario = usuario;
+        this.correo = correo;
+    }
+    public void actualizarCorreo(String correo) { this.correo = correo; }
     public void actualizar(String nombre, String cmp, Set<Especialidad> especialidades) {
         this.nombre = nombre;
         this.cmp = cmp;
         this.especialidades = new HashSet<>(especialidades);
     }
+    public void asignarImagen(String imagen) { this.imagen = imagen; }
     public void cambiarEstado(String estado) { this.estado = estado; }
 }

@@ -1,12 +1,15 @@
 package com.sigesmed.api.config;
 
+import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.Clock;
-import java.util.List;
-import java.util.Set;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
@@ -21,7 +24,6 @@ import com.sigesmed.api.domain.entity.Cita;
 import com.sigesmed.api.domain.entity.Doctor;
 import com.sigesmed.api.domain.entity.Especialidad;
 import com.sigesmed.api.domain.entity.Horario;
-import com.sigesmed.api.domain.entity.Paciente;
 import com.sigesmed.api.domain.entity.Recepcionista;
 import com.sigesmed.api.domain.entity.ServicioComplementario;
 import com.sigesmed.api.domain.entity.Usuario;
@@ -31,7 +33,6 @@ import com.sigesmed.api.repository.CitaRepository;
 import com.sigesmed.api.repository.DoctorRepository;
 import com.sigesmed.api.repository.EspecialidadRepository;
 import com.sigesmed.api.repository.HorarioRepository;
-import com.sigesmed.api.repository.PacienteRepository;
 import com.sigesmed.api.repository.RecepcionistaRepository;
 import com.sigesmed.api.repository.UsuarioRepository;
 import com.sigesmed.api.repository.ServicioComplementarioRepository;
@@ -40,7 +41,6 @@ import com.sigesmed.api.repository.ServicioComplementarioRepository;
 @Profile("dev")
 public class DevDataInitializer implements ApplicationRunner {
     private final UsuarioRepository usuarioRepository;
-    private final PacienteRepository pacienteRepository;
     private final RecepcionistaRepository recepcionistaRepository;
     private final AdministradorRepository administradorRepository;
     private final EspecialidadRepository especialidadRepository;
@@ -52,24 +52,21 @@ public class DevDataInitializer implements ApplicationRunner {
     private final Clock clock;
     private final String adminPassword;
     private final String receptionistPassword;
-    private final String patientPassword;
 
-    public DevDataInitializer(UsuarioRepository usuarioRepository, PacienteRepository pacienteRepository,
+    public DevDataInitializer(UsuarioRepository usuarioRepository,
             RecepcionistaRepository recepcionistaRepository, AdministradorRepository administradorRepository,
             EspecialidadRepository especialidadRepository, DoctorRepository doctorRepository,
             CitaRepository citaRepository, HorarioRepository horarioRepository,
             ServicioComplementarioRepository servicioRepository, PasswordEncoder passwordEncoder, Clock clock,
             @Value("${SIGESMED_DEV_ADMIN_PASSWORD:}") String adminPassword,
-            @Value("${SIGESMED_DEV_RECEPCIONISTA_PASSWORD:}") String receptionistPassword,
-            @Value("${SIGESMED_DEV_PACIENTE_PASSWORD:}") String patientPassword) {
-        this.usuarioRepository = usuarioRepository; this.pacienteRepository = pacienteRepository;
+            @Value("${SIGESMED_DEV_RECEPCIONISTA_PASSWORD:}") String receptionistPassword) {
+        this.usuarioRepository = usuarioRepository;
         this.recepcionistaRepository = recepcionistaRepository; this.administradorRepository = administradorRepository;
         this.especialidadRepository = especialidadRepository; this.doctorRepository = doctorRepository;
         this.citaRepository = citaRepository; this.horarioRepository = horarioRepository;
         this.servicioRepository = servicioRepository;
         this.passwordEncoder = passwordEncoder; this.clock = clock;
         this.adminPassword = adminPassword; this.receptionistPassword = receptionistPassword;
-        this.patientPassword = patientPassword;
     }
 
     @Override
@@ -85,77 +82,195 @@ public class DevDataInitializer implements ApplicationRunner {
                 "Odontología pediátrica",
                 "Otorrinolaringología"
         );
-        List<String> doctorNames = List.of(
-                "Dra. Ana Demo",
-                "Dr. Luis Demo",
-                "Dra. María Demo",
-                "Dr. Carlos Demo",
-                "Dra. Elena Demo",
-                "Dr. Roberto Demo"
+        List<Especialidad> specialties = new ArrayList<>();
+        for (String name : names) {
+            specialties.add(asegurarEspecialidad(name));
+        }
+
+        // 6 profesionales por especialidad (36 en total: 3 mujeres y 3 hombres): turno mañana, tarde y completo.
+        record DoctorSeed(String name, String image) {}
+        List<List<DoctorSeed>> doctorsPerSpecialty = List.of(
+                List.of(
+                        new DoctorSeed("Dra. Carmen Rosa Salazar", "/assets/rediseno/doc-female-1.jpg"),
+                        new DoctorSeed("Dr. Jorge Andrés Villanueva", "/assets/rediseno/doc-male-1.jpg"),
+                        new DoctorSeed("Dra. Lucía Beatriz Quispe", "/assets/rediseno/doc-female-2.jpg"),
+                        new DoctorSeed("Dr. Álvaro Sebastián Gutiérrez", "/assets/rediseno/doc-male-2.jpg"),
+                        new DoctorSeed("Dra. Daniela Fernanda Ortiz", "/assets/rediseno/doc-female-3.jpg"),
+                        new DoctorSeed("Dr. Mateo Nicolás Delgado", "/assets/rediseno/doc-male-3.jpg")
+                ),
+                List.of(
+                        new DoctorSeed("Dr. Luis Alberto Paredes", "/assets/rediseno/doc-male-1.jpg"),
+                        new DoctorSeed("Dra. Patricia Milagros Vargas", "/assets/rediseno/doc-female-1.jpg"),
+                        new DoctorSeed("Dr. Miguel Ángel Navarro", "/assets/rediseno/doc-male-2.jpg"),
+                        new DoctorSeed("Dra. Mónica Isabel Herrera", "/assets/rediseno/doc-female-2.jpg"),
+                        new DoctorSeed("Dr. César Augusto Benítez", "/assets/rediseno/doc-male-3.jpg"),
+                        new DoctorSeed("Dra. Camila Andrea Morales", "/assets/rediseno/doc-female-3.jpg")
+                ),
+                List.of(
+                        new DoctorSeed("Lic. María Fernanda Chávez", "/assets/rediseno/doc-female-1.jpg"),
+                        new DoctorSeed("Lic. Sofía Alejandra Rojas", "/assets/rediseno/doc-female-2.jpg"),
+                        new DoctorSeed("Lic. Diego Alonso Campos", "/assets/rediseno/doc-male-1.jpg"),
+                        new DoctorSeed("Lic. Rodrigo Javier Castillo", "/assets/rediseno/doc-male-2.jpg"),
+                        new DoctorSeed("Lic. Natalia Rocío Espinoza", "/assets/rediseno/doc-female-3.jpg"),
+                        new DoctorSeed("Lic. Sebastián Andrés Vera", "/assets/rediseno/doc-male-3.jpg")
+                ),
+                List.of(
+                        new DoctorSeed("Ps. Carlos Eduardo Mendoza", "/assets/rediseno/doc-male-1.jpg"),
+                        new DoctorSeed("Ps. Valeria Lucero Flores", "/assets/rediseno/doc-female-1.jpg"),
+                        new DoctorSeed("Ps. Andrea Paola Castañeda", "/assets/rediseno/doc-female-2.jpg"),
+                        new DoctorSeed("Ps. Mauricio Enrique Lozano", "/assets/rediseno/doc-male-2.jpg"),
+                        new DoctorSeed("Ps. Ximena Beatriz Salazar", "/assets/rediseno/doc-female-3.jpg"),
+                        new DoctorSeed("Ps. Alejandro Tomás Peña", "/assets/rediseno/doc-male-3.jpg")
+                ),
+                List.of(
+                        new DoctorSeed("Dra. Elena Patricia Torres", "/assets/rediseno/doc-female-1.jpg"),
+                        new DoctorSeed("Dr. Fernando José Aguilar", "/assets/rediseno/doc-male-1.jpg"),
+                        new DoctorSeed("Dra. Gabriela Sofía Huamán", "/assets/rediseno/doc-female-2.jpg"),
+                        new DoctorSeed("Dr. Ernesto Rafael Córdova", "/assets/rediseno/doc-male-2.jpg"),
+                        new DoctorSeed("Dra. Paola Cristina Medina", "/assets/rediseno/doc-female-3.jpg"),
+                        new DoctorSeed("Dr. Gonzalo Iván Ramírez", "/assets/rediseno/doc-male-3.jpg")
+                ),
+                List.of(
+                        new DoctorSeed("Dr. Roberto Antonio Ríos", "/assets/rediseno/doc-male-1.jpg"),
+                        new DoctorSeed("Dra. Claudia Verónica Silva", "/assets/rediseno/doc-female-1.jpg"),
+                        new DoctorSeed("Dr. Ricardo Manuel León", "/assets/rediseno/doc-male-2.jpg"),
+                        new DoctorSeed("Dra. Verónica Lucía Mendoza", "/assets/rediseno/doc-female-2.jpg"),
+                        new DoctorSeed("Dr. Héctor Darío Cárdenas", "/assets/rediseno/doc-male-3.jpg"),
+                        new DoctorSeed("Dra. Teresa Milagros Núñez", "/assets/rediseno/doc-female-3.jpg")
+                )
         );
-        List<Especialidad> specialties = names.stream().map(this::asegurarEspecialidad).toList();
+
+        List<LocalTime> morningHours = List.of(
+                LocalTime.of(8, 0), LocalTime.of(9, 0), LocalTime.of(10, 0),
+                LocalTime.of(11, 0), LocalTime.of(12, 0)
+        );
+        List<LocalTime> afternoonHours = List.of(
+                LocalTime.of(14, 0), LocalTime.of(15, 0), LocalTime.of(16, 0),
+                LocalTime.of(17, 0), LocalTime.of(18, 0), LocalTime.of(19, 0)
+        );
+        List<LocalTime> fullHours = new ArrayList<>();
+        fullHours.addAll(morningHours);
+        fullHours.addAll(afternoonHours);
+
         List<Doctor> doctors = new ArrayList<>();
-        for (int i = 0; i < specialties.size(); i++) {
-            int index = i;
-            String cmp = "DEV-CMP-%04d".formatted(index + 1);
+        List<List<LocalTime>> doctorShiftHours = new ArrayList<>();
+
+        // Mantener los 6 CMP base (0001-0006) para el primer médico de cada especialidad
+        for (int specIdx = 0; specIdx < specialties.size(); specIdx++) {
+            String cmp = "DEV-CMP-%04d".formatted(specIdx + 1);
+            DoctorSeed seed = doctorsPerSpecialty.get(specIdx).get(0);
+            Especialidad spec = specialties.get(specIdx);
             Doctor doctor = doctorRepository.findByCmpIgnoreCase(cmp)
-                    .orElseGet(() -> new Doctor(doctorNames.get(index), cmp, Set.of(specialties.get(index))));
-            doctor.actualizar(doctorNames.get(index), cmp, Set.of(specialties.get(index)));
+                    .orElseGet(() -> new Doctor(seed.name(), cmp, Set.of(spec)));
+            doctor.actualizar(seed.name(), cmp, Set.of(spec));
+            doctor.asignarImagen(seed.image());
             doctors.add(doctorRepository.save(doctor));
+            doctorShiftHours.add(morningHours);
+        }
+
+        // Mantener 0007-0018 para el 2.º y 3.º médico de cada especialidad, y 0019-0036 para los 3 adicionales
+        int nextCmpIndex = 7;
+        for (int specIdx = 0; specIdx < specialties.size(); specIdx++) {
+            Especialidad spec = specialties.get(specIdx);
+            for (int tier = 1; tier <= 2; tier++) {
+                String cmp = "DEV-CMP-%04d".formatted(nextCmpIndex++);
+                DoctorSeed seed = doctorsPerSpecialty.get(specIdx).get(tier);
+                Doctor doctor = doctorRepository.findByCmpIgnoreCase(cmp)
+                        .orElseGet(() -> new Doctor(seed.name(), cmp, Set.of(spec)));
+                doctor.actualizar(seed.name(), cmp, Set.of(spec));
+                doctor.asignarImagen(seed.image());
+                doctors.add(doctorRepository.save(doctor));
+                doctorShiftHours.add(tier == 1 ? afternoonHours : fullHours);
+            }
+        }
+        for (int specIdx = 0; specIdx < specialties.size(); specIdx++) {
+            Especialidad spec = specialties.get(specIdx);
+            for (int tier = 3; tier < 6; tier++) {
+                String cmp = "DEV-CMP-%04d".formatted(nextCmpIndex++);
+                DoctorSeed seed = doctorsPerSpecialty.get(specIdx).get(tier);
+                Doctor doctor = doctorRepository.findByCmpIgnoreCase(cmp)
+                        .orElseGet(() -> new Doctor(seed.name(), cmp, Set.of(spec)));
+                doctor.actualizar(seed.name(), cmp, Set.of(spec));
+                doctor.asignarImagen(seed.image());
+                doctors.add(doctorRepository.save(doctor));
+                doctorShiftHours.add(tier == 3 ? morningHours : (tier == 4 ? afternoonHours : fullHours));
+            }
         }
 
         remapLegacySpecialties();
 
         LocalDate firstDay = LocalDate.now(clock).plusDays(1);
+        LocalDate lastDay = firstDay.plusDays(6);
         List<ServicioComplementario> services = servicioRepository.findAllByOrderByNombreAsc();
+        List<Horario> existingWeek = horarioRepository.findAllByFechaBetweenOrderByFechaAscHoraAsc(firstDay, lastDay);
+        Set<String> existingKeys = new HashSet<>();
+        for (Horario h : existingWeek) {
+            if (h.getDoctor() != null) {
+                existingKeys.add("D:" + h.getDoctor().getId() + ":" + h.getFecha() + ":" + h.getHora());
+            } else if (h.getServicioComplementario() != null) {
+                existingKeys.add("S:" + h.getServicioComplementario().getId() + ":" + h.getFecha() + ":" + h.getHora());
+            }
+        }
+
+        List<Horario> pendingSchedules = new ArrayList<>();
         for (int day = 0; day < 7; day++) {
             LocalDate date = firstDay.plusDays(day);
-            for (Doctor doctor : doctors) {
-                for (LocalTime time : List.of(LocalTime.of(9, 0), LocalTime.of(10, 0))) {
-                    if (!horarioRepository.existsByDoctor_IdAndFechaAndHora(doctor.getId(), date, time)) {
-                        horarioRepository.save(new Horario(doctor, date, time));
+            if (date.getDayOfWeek() == DayOfWeek.SUNDAY) continue;
+            for (int d = 0; d < doctors.size(); d++) {
+                Doctor doctor = doctors.get(d);
+                for (LocalTime time : doctorShiftHours.get(d)) {
+                    String key = "D:" + doctor.getId() + ":" + date + ":" + time;
+                    if (!existingKeys.contains(key)) {
+                        pendingSchedules.add(new Horario(doctor, date, time));
                     }
                 }
             }
             for (ServicioComplementario service : services) {
-                for (LocalTime time : List.of(LocalTime.of(9, 0), LocalTime.of(10, 0))) {
-                    if (!horarioRepository.existsByServicioComplementario_IdAndFechaAndHora(
-                            service.getId(), date, time)) {
-                        horarioRepository.save(new Horario(service, date, time));
+                for (LocalTime time : fullHours) {
+                    String key = "S:" + service.getId() + ":" + date + ":" + time;
+                    if (!existingKeys.contains(key)) {
+                        pendingSchedules.add(new Horario(service, date, time));
                     }
                 }
             }
         }
+        if (!pendingSchedules.isEmpty()) {
+            horarioRepository.saveAll(pendingSchedules);
+        }
     }
 
     private void seedDemoAccountsIfConfigured() {
-        boolean anyPassword = !adminPassword.isBlank() || !receptionistPassword.isBlank() || !patientPassword.isBlank();
-        boolean allPasswords = !adminPassword.isBlank() && !receptionistPassword.isBlank() && !patientPassword.isBlank();
+        boolean anyPassword = !adminPassword.isBlank() || !receptionistPassword.isBlank();
+        boolean allPasswords = !adminPassword.isBlank() && !receptionistPassword.isBlank();
         if (anyPassword && !allPasswords) {
-            throw new IllegalStateException("Defina las tres variables SIGESMED_DEV_*_PASSWORD o ninguna.");
+            throw new IllegalStateException("Defina SIGESMED_DEV_ADMIN_PASSWORD y SIGESMED_DEV_RECEPCIONISTA_PASSWORD o ninguna.");
         }
 
-        boolean allAccountsExist = usuarioRepository.findByDni("90000001").isPresent()
-                && usuarioRepository.findByDni("90000002").isPresent()
-                && usuarioRepository.findByDni("90000003").isPresent();
-        if (!allPasswords && !allAccountsExist) return;
+        boolean staffAccountsExist = usuarioRepository.findByDni("74829105").isPresent()
+                && usuarioRepository.findByDni("48291637").isPresent();
+        if (!allPasswords && !staffAccountsExist) return;
 
-        asegurarCuenta("90000001", RolUsuario.ADMINISTRADOR, adminPassword, "SIGESMED_DEV_ADMIN_PASSWORD");
-        asegurarCuenta("90000002", RolUsuario.RECEPCIONISTA, receptionistPassword,
+        asegurarCuenta("74829105", RolUsuario.ADMINISTRADOR, adminPassword, "SIGESMED_DEV_ADMIN_PASSWORD");
+        asegurarCuenta("48291637", RolUsuario.RECEPCIONISTA, receptionistPassword,
                 "SIGESMED_DEV_RECEPCIONISTA_PASSWORD");
-        asegurarCuenta("90000003", RolUsuario.PACIENTE, patientPassword, "SIGESMED_DEV_PACIENTE_PASSWORD");
 
-        Usuario admin = usuarioRepository.findByDni("90000001").orElseThrow();
+        Usuario admin = usuarioRepository.findByDni("74829105").orElseThrow();
         administradorRepository.findByUsuario_Id(admin.getId())
-                .orElseGet(() -> administradorRepository.save(new Administrador(admin, "90000001", "admin@example.test")));
-        Usuario receptionist = usuarioRepository.findByDni("90000002").orElseThrow();
+                .orElseGet(() -> administradorRepository.save(new Administrador(admin, "74829105", "admin@policlinico.pe")));
+        Usuario receptionist = usuarioRepository.findByDni("48291637").orElseThrow();
         recepcionistaRepository.findByUsuario_Id(receptionist.getId())
-                .orElseGet(() -> recepcionistaRepository.save(new Recepcionista(receptionist, "Rosa", "Recepción", "Demo",
-                        "90000002", "recepcion@example.test")));
-        Usuario patientUser = usuarioRepository.findByDni("90000003").orElseThrow();
-        pacienteRepository.findByUsuario_Id(patientUser.getId())
-                .orElseGet(() -> pacienteRepository.save(new Paciente(patientUser, "Paciente", "Prueba", "Demo", "90000003",
-                        LocalDate.of(2000, 1, 1), "paciente@example.test")));
+                .orElseGet(() -> recepcionistaRepository.save(new Recepcionista(receptionist, "Rosa", "Mendoza", "Díaz",
+                        "48291637", "recep@policlinico.pe")));
+
+        // Vincular cuenta de acceso para Dra. Carmen Rosa Salazar (Portal del Médico)
+        doctorRepository.findByCmpIgnoreCase("DEV-CMP-0001").ifPresent(doc -> {
+            if (doc.getUsuario() == null && usuarioRepository.findByDni("62948173").isEmpty()) {
+                Usuario docUser = usuarioRepository.save(
+                        new Usuario("62948173", passwordEncoder.encode("doc123"), RolUsuario.DOCTOR));
+                doc.vincularUsuario(docUser, "carmen.salazar@policlinico.pe");
+                doctorRepository.save(doc);
+            }
+        });
     }
 
     private Usuario asegurarCuenta(String dni, RolUsuario rol, String password, String variable) {
@@ -199,7 +314,7 @@ public class DevDataInitializer implements ApplicationRunner {
             Especialidad target = asegurarEspecialidad(officialName);
             List<Cita> citas = citaRepository.findAll().stream()
                     .filter(c -> c.getEspecialidad() != null && c.getEspecialidad().getId().equals(oldSpecialty.getId()))
-                    .toList();
+                    .collect(Collectors.toList());
             for (Cita c : citas) {
                 c.setEspecialidad(target);
                 citaRepository.save(c);

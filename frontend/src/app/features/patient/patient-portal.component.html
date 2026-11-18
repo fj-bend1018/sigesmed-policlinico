@@ -49,10 +49,30 @@
         </span>
         <span>Tu información y tus citas están protegidas.</span>
       </div>
+
+      <div class="patient-portal__sidebar-actions">
+        <a class="patient-portal__sidebar-cta" routerLink="/paciente/disponibilidad">+ Reservar cita</a>
+        <button type="button" class="patient-portal__logout-btn" (click)="logout()">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+          Cerrar sesión
+        </button>
+      </div>
     </aside>
 
     <div class="patient-portal__content">
-      <header class="patient-portal__heading patient-hero-banner">
+      <div class="v7-topbar">
+        <div class="v7-topbar__crumbs">
+          <span class="v7-role-badge">Portal del Paciente</span>
+          <span class="v7-topbar__sep">/</span>
+          <strong>{{ title }}</strong>
+        </div>
+        <div class="v7-topbar__right">
+          <span class="v7-dni-chip" *ngIf="dni">DNI {{ dni }}</span>
+          <a class="v7-topbar__btn" routerLink="/paciente/disponibilidad">Reservar cita</a>
+        </div>
+      </div>
+
+      <header class="patient-portal__heading patient-hero-banner v7-hero-banner">
         <div>
           <p class="patient-portal__eyebrow">Área del paciente · SIGESMED</p>
           <h1 id="patient-page-title">{{ title }}</h1>
@@ -60,6 +80,24 @@
         </div>
         <a class="patient-hero-banner__cta" routerLink="/paciente/disponibilidad">Reservar nueva cita →</a>
       </header>
+
+      <div class="v7-kpi-strip" *ngIf="section === 'appointments' || section === 'history' || section === 'cancelled'">
+        <div class="v7-kpi-card">
+          <span class="v7-kpi-label">Registros en vista</span>
+          <strong class="v7-kpi-value">{{ appointments.length }}</strong>
+          <small class="v7-kpi-sub">{{ title }}</small>
+        </div>
+        <div class="v7-kpi-card">
+          <span class="v7-kpi-label">Próxima referencia</span>
+          <strong class="v7-kpi-value v7-kpi-value--sm">{{ nextAppointmentSummary }}</strong>
+          <small class="v7-kpi-sub">Horario programado</small>
+        </div>
+        <div class="v7-kpi-card">
+          <span class="v7-kpi-label">Documento vinculado</span>
+          <strong class="v7-kpi-value v7-kpi-value--sm">{{ dni || 'Registrado' }}</strong>
+          <small class="v7-kpi-sub">Nuestra Señora del Sagrado Corazón · Ate</small>
+        </div>
+      </div>
 
       <div *ngIf="errorMessage" class="patient-portal__alert patient-portal__alert--error" role="alert">
         <span>{{ errorMessage }}</span>
@@ -92,7 +130,7 @@
               </div>
 
               <div class="patient-appointment-list">
-                <article class="patient-appointment" *ngFor="let appointment of appointments">
+                <article class="patient-appointment" *ngFor="let appointment of appointments; let idx = index">
                   <div class="patient-appointment__date" aria-label="Fecha de la cita">
                     <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                       <rect x="3.5" y="5" width="17" height="16" rx="2"></rect>
@@ -106,7 +144,7 @@
                     <div class="patient-appointment__heading">
                       <div class="patient-appointment__title-row">
                         <img class="patient-appointment__portrait"
-                             [src]="appointment.servicio ? '/assets/rediseno/hero-slide-2.jpg' : '/assets/rediseno/spec-pediatria.jpg'"
+                             [src]="appointment.servicio ? '/assets/rediseno/hero-slide-2.jpg' : doctorAvatar(appointment.doctor, idx)"
                              alt="" loading="lazy">
                         <div>
                           <span class="patient-appointment__reference">Cita #{{ appointment.id }}</span>

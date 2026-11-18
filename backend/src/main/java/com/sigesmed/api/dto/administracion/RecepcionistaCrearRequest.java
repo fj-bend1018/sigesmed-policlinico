@@ -13,4 +13,4 @@ public record RecepcionistaCrearRequest(
         @NotBlank @Email @Size(max = 254) String correo,
         @Pattern(regexp = "^$|^[0-9]{9}$", message = "El celular debe contener 9 dígitos") @Size(max = 9) String celular,
         @Size(max = 300) String direccion,
-        @NotBlank @Size(min = 12, max = 72) String claveTemporal) { }
+        @NotBlank @Size(min = 12, max = 18) String claveTemporal) { }

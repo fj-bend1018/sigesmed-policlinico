@@ -21,10 +21,12 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
         left join u.paciente p
         left join u.recepcionista r
         left join u.administrador a
+        left join u.doctor d
         where lower(u.dni) = lower(:identifier)
            or lower(p.correo) = lower(:identifier)
            or lower(r.correo) = lower(:identifier)
            or lower(a.correo) = lower(:identifier)
+           or lower(d.correo) = lower(:identifier)
         """)
     List<Usuario> findByIdentifier(@Param("identifier") String identifier);
 

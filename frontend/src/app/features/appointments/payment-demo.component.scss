@@ -293,6 +293,64 @@
 .payment-result p:not(.eyebrow) { max-width: 62ch; margin: 0 0 1rem; color: #52675a; line-height: 1.6; }
 .payment-result .btn { min-width: 160px; }
 
+.payment-modal-backdrop {
+  position: fixed;
+  z-index: 1500;
+  inset: 0;
+  display: grid;
+  padding: 1.25rem;
+  place-items: center;
+  background: rgb(7 34 21 / 52%);
+  backdrop-filter: blur(4px);
+  animation: payment-view-enter .2s ease-out both;
+}
+.payment-modal {
+  display: grid;
+  width: min(460px, 100%);
+  justify-items: center;
+  gap: .65rem;
+  padding: 2rem 1.75rem 1.5rem;
+  border: 1px solid #d5e5d8;
+  border-radius: 1.35rem;
+  background: #fff;
+  box-shadow: 0 24px 60px rgb(7 34 21 / 28%);
+  text-align: center;
+}
+.payment-modal__icon {
+  display: grid;
+  width: 3.5rem;
+  height: 3.5rem;
+  place-items: center;
+  border-radius: 50%;
+  background: #e6f4ea;
+  color: #165e3b;
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+.payment-modal .eyebrow { margin: 0; color: #165e3b !important; font-weight: 800; }
+.payment-modal h3 { margin: 0; color: var(--pay-deep); font-size: 1.5rem; font-weight: 800; }
+.payment-modal__subtitle { margin: 0; color: #52675a; font-size: .92rem; line-height: 1.5; }
+.payment-modal__summary {
+  display: grid;
+  width: 100%;
+  gap: .5rem;
+  margin: .45rem 0 .65rem;
+  padding: .95rem 1rem;
+  border: 1px solid #e1ece4;
+  border-radius: .95rem;
+  background: #f8fbf9;
+  text-align: left;
+}
+.payment-modal__summary > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: .88rem;
+}
+.payment-modal__summary dt { color: #66776c; font-weight: 700; }
+.payment-modal__summary dd { margin: 0; color: var(--pay-deep); font-weight: 800; text-align: right; }
+.payment-modal__redirect { color: #66776c; font-size: .78rem; }
+
 .payment-loading, .payment-error { display: flex; align-items: center; gap: .8rem; padding: 1.5rem; }
 .payment-error { align-items: flex-start; max-width: 700px; margin: 2rem auto; padding: 1.5rem; }
 .payment-error__icon { display: grid; width: 2.4rem; height: 2.4rem; flex: 0 0 2.4rem; place-items: center; border-radius: 50%; background: #fff0ef; color: #8c3330; font-weight: 800; }
