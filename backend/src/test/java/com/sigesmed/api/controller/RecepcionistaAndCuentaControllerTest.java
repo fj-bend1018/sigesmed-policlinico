@@ -34,8 +34,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import com.sigesmed.api.config.SecurityConfiguration;
 import com.sigesmed.api.domain.entity.Usuario;
 import com.sigesmed.api.domain.enums.EstadoCita;
+import com.sigesmed.api.domain.enums.EstadoPago;
 import com.sigesmed.api.domain.enums.RolUsuario;
 import com.sigesmed.api.dto.cita.CitaResponse;
+import com.sigesmed.api.dto.cita.ComprobantePagoResponse;
 import com.sigesmed.api.dto.cuenta.PerfilResponse;
 import com.sigesmed.api.security.UsuarioPrincipal;
 import com.sigesmed.api.service.CitaManagementService;
@@ -75,6 +77,30 @@ class RecepcionistaAndCuentaControllerTest {
         mvc.perform(patch("/api/v1/recepcionista/citas/10/estado").with(csrf()).contentType(MediaType.APPLICATION_JSON)
                         .content("{\"estado\":\"ATENDIDA\"}"))
                 .andExpect(status().isOk());
+
+        Usuario recep = new Usuario("48291637", "h", RolUsuario.RECEPCIONISTA);
+        ReflectionTestUtils.setField(recep, "id", 88L);
+        ComprobantePagoResponse comp = new ComprobantePagoResponse(12L, 10L, "CMP-PAGO-000012", "EFECTIVO",
+                new java.math.BigDecimal("80.00"), EstadoPago.PAGADO, EstadoCita.CONFIRMADA, "Ana", "70000001",
+                "Pediatría", "Dr. Ana", LocalDate.of(2026, 11, 20), LocalTime.of(9, 0), "48291637");
+        when(managementService.registrarPagoPresencial(10L, 88L, "EFECTIVO", new java.math.BigDecimal("80.00")))
+                .thenReturn(comp);
+
+        mvc.perform(post("/api/v1/recepcionista/citas/10/pago")
+                        .with(user(new UsuarioPrincipal(recep)))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"metodo\":\"EFECTIVO\",\"monto\":80.00}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.codigoComprobante").value("CMP-PAGO-000012"))
+                .andExpect(jsonPath("$.estadoCita").value("CONFIRMADA"));
+
+        mvc.perform(post("/api/v1/recepcionista/citas/10/pago")
+                        .with(user(new UsuarioPrincipal(recep)))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"metodo\":\"\",\"monto\":-5}"))
+                .andExpect(status().isBadRequest());
     }
 
     @Test

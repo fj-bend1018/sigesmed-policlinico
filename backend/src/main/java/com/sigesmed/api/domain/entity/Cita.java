@@ -69,4 +69,8 @@ public class Cita {
         this.estado = EstadoCita.CANCELADA;
         this.motivoCancelacion = motivo;
     }
+    public void confirmarConPago(Pago pago) {
+        this.pago = pago;
+        this.estado = EstadoCita.CONFIRMADA;
+    }
 }

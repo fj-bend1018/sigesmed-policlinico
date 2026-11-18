@@ -1,5 +1,6 @@
 package com.sigesmed.api.service;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -11,6 +12,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,13 +21,19 @@ import org.springframework.transaction.annotation.Transactional;
 import com.sigesmed.api.domain.entity.Cita;
 import com.sigesmed.api.domain.entity.Horario;
 import com.sigesmed.api.domain.entity.Paciente;
+import com.sigesmed.api.domain.entity.Pago;
+import com.sigesmed.api.domain.entity.Usuario;
 import com.sigesmed.api.domain.enums.EstadoCita;
 import com.sigesmed.api.domain.enums.EstadoHorario;
+import com.sigesmed.api.domain.enums.EstadoPago;
 import com.sigesmed.api.dto.cita.CitaResponse;
+import com.sigesmed.api.dto.cita.ComprobantePagoResponse;
 import com.sigesmed.api.exception.ApiException;
 import com.sigesmed.api.repository.CitaRepository;
 import com.sigesmed.api.repository.HorarioRepository;
 import com.sigesmed.api.repository.PacienteRepository;
+import com.sigesmed.api.repository.PagoRepository;
+import com.sigesmed.api.repository.UsuarioRepository;
 
 @Service
 public class CitaManagementService {
@@ -36,11 +44,21 @@ public class CitaManagementService {
     private final PacienteRepository pacienteRepository;
     private final CitaRepository citaRepository;
     private final HorarioRepository horarioRepository;
+    private final PagoRepository pagoRepository;
+    private final UsuarioRepository usuarioRepository;
     private final Clock clock;
     private final Duration plazoCancelacion;
 
     public CitaManagementService(PacienteRepository pacienteRepository, CitaRepository citaRepository,
             HorarioRepository horarioRepository, Clock clock,
+            @Value("${sigesmed.cita.plazo-cancelacion:PT2H}") Duration plazoCancelacion) {
+        this(pacienteRepository, citaRepository, horarioRepository, null, null, clock, plazoCancelacion);
+    }
+
+    @Autowired
+    public CitaManagementService(PacienteRepository pacienteRepository, CitaRepository citaRepository,
+            HorarioRepository horarioRepository, PagoRepository pagoRepository,
+            UsuarioRepository usuarioRepository, Clock clock,
             @Value("${sigesmed.cita.plazo-cancelacion:PT2H}") Duration plazoCancelacion) {
         if (plazoCancelacion == null || plazoCancelacion.isNegative() || plazoCancelacion.isZero()) {
             throw new IllegalArgumentException("sigesmed.cita.plazo-cancelacion debe ser positivo");
@@ -48,8 +66,35 @@ public class CitaManagementService {
         this.pacienteRepository = pacienteRepository;
         this.citaRepository = citaRepository;
         this.horarioRepository = horarioRepository;
+        this.pagoRepository = pagoRepository;
+        this.usuarioRepository = usuarioRepository;
         this.clock = clock;
         this.plazoCancelacion = plazoCancelacion;
+    }
+
+    @Transactional
+    public ComprobantePagoResponse registrarPagoPresencial(Long citaId, Long usuarioId, String metodo, BigDecimal monto) {
+        if (monto == null || monto.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "El monto debe ser mayor a cero");
+        }
+        if (metodo == null || metodo.isBlank()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Selecciona un método de pago");
+        }
+        Cita cita = citaRepository.findById(citaId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Cita no encontrada"));
+        if (cita.getPago() != null) {
+            throw new ApiException(HttpStatus.CONFLICT, "La cita ya tiene un pago registrado");
+        }
+        if (cita.getEstado() != EstadoCita.RESERVADA) {
+            throw new ApiException(HttpStatus.CONFLICT, "Solo se pueden pagar citas en estado RESERVADA");
+        }
+        Usuario recepcionista = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        Pago pago = pagoRepository.save(new Pago(
+                metodo.trim().toUpperCase(Locale.ROOT), monto, EstadoPago.PAGADO, recepcionista));
+        cita.confirmarConPago(pago);
+        citaRepository.save(cita);
+        return ComprobantePagoResponse.from(cita, pago, recepcionista.getDni());
     }
 
     @Transactional(readOnly = true)
