@@ -322,8 +322,14 @@ export class RolePortalComponent implements OnInit {
   }
 
   loadAppointments(): void {
+    const query = this.searchText.trim();
+    if (/\d/.test(query) && !query.includes('@') && !/^\d{8}$/.test(query)) {
+      this.errorMessage = 'El DNI debe tener 8 dígitos numéricos.';
+      this.successMessage = '';
+      return;
+    }
     this.loading = true; this.errorMessage = '';
-    this.api.receptionAppointments(undefined, this.appointmentDate || undefined, this.searchText || undefined).subscribe({
+    this.api.receptionAppointments(undefined, this.appointmentDate || undefined, query || undefined).subscribe({
       next: items => { this.appointments = items; this.recomputeReceptionAnalytics(); this.loading = false; },
       error: error => { this.fail(error, 'No se pudo cargar la agenda.'); }
     });

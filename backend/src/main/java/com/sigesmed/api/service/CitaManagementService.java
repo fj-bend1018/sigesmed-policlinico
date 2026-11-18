@@ -112,6 +112,12 @@ public class CitaManagementService {
 
     @Transactional(readOnly = true)
     public List<CitaResponse> listarAgenda(EstadoCita estado, LocalDate fecha, String busqueda) {
+        if (busqueda != null && !busqueda.isBlank()) {
+            String trimmed = busqueda.trim();
+            if (trimmed.chars().anyMatch(Character::isDigit) && !trimmed.contains("@") && !trimmed.matches("\\d{8}")) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "El DNI debe tener 8 dígitos numéricos.");
+            }
+        }
         List<Cita> citas = citaRepository.findAgenda(estado, fecha);
         if (busqueda == null || busqueda.isBlank()) return citas.stream().map(CitaResponse::from).toList();
         String query = busqueda.trim().toLowerCase(Locale.ROOT);

@@ -426,6 +426,26 @@ class CitaManagementServiceTest {
         assertEquals(HttpStatus.BAD_REQUEST, noMethod.getStatus());
     }
 
+    @Test
+    void listarAgenda_validacionDniYBusquedaUnificada() {
+        ApiException shortDni = assertThrows(ApiException.class,
+                () -> service.listarAgenda(null, null, "7000001"));
+        assertEquals(HttpStatus.BAD_REQUEST, shortDni.getStatus());
+        assertEquals("El DNI debe tener 8 dígitos numéricos.", shortDni.getMessage());
+
+        ApiException alphaDni = assertThrows(ApiException.class,
+                () -> service.listarAgenda(null, null, "7000A001"));
+        assertEquals(HttpStatus.BAD_REQUEST, alphaDni.getStatus());
+        assertEquals("El DNI debe tener 8 dígitos numéricos.", alphaDni.getMessage());
+
+        ReflectionTestUtils.setField(patient, "dni", "70000001");
+        ReflectionTestUtils.setField(patient, "correo", "ana2026@sigesmed.local");
+        when(citas.findAgenda(null, null)).thenReturn(List.of(appointment));
+        assertEquals(1, service.listarAgenda(null, null, "70000001").size());
+        assertEquals(1, service.listarAgenda(null, null, "Dr. Demo").size());
+        assertEquals(1, service.listarAgenda(null, null, "ana2026@sigesmed.local").size());
+    }
+
     private Especialidad specialty(Long id, String name) {
         Especialidad value = new Especialidad(name);
         ReflectionTestUtils.setField(value, "id", id);
