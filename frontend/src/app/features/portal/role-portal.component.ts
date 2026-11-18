@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { Appointment, AppointmentApiService, AvailableSlot, ComplementaryService, Specialty } from '../../core/appointments/appointment-api.service';
-import { AccountProfile, DoctorRecord, ReceptionistRecord, ScheduleRecord, WorkspaceApiService } from '../../core/workspaces/workspace-api.service';
+import { AccountProfile, DoctorRecord, PaymentReceipt, ReceptionistRecord, ScheduleRecord, WorkspaceApiService } from '../../core/workspaces/workspace-api.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { UserRole } from '../../core/auth/auth.models';
 import { DNI_PATTERN, hasValidEmail, hasValidOptionalLength, hasValidOptionalPeruMobile, isValidIsoDate } from '../../core/forms/field-rules';
@@ -28,6 +28,9 @@ export class RolePortalComponent implements OnInit {
   readonly recordId: number;
   appointments: Appointment[] = [];
   appointment: Appointment | null = null;
+  paymentTarget: Appointment | null = null;
+  paymentForm = { metodo: '', monto: '' };
+  paymentReceipt: PaymentReceipt | null = null;
   appointmentSlots: AvailableSlot[] = [];
   selectedSlotId = '';
   rescheduleDate = '';
@@ -319,8 +322,14 @@ export class RolePortalComponent implements OnInit {
   }
 
   loadAppointments(): void {
+    const query = this.searchText.trim();
+    if (/\d/.test(query) && !query.includes('@') && !/^\d{8}$/.test(query)) {
+      this.errorMessage = 'El DNI debe tener 8 dígitos numéricos.';
+      this.successMessage = '';
+      return;
+    }
     this.loading = true; this.errorMessage = '';
-    this.api.receptionAppointments(undefined, this.appointmentDate || undefined, this.searchText || undefined).subscribe({
+    this.api.receptionAppointments(undefined, this.appointmentDate || undefined, query || undefined).subscribe({
       next: items => { this.appointments = items; this.recomputeReceptionAnalytics(); this.loading = false; },
       error: error => { this.fail(error, 'No se pudo cargar la agenda.'); }
     });
@@ -376,6 +385,45 @@ export class RolePortalComponent implements OnInit {
     this.api.changeAppointmentState(appointment.id, state).subscribe({
       next: () => { this.successMessage = 'El estado de la cita se actualizó.'; this.loadAppointments(); },
       error: error => this.showFailure(error, 'No se pudo actualizar el estado.')
+    });
+  }
+
+  openPaymentForm(appointment: Appointment): void {
+    this.paymentTarget = appointment;
+    this.paymentForm = { metodo: '', monto: '80.00' };
+    this.paymentReceipt = null;
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  cancelPaymentForm(): void {
+    this.paymentTarget = null;
+  }
+
+  submitPayment(): void {
+    if (!this.paymentTarget || this.saving) return;
+    const metodo = this.paymentForm.metodo.trim();
+    const monto = Number(this.paymentForm.monto);
+    if (!metodo) {
+      this.errorMessage = 'Selecciona un método de pago.';
+      return;
+    }
+    if (!Number.isFinite(monto) || monto <= 0) {
+      this.errorMessage = 'Ingresa un monto válido mayor a cero.';
+      return;
+    }
+    this.saving = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.api.registerReceptionPayment(this.paymentTarget.id, { metodo, monto }).subscribe({
+      next: receipt => {
+        this.saving = false;
+        this.paymentTarget = null;
+        this.paymentReceipt = receipt;
+        this.successMessage = `Pago registrado (${receipt.codigoComprobante}). La cita #${receipt.citaId} pasó a CONFIRMADA.`;
+        this.loadAppointments();
+      },
+      error: error => this.fail(error, 'No se pudo registrar el pago.')
     });
   }
 

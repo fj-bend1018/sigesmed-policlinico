@@ -48,6 +48,23 @@ export interface ReceptionistRecord {
   estado: 'ACTIVO' | 'INACTIVO';
 }
 
+export interface PaymentReceipt {
+  pagoId: number;
+  citaId: number;
+  codigoComprobante: string;
+  metodo: string;
+  monto: number;
+  estadoPago: string;
+  estadoCita: string;
+  paciente: string;
+  pacienteDni: string;
+  atencion: string;
+  doctor: string | null;
+  fecha: string;
+  hora: string;
+  registradoPorDni: string;
+}
+
 export type AppointmentView = 'PROXIMAS' | 'HISTORIAL' | 'CANCELADAS';
 
 @Injectable({ providedIn: 'root' })
@@ -98,6 +115,10 @@ export class WorkspaceApiService {
 
   changeAppointmentState(id: number, estado: 'ATENDIDA' | 'NO_ASISTIO' | 'CANCELADA'): Observable<Appointment> {
     return this.http.patch<Appointment>(`${this.baseUrl}/recepcionista/citas/${id}/estado`, { estado });
+  }
+
+  registerReceptionPayment(id: number, data: { metodo: string; monto: number }): Observable<PaymentReceipt> {
+    return this.http.post<PaymentReceipt>(`${this.baseUrl}/recepcionista/citas/${id}/pago`, data);
   }
 
   doctors(): Observable<DoctorRecord[]> {

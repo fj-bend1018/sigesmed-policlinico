@@ -171,6 +171,7 @@
                 <td><span class="badge-status" [attr.data-status]="appointment.estado">{{ statusLabel(appointment.estado) }}</span></td>
                 <td>
                   <div class="workspace-actions">
+                    <button *ngIf="appointment.estado === 'RESERVADA'" class="btn btn-sm btn-primary" type="button" (click)="openPaymentForm(appointment)">Registrar pago</button>
                     <a *ngIf="appointment.estado === 'RESERVADA'" class="btn btn-sm btn-outline-primary" [routerLink]="['/recepcionista/citas', appointment.id, 'modificar']">Reprogramar</a>
                     <button class="btn btn-sm btn-outline-success" type="button" (click)="closeAppointment(appointment, 'ATENDIDA')">Atendida</button>
                     <button class="btn btn-sm btn-outline-secondary" type="button" (click)="closeAppointment(appointment, 'NO_ASISTIO')">No asistió</button>
@@ -179,6 +180,43 @@
                 </td>
               </tr></tbody>
             </table>
+          </div>
+
+          <form id="reception-payment-form" class="workspace-form-card mt-4" *ngIf="paymentTarget as target" (ngSubmit)="submitPayment()" novalidate>
+            <p class="eyebrow mb-2">Pago presencial · Cita #{{ target.id }}</p>
+            <h3>Registrar pago de {{ target.paciente }}</h3>
+            <div class="workspace-form-grid mt-3">
+              <div>
+                <label class="form-label" for="payment-method">Método de pago</label>
+                <select id="payment-method" name="metodo" class="form-select" required [(ngModel)]="paymentForm.metodo">
+                  <option value="">Selecciona un método</option>
+                  <option value="EFECTIVO">Efectivo</option>
+                  <option value="TARJETA">Tarjeta</option>
+                  <option value="YAPE">Yape</option>
+                  <option value="PLIN">Plin</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" for="payment-amount">Monto (S/)</label>
+                <input id="payment-amount" name="monto" class="form-control" type="number" step="0.01" min="0.01" required [(ngModel)]="paymentForm.monto">
+              </div>
+            </div>
+            <div class="workspace-actions mt-4">
+              <button class="btn btn-primary" type="submit" [disabled]="saving">{{ saving ? 'Registrando…' : 'Confirmar pago' }}</button>
+              <button class="btn btn-outline-secondary" type="button" (click)="cancelPaymentForm()">Cancelar</button>
+            </div>
+          </form>
+
+          <div id="payment-receipt" class="workspace-form-card mt-4" *ngIf="paymentReceipt as receipt">
+            <p class="eyebrow mb-2">Comprobante de pago · {{ receipt.codigoComprobante }}</p>
+            <h3>Pago registrado — {{ receipt.estadoCita }}</h3>
+            <dl class="profile-details profile-details--compact mt-3">
+              <div><dt>Paciente</dt><dd>{{ receipt.paciente }} · DNI {{ receipt.pacienteDni }}</dd></div>
+              <div><dt>Atención</dt><dd>{{ receipt.atencion }}<span *ngIf="receipt.doctor"> · {{ receipt.doctor }}</span></dd></div>
+              <div><dt>Fecha y hora</dt><dd>{{ receipt.fecha | date:'d MMM y' }} · {{ receipt.hora.slice(0, 5) }}</dd></div>
+              <div><dt>Método y monto</dt><dd>{{ receipt.metodo }} · S/ {{ receipt.monto | number:'1.2-2' }}</dd></div>
+              <div><dt>Registrado por</dt><dd>DNI {{ receipt.registradoPorDni }}</dd></div>
+            </dl>
           </div>
           <div class="workspace-empty" *ngIf="!loading && !visibleAppointments.length && !errorMessage" role="status">
             <span class="workspace-empty__icon" aria-hidden="true">▣</span><h3>No hay citas para mostrar</h3>

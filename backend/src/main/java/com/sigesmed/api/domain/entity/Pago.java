@@ -25,6 +25,15 @@ public class Pago {
     @ManyToOne(fetch = FetchType.LAZY) @JoinColumn(name = "registrado_por_usuario_id")
     private Usuario registradoPor;
     protected Pago() { }
+    public Pago(String metodo, BigDecimal monto, EstadoPago estado, Usuario registradoPor) {
+        this.metodo = metodo;
+        this.monto = monto;
+        this.estado = estado;
+        this.registradoPor = registradoPor;
+    }
     public Long getId() { return id; }
+    public String getMetodo() { return metodo; }
+    public BigDecimal getMonto() { return monto; }
     public EstadoPago getEstado() { return estado; }
+    public Usuario getRegistradoPor() { return registradoPor; }
 }

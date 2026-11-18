@@ -11,6 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -27,14 +28,18 @@ import com.sigesmed.api.domain.entity.Doctor;
 import com.sigesmed.api.domain.entity.Especialidad;
 import com.sigesmed.api.domain.entity.Horario;
 import com.sigesmed.api.domain.entity.Paciente;
+import com.sigesmed.api.domain.entity.Pago;
 import com.sigesmed.api.domain.entity.ServicioComplementario;
 import com.sigesmed.api.domain.entity.Usuario;
 import com.sigesmed.api.domain.enums.EstadoCita;
+import com.sigesmed.api.domain.enums.EstadoPago;
 import com.sigesmed.api.domain.enums.RolUsuario;
 import com.sigesmed.api.exception.ApiException;
 import com.sigesmed.api.repository.CitaRepository;
 import com.sigesmed.api.repository.HorarioRepository;
 import com.sigesmed.api.repository.PacienteRepository;
+import com.sigesmed.api.repository.PagoRepository;
+import com.sigesmed.api.repository.UsuarioRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -52,6 +57,8 @@ class CitaManagementServiceTest {
     @Mock private PacienteRepository pacientes;
     @Mock private CitaRepository citas;
     @Mock private HorarioRepository horarios;
+    @Mock private PagoRepository pagos;
+    @Mock private UsuarioRepository usuarios;
 
     private CitaManagementService service;
     private Paciente patient;
@@ -375,6 +382,68 @@ class CitaManagementServiceTest {
 
         var list = service.listarPropias(10L, "PROXIMAS");
         assertEquals(1, list.size());
+    }
+
+    @Test
+    void registrarPagoPresencial_efectivoYTarjetaConfirmaCitaYGeneraComprobante() {
+        service = new CitaManagementService(pacientes, citas, horarios, pagos, usuarios, clock, Duration.ofHours(2));
+        Usuario recep = new Usuario("48291637", "h", RolUsuario.RECEPCIONISTA);
+        ReflectionTestUtils.setField(recep, "id", 99L);
+        when(citas.findById(30L)).thenReturn(Optional.of(appointment));
+        when(usuarios.findById(99L)).thenReturn(Optional.of(recep));
+        when(pagos.save(any(Pago.class))).thenAnswer(inv -> {
+            Pago p = inv.getArgument(0);
+            ReflectionTestUtils.setField(p, "id", 501L);
+            return p;
+        });
+
+        var receipt = service.registrarPagoPresencial(30L, 99L, "efectivo", new BigDecimal("80.00"));
+        assertEquals(EstadoCita.CONFIRMADA, appointment.getEstado());
+        assertEquals(EstadoPago.PAGADO, receipt.estadoPago());
+        assertEquals("EFECTIVO", receipt.metodo());
+        assertEquals("CMP-PAGO-000501", receipt.codigoComprobante());
+        assertEquals("48291637", receipt.registradoPorDni());
+        assertSame(recep, appointment.getPago().getRegistradoPor());
+    }
+
+    @Test
+    void registrarPagoPresencial_rechazaDoblePagoYValoresInvalidos() {
+        service = new CitaManagementService(pacientes, citas, horarios, pagos, usuarios, clock, Duration.ofHours(2));
+        Pago yaPagado = new Pago("TARJETA", new BigDecimal("80.00"), EstadoPago.PAGADO, new Usuario("48291637", "h", RolUsuario.RECEPCIONISTA));
+        ReflectionTestUtils.setField(appointment, "pago", yaPagado);
+        when(citas.findById(30L)).thenReturn(Optional.of(appointment));
+
+        ApiException dup = assertThrows(ApiException.class,
+                () -> service.registrarPagoPresencial(30L, 99L, "EFECTIVO", new BigDecimal("80.00")));
+        assertEquals(HttpStatus.CONFLICT, dup.getStatus());
+
+        ApiException neg = assertThrows(ApiException.class,
+                () -> service.registrarPagoPresencial(30L, 99L, "EFECTIVO", new BigDecimal("-10.00")));
+        assertEquals(HttpStatus.BAD_REQUEST, neg.getStatus());
+
+        ApiException noMethod = assertThrows(ApiException.class,
+                () -> service.registrarPagoPresencial(30L, 99L, " ", new BigDecimal("80.00")));
+        assertEquals(HttpStatus.BAD_REQUEST, noMethod.getStatus());
+    }
+
+    @Test
+    void listarAgenda_validacionDniYBusquedaUnificada() {
+        ApiException shortDni = assertThrows(ApiException.class,
+                () -> service.listarAgenda(null, null, "7000001"));
+        assertEquals(HttpStatus.BAD_REQUEST, shortDni.getStatus());
+        assertEquals("El DNI debe tener 8 dígitos numéricos.", shortDni.getMessage());
+
+        ApiException alphaDni = assertThrows(ApiException.class,
+                () -> service.listarAgenda(null, null, "7000A001"));
+        assertEquals(HttpStatus.BAD_REQUEST, alphaDni.getStatus());
+        assertEquals("El DNI debe tener 8 dígitos numéricos.", alphaDni.getMessage());
+
+        ReflectionTestUtils.setField(patient, "dni", "70000001");
+        ReflectionTestUtils.setField(patient, "correo", "ana2026@sigesmed.local");
+        when(citas.findAgenda(null, null)).thenReturn(List.of(appointment));
+        assertEquals(1, service.listarAgenda(null, null, "70000001").size());
+        assertEquals(1, service.listarAgenda(null, null, "Dr. Demo").size());
+        assertEquals(1, service.listarAgenda(null, null, "ana2026@sigesmed.local").size());
     }
 
     private Especialidad specialty(Long id, String name) {
