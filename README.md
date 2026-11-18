@@ -35,7 +35,6 @@ Sistema web para la gestión integral de citas médicas del **Policlínico Infan
 sistema_migracion/
 ├── backend/     # API REST Spring Boot 3.5 + Flyway + pruebas (unitarias e integración)
 ├── frontend/    # Aplicación Angular 17 (puerto 4200)
-├── evidencia/   # Capturas limpias, reportes y evidencia de casos de caja negra
 ├── scripts/     # Scripts auxiliares de pruebas
 └── legacy/      # Código monolítico original de referencia (pre-migración)
 ```

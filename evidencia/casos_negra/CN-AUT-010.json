@@ -1,4 +1,0 @@
-{
-  "id": "CN-AUT-010",
-  "motivo": "El timeout de sesión configurado en application.properties es 30m y no está permitido modificar código/configuración ni reiniciar el servidor durante la ejecución."
-}
