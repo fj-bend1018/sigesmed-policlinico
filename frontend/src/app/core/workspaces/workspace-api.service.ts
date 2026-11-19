@@ -36,6 +36,23 @@ export interface ScheduleRecord {
   estado: 'DISPONIBLE' | 'OCUPADO';
 }
 
+export interface RecurringScheduleRequest {
+  doctorId: number;
+  diasSemana: string[];
+  horaInicio: string;
+  horaFin: string;
+  fechaDesde: string;
+  fechaHasta: string;
+  diasDescanso: string[];
+}
+
+export interface RecurringScheduleResponse {
+  doctorId: number;
+  doctor: string;
+  creados: number;
+  horarios: ScheduleRecord[];
+}
+
 export interface ReceptionistRecord {
   id: number;
   nombre: string;
@@ -156,6 +173,10 @@ export class WorkspaceApiService {
 
   createSchedule(data: Pick<ScheduleRecord, 'doctorId' | 'servicioId' | 'fecha' | 'hora'>): Observable<ScheduleRecord> {
     return this.http.post<ScheduleRecord>(`${this.baseUrl}/administrador/horarios`, data);
+  }
+
+  createRecurringSchedules(data: RecurringScheduleRequest): Observable<RecurringScheduleResponse> {
+    return this.http.post<RecurringScheduleResponse>(`${this.baseUrl}/administrador/horarios/recurrentes`, data);
   }
 
   updateSchedule(id: number, data: Pick<ScheduleRecord, 'doctorId' | 'servicioId' | 'fecha' | 'hora'>): Observable<ScheduleRecord> {

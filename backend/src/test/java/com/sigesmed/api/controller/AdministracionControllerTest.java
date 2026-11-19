@@ -35,6 +35,7 @@ import com.sigesmed.api.config.SecurityConfiguration;
 import com.sigesmed.api.domain.enums.EstadoHorario;
 import com.sigesmed.api.dto.administracion.DoctorAdminResponse;
 import com.sigesmed.api.dto.administracion.HorarioAdminResponse;
+import com.sigesmed.api.dto.administracion.HorarioRecurrenteResponse;
 import com.sigesmed.api.dto.administracion.RecepcionistaAdminResponse;
 import com.sigesmed.api.service.AdministracionService;
 
@@ -88,6 +89,21 @@ class AdministracionControllerTest {
                         .content("{\"doctorId\":1,\"fecha\":\"2026-11-20\",\"hora\":\"09:00\"}"))
                 .andExpect(status().isOk());
         mvc.perform(delete("/api/v1/administrador/horarios/10").with(csrf())).andExpect(status().isNoContent());
+
+        HorarioRecurrenteResponse recResp = new HorarioRecurrenteResponse(1L, "Dr. Ana", 8, List.of(h));
+        when(service.crearHorariosRecurrentes(any())).thenReturn(recResp);
+        mvc.perform(post("/api/v1/administrador/horarios/recurrentes").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"doctorId\":1,\"diasSemana\":[\"MONDAY\",\"WEDNESDAY\"],\"horaInicio\":\"08:00\",\"horaFin\":\"12:00\",\"fechaDesde\":\"2026-11-23\",\"fechaHasta\":\"2026-11-27\",\"diasDescanso\":[\"2026-11-27\"]}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.creados").value(8));
+    }
+
+    @Test
+    @WithMockUser(roles = "RECEPCIONISTA")
+    void horariosRecurrentes_denegadoAOtrosRoles() throws Exception {
+        mvc.perform(post("/api/v1/administrador/horarios/recurrentes").with(csrf()).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"doctorId\":1,\"diasSemana\":[\"MONDAY\"],\"horaInicio\":\"08:00\",\"horaFin\":\"12:00\",\"fechaDesde\":\"2026-11-23\",\"fechaHasta\":\"2026-11-27\"}"))
+                .andExpect(status().isForbidden());
     }
 
     @Test

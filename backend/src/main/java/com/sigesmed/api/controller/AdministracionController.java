@@ -8,6 +8,8 @@ import com.sigesmed.api.dto.administracion.DoctorAdminRequest;
 import com.sigesmed.api.dto.administracion.DoctorAdminResponse;
 import com.sigesmed.api.dto.administracion.HorarioAdminRequest;
 import com.sigesmed.api.dto.administracion.HorarioAdminResponse;
+import com.sigesmed.api.dto.administracion.HorarioRecurrenteRequest;
+import com.sigesmed.api.dto.administracion.HorarioRecurrenteResponse;
 import com.sigesmed.api.dto.administracion.RecepcionistaActualizarRequest;
 import com.sigesmed.api.dto.administracion.RecepcionistaAdminResponse;
 import com.sigesmed.api.dto.administracion.RecepcionistaCrearRequest;
@@ -74,6 +76,12 @@ public class AdministracionController {
     @PostMapping("/horarios")
     public ResponseEntity<HorarioAdminResponse> crearHorario(@Valid @RequestBody HorarioAdminRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.crearHorario(request));
+    }
+
+    @PostMapping("/horarios/recurrentes")
+    public ResponseEntity<HorarioRecurrenteResponse> crearHorariosRecurrentes(
+            @Valid @RequestBody HorarioRecurrenteRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.crearHorariosRecurrentes(request));
     }
 
     @PutMapping("/horarios/{id}")

@@ -488,7 +488,73 @@
           </div>
 
           <div class="workspace-toolbar"><span class="workspace-toolbar__label">Horarios de atención · próximos 30 días</span>
-            <a class="btn btn-primary" routerLink="/administrador/horarios/nuevo">Agregar horario</a></div>
+            <div class="workspace-actions">
+              <button class="btn btn-outline-primary" type="button" (click)="toggleRecurringMode()">
+                {{ recurringMode ? 'Cerrar horarios recurrentes' : 'Horarios recurrentes' }}
+              </button>
+              <a class="btn btn-primary" routerLink="/administrador/horarios/nuevo">Agregar horario</a>
+            </div>
+          </div>
+
+          <form id="recurring-schedule-form" class="workspace-form-card mb-4" *ngIf="recurringMode" (ngSubmit)="saveRecurringSchedules()">
+            <p class="eyebrow mb-2">Programación por franjas</p>
+            <h3>Horarios recurrentes</h3>
+            <div class="workspace-form-grid mt-3">
+              <div>
+                <label class="form-label" for="recurring-doctor">Médico</label>
+                <select id="recurring-doctor" name="recurringDoctorId" class="form-select" required [(ngModel)]="recurringForm.doctorId">
+                  <option value="">Selecciona un médico</option>
+                  <option *ngFor="let doctor of activeDoctors" [value]="doctor.id">{{ doctor.nombre }} · {{ doctor.cmp }}</option>
+                </select>
+              </div>
+              <div>
+                <label class="form-label" for="recurring-start-time">Hora de inicio</label>
+                <input id="recurring-start-time" name="horaInicio" class="form-control" type="time" step="3600" required [(ngModel)]="recurringForm.horaInicio">
+              </div>
+              <div>
+                <label class="form-label" for="recurring-end-time">Hora de fin</label>
+                <input id="recurring-end-time" name="horaFin" class="form-control" type="time" step="3600" required [(ngModel)]="recurringForm.horaFin">
+              </div>
+              <div>
+                <label class="form-label" for="recurring-date-from">Fecha desde</label>
+                <input id="recurring-date-from" name="fechaDesde" class="form-control" type="date" [min]="minDate" required [(ngModel)]="recurringForm.fechaDesde">
+              </div>
+              <div>
+                <label class="form-label" for="recurring-date-to">Fecha hasta</label>
+                <input id="recurring-date-to" name="fechaHasta" class="form-control" type="date" [min]="minDate" required [(ngModel)]="recurringForm.fechaHasta">
+              </div>
+              <div class="workspace-form-grid__wide">
+                <span class="form-label d-block">Días de la semana</span>
+                <div class="workspace-actions">
+                  <button *ngFor="let day of weekdayOptions" type="button"
+                          class="btn btn-sm"
+                          [class.btn-primary]="recurringForm.diasSemana.includes(day.value)"
+                          [class.btn-outline-secondary]="!recurringForm.diasSemana.includes(day.value)"
+                          (click)="toggleRecurringDay(day.value)">
+                    {{ day.label }}
+                  </button>
+                </div>
+              </div>
+              <div class="workspace-form-grid__wide">
+                <label class="form-label" for="recurring-rest-date">Días de descanso (opcional)</label>
+                <div class="workspace-actions">
+                  <input id="recurring-rest-date" name="nuevaFechaDescanso" class="form-control" type="date" [min]="minDate" [(ngModel)]="recurringForm.nuevaFechaDescanso">
+                  <button id="add-rest-date-btn" class="btn btn-outline-secondary" type="button" (click)="addRestDate()">Agregar descanso</button>
+                </div>
+                <div class="workspace-actions mt-2" *ngIf="recurringForm.diasDescanso.length">
+                  <button *ngFor="let rest of recurringForm.diasDescanso" type="button" class="btn btn-sm btn-outline-danger" (click)="removeRestDate(rest)">
+                    {{ rest }} ×
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="workspace-actions mt-4">
+              <button class="btn btn-primary" type="submit" [disabled]="saving || !recurringForm.doctorId || !recurringForm.diasSemana.length">
+                {{ saving ? 'Generando…' : 'Generar horarios' }}
+              </button>
+              <button class="btn btn-outline-secondary" type="button" (click)="toggleRecurringMode()">Cancelar</button>
+            </div>
+          </form>
           <div class="workspace-table-wrap" *ngIf="!loading && schedules.length">
             <table class="workspace-table"><thead><tr><th>Fecha</th><th>Hora</th><th>Médico o servicio</th><th>Estado</th><th>Acciones</th></tr></thead>
               <tbody><tr *ngFor="let schedule of schedules"><td>{{ schedule.fecha | date:'d MMM y' }}</td><td><span class="staff-datetime-chip">{{ schedule.hora.slice(0, 5) }}</span></td>
