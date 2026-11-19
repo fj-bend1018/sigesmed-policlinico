@@ -427,6 +427,47 @@ class CitaManagementServiceTest {
     }
 
     @Test
+    void registrarPagoPresencial_citaNoExiste() {
+        service = new CitaManagementService(pacientes, citas, horarios, pagos, usuarios, clock, Duration.ofHours(2));
+        when(citas.findById(30L)).thenReturn(Optional.empty());
+
+        ApiException ex = assertThrows(ApiException.class,
+                () -> service.registrarPagoPresencial(30L, 99L, "EFECTIVO", new BigDecimal("80.00")));
+
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatus());
+        assertEquals("Cita no encontrada", ex.getMessage());
+        verify(pagos, never()).save(any());
+    }
+
+    @Test
+    void registrarPagoPresencial_citaNoReservada() {
+        service = new CitaManagementService(pacientes, citas, horarios, pagos, usuarios, clock, Duration.ofHours(2));
+        ReflectionTestUtils.setField(appointment, "estado", EstadoCita.CANCELADA);
+        when(citas.findById(30L)).thenReturn(Optional.of(appointment));
+
+        ApiException ex = assertThrows(ApiException.class,
+                () -> service.registrarPagoPresencial(30L, 99L, "EFECTIVO", new BigDecimal("80.00")));
+
+        assertEquals(HttpStatus.CONFLICT, ex.getStatus());
+        assertEquals("Solo se pueden pagar citas en estado RESERVADA", ex.getMessage());
+        verify(pagos, never()).save(any());
+    }
+
+    @Test
+    void registrarPagoPresencial_usuarioNoExiste() {
+        service = new CitaManagementService(pacientes, citas, horarios, pagos, usuarios, clock, Duration.ofHours(2));
+        when(citas.findById(30L)).thenReturn(Optional.of(appointment));
+        when(usuarios.findById(99L)).thenReturn(Optional.empty());
+
+        ApiException ex = assertThrows(ApiException.class,
+                () -> service.registrarPagoPresencial(30L, 99L, "EFECTIVO", new BigDecimal("80.00")));
+
+        assertEquals(HttpStatus.NOT_FOUND, ex.getStatus());
+        assertEquals("Usuario no encontrado", ex.getMessage());
+        verify(pagos, never()).save(any());
+    }
+
+    @Test
     void listarAgenda_validacionDniYBusquedaUnificada() {
         ApiException shortDni = assertThrows(ApiException.class,
                 () -> service.listarAgenda(null, null, "7000001"));
