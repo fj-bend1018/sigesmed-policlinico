@@ -1,9 +1,11 @@
 package com.sigesmed.api.service;
 
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -29,6 +31,8 @@ import com.sigesmed.api.dto.administracion.DoctorAdminRequest;
 import com.sigesmed.api.dto.administracion.DoctorAdminResponse;
 import com.sigesmed.api.dto.administracion.HorarioAdminRequest;
 import com.sigesmed.api.dto.administracion.HorarioAdminResponse;
+import com.sigesmed.api.dto.administracion.HorarioRecurrenteRequest;
+import com.sigesmed.api.dto.administracion.HorarioRecurrenteResponse;
 import com.sigesmed.api.dto.administracion.RecepcionistaActualizarRequest;
 import com.sigesmed.api.dto.administracion.RecepcionistaAdminResponse;
 import com.sigesmed.api.dto.administracion.RecepcionistaCrearRequest;
@@ -164,6 +168,47 @@ public class AdministracionService {
         Horario horario = nuevoHorario(request);
         try {
             return horarioResponse(horarioRepository.saveAndFlush(horario));
+        } catch (DataIntegrityViolationException exception) {
+            throw new ApiException(HttpStatus.CONFLICT, "Ya existe un horario para ese recurso y momento");
+        }
+    }
+
+    @Transactional
+    public HorarioRecurrenteResponse crearHorariosRecurrentes(HorarioRecurrenteRequest request) {
+        if (request.fechaHasta().isBefore(request.fechaDesde())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "La fecha final debe ser igual o posterior a la inicial");
+        }
+        if (!request.horaInicio().isBefore(request.horaFin())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "La hora de inicio debe ser menor a la hora de fin");
+        }
+        Doctor doctor = doctorActivo(request.doctorId());
+        Set<DayOfWeek> dias = Set.copyOf(request.diasSemana());
+        Set<LocalDate> descansos = request.diasDescanso() == null ? Set.of() : Set.copyOf(request.diasDescanso());
+        LocalDate today = LocalDate.now(clock.withZone(LIMA));
+        LocalTime now = LocalTime.now(clock.withZone(LIMA));
+
+        List<Horario> porGuardar = new ArrayList<>();
+        for (LocalDate fecha = request.fechaDesde(); !fecha.isAfter(request.fechaHasta()); fecha = fecha.plusDays(1)) {
+            if (!dias.contains(fecha.getDayOfWeek()) || descansos.contains(fecha) || fecha.isBefore(today)) {
+                continue;
+            }
+            for (LocalTime hora = request.horaInicio(); hora.isBefore(request.horaFin()); hora = hora.plusHours(1)) {
+                if (fecha.equals(today) && !hora.isAfter(now)) {
+                    continue;
+                }
+                if (horarioRepository.existsByDoctor_IdAndFechaAndHora(doctor.getId(), fecha, hora)) {
+                    throw new ApiException(HttpStatus.CONFLICT, "Ya existe un horario para ese recurso y momento");
+                }
+                porGuardar.add(new Horario(doctor, fecha, hora));
+            }
+        }
+        if (porGuardar.isEmpty()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "No hay franjas futuras válidas en el rango seleccionado");
+        }
+        try {
+            List<Horario> guardados = horarioRepository.saveAllAndFlush(porGuardar);
+            return new HorarioRecurrenteResponse(doctor.getId(), doctor.getNombre(), guardados.size(),
+                    guardados.stream().map(this::horarioResponse).toList());
         } catch (DataIntegrityViolationException exception) {
             throw new ApiException(HttpStatus.CONFLICT, "Ya existe un horario para ese recurso y momento");
         }

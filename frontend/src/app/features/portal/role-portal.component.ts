@@ -50,6 +50,35 @@ export class RolePortalComponent implements OnInit {
   doctorForm = { nombre: '', cmp: 'DEV-CMP-', especialidadIds: [] as number[] };
   scheduleForm: { tipoRecurso: 'DOCTOR' | 'SERVICIO'; doctorId: string; servicioId: string; fecha: string; hora: string } =
     { tipoRecurso: 'DOCTOR', doctorId: '', servicioId: '', fecha: '', hora: '' };
+  recurringMode = false;
+  readonly weekdayOptions = [
+    { value: 'MONDAY', label: 'Lunes' },
+    { value: 'TUESDAY', label: 'Martes' },
+    { value: 'WEDNESDAY', label: 'Miércoles' },
+    { value: 'THURSDAY', label: 'Jueves' },
+    { value: 'FRIDAY', label: 'Viernes' },
+    { value: 'SATURDAY', label: 'Sábado' },
+    { value: 'SUNDAY', label: 'Domingo' }
+  ];
+  recurringForm: {
+    doctorId: string;
+    diasSemana: string[];
+    horaInicio: string;
+    horaFin: string;
+    fechaDesde: string;
+    fechaHasta: string;
+    diasDescanso: string[];
+    nuevaFechaDescanso: string;
+  } = {
+    doctorId: '',
+    diasSemana: ['MONDAY', 'WEDNESDAY'],
+    horaInicio: '08:00',
+    horaFin: '12:00',
+    fechaDesde: '',
+    fechaHasta: '',
+    diasDescanso: [],
+    nuevaFechaDescanso: ''
+  };
   receptionistForm = {
     nombre: '', apellidoPaterno: '', apellidoMaterno: '', dni: '', correo: '', celular: '', direccion: '', claveTemporal: ''
   };
@@ -569,6 +598,73 @@ export class RolePortalComponent implements OnInit {
       ? this.api.updateSchedule(this.recordId, payload) : this.api.createSchedule(payload);
     request.subscribe({ next: () => { this.saving = false; void this.router.navigate(['/administrador/horarios']); },
       error: error => this.fail(error, 'No se pudo guardar el horario.') });
+  }
+
+  toggleRecurringMode(): void {
+    this.recurringMode = !this.recurringMode;
+    this.errorMessage = '';
+    this.successMessage = '';
+    if (!this.recurringMode) return;
+    if (!this.recurringForm.fechaDesde) this.recurringForm.fechaDesde = this.tomorrow();
+    if (!this.recurringForm.fechaHasta) this.recurringForm.fechaHasta = this.tomorrow();
+    if (!this.doctors.length) {
+      this.api.doctors().subscribe({
+        next: doctors => { this.doctors = doctors; },
+        error: error => this.showFailure(error, 'No se pudieron cargar los médicos.')
+      });
+    }
+  }
+
+  toggleRecurringDay(day: string): void {
+    const idx = this.recurringForm.diasSemana.indexOf(day);
+    if (idx >= 0) this.recurringForm.diasSemana.splice(idx, 1);
+    else this.recurringForm.diasSemana.push(day);
+  }
+
+  addRestDate(): void {
+    const fecha = this.recurringForm.nuevaFechaDescanso;
+    if (!isValidIsoDate(fecha)) return;
+    if (!this.recurringForm.diasDescanso.includes(fecha)) {
+      this.recurringForm.diasDescanso.push(fecha);
+    }
+    this.recurringForm.nuevaFechaDescanso = '';
+  }
+
+  removeRestDate(fecha: string): void {
+    this.recurringForm.diasDescanso = this.recurringForm.diasDescanso.filter(d => d !== fecha);
+  }
+
+  saveRecurringSchedules(): void {
+    if (this.saving) return;
+    const doctorId = Number(this.recurringForm.doctorId);
+    const { diasSemana, horaInicio, horaFin, fechaDesde, fechaHasta, diasDescanso } = this.recurringForm;
+    if (!Number.isSafeInteger(doctorId) || doctorId <= 0 || !diasSemana.length
+        || !isValidIsoDate(fechaDesde) || !isValidIsoDate(fechaHasta) || fechaHasta < fechaDesde
+        || !/^([01]\d|2[0-3]):[0-5]\d$/.test(horaInicio) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(horaFin)
+        || horaInicio >= horaFin) {
+      this.errorMessage = 'Completa el médico, al menos un día de la semana y un rango válido de fechas y horas.';
+      return;
+    }
+    this.saving = true;
+    this.errorMessage = '';
+    this.successMessage = '';
+    this.api.createRecurringSchedules({
+      doctorId,
+      diasSemana: [...diasSemana],
+      horaInicio,
+      horaFin,
+      fechaDesde,
+      fechaHasta,
+      diasDescanso: [...diasDescanso]
+    }).subscribe({
+      next: res => {
+        this.saving = false;
+        this.recurringMode = false;
+        this.successMessage = `Se crearon ${res.creados} horarios recurrentes para ${res.doctor}.`;
+        this.loadSchedules();
+      },
+      error: error => this.fail(error, 'No se pudieron generar los horarios recurrentes.')
+    });
   }
 
   deleteSchedule(schedule: ScheduleRecord): void {

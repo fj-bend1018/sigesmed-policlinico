@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -29,6 +30,7 @@ import com.sigesmed.api.domain.enums.EstadoCita;
 import com.sigesmed.api.domain.enums.RolUsuario;
 import com.sigesmed.api.dto.administracion.DoctorAdminRequest;
 import com.sigesmed.api.dto.administracion.HorarioAdminRequest;
+import com.sigesmed.api.dto.administracion.HorarioRecurrenteRequest;
 import com.sigesmed.api.dto.administracion.RecepcionistaActualizarRequest;
 import com.sigesmed.api.dto.administracion.RecepcionistaCrearRequest;
 import com.sigesmed.api.exception.ApiException;
@@ -312,6 +314,77 @@ class AdministracionServiceTest {
         assertEquals(1L, resp.doctorId());
         assertEquals(fecha, resp.fecha());
         assertEquals(hora, resp.hora());
+    }
+
+    @Test
+    void crearHorariosRecurrentes_caminoFelizYDescansoOmitido() {
+        Doctor doc = new Doctor("Dr. Demo", "CMP-1", Set.of());
+        ReflectionTestUtils.setField(doc, "id", 1L);
+        when(doctores.findByIdAndEstado(1L, "ACTIVO")).thenReturn(Optional.of(doc));
+        when(horarios.existsByDoctor_IdAndFechaAndHora(anyLong(), any(), any())).thenReturn(false);
+        when(horarios.saveAllAndFlush(any())).thenAnswer(i -> i.getArgument(0));
+
+        // 2026-11-09 (Mon), 2026-11-11 (Wed), 2026-11-13 (Fri in diasDescanso)
+        HorarioRecurrenteRequest req = new HorarioRecurrenteRequest(
+                1L,
+                List.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
+                LocalTime.of(8, 0),
+                LocalTime.of(12, 0),
+                LocalDate.of(2026, 11, 9),
+                LocalDate.of(2026, 11, 13),
+                List.of(LocalDate.of(2026, 11, 13))
+        );
+
+        var resp = service.crearHorariosRecurrentes(req);
+        assertEquals(8, resp.creados());
+        assertEquals(8, resp.horarios().size());
+    }
+
+    @Test
+    void crearHorariosRecurrentes_rangoInvalidoLanza400() {
+        HorarioRecurrenteRequest fechasMal = new HorarioRecurrenteRequest(
+                1L, List.of(DayOfWeek.MONDAY), LocalTime.of(8, 0), LocalTime.of(12, 0),
+                LocalDate.of(2026, 11, 15), LocalDate.of(2026, 11, 10), List.of());
+        ApiException exFechas = assertThrows(ApiException.class, () -> service.crearHorariosRecurrentes(fechasMal));
+        assertEquals(HttpStatus.BAD_REQUEST, exFechas.getStatus());
+
+        HorarioRecurrenteRequest horasMal = new HorarioRecurrenteRequest(
+                1L, List.of(DayOfWeek.MONDAY), LocalTime.of(12, 0), LocalTime.of(8, 0),
+                LocalDate.of(2026, 11, 9), LocalDate.of(2026, 11, 15), List.of());
+        ApiException exHoras = assertThrows(ApiException.class, () -> service.crearHorariosRecurrentes(horasMal));
+        assertEquals(HttpStatus.BAD_REQUEST, exHoras.getStatus());
+    }
+
+    @Test
+    void crearHorariosRecurrentes_superposicionLanza409() {
+        Doctor doc = new Doctor("Dr. Demo", "CMP-1", Set.of());
+        ReflectionTestUtils.setField(doc, "id", 1L);
+        when(doctores.findByIdAndEstado(1L, "ACTIVO")).thenReturn(Optional.of(doc));
+        when(horarios.existsByDoctor_IdAndFechaAndHora(1L, LocalDate.of(2026, 11, 9), LocalTime.of(8, 0))).thenReturn(true);
+
+        HorarioRecurrenteRequest req = new HorarioRecurrenteRequest(
+                1L, List.of(DayOfWeek.MONDAY), LocalTime.of(8, 0), LocalTime.of(12, 0),
+                LocalDate.of(2026, 11, 9), LocalDate.of(2026, 11, 13), List.of());
+        ApiException ex = assertThrows(ApiException.class, () -> service.crearHorariosRecurrentes(req));
+        assertEquals(HttpStatus.CONFLICT, ex.getStatus());
+        verify(horarios, never()).saveAllAndFlush(any());
+    }
+
+    @Test
+    void crearHorariosRecurrentes_fechasPasadasOmitidas() {
+        Doctor doc = new Doctor("Dr. Demo", "CMP-1", Set.of());
+        ReflectionTestUtils.setField(doc, "id", 1L);
+        when(doctores.findByIdAndEstado(1L, "ACTIVO")).thenReturn(Optional.of(doc));
+        when(horarios.existsByDoctor_IdAndFechaAndHora(anyLong(), any(), any())).thenReturn(false);
+        when(horarios.saveAllAndFlush(any())).thenAnswer(i -> i.getArgument(0));
+
+        // 2026-11-04 (Wed, past) omitted, 2026-11-09 (Mon, future) created -> 4 slots
+        HorarioRecurrenteRequest req = new HorarioRecurrenteRequest(
+                1L, List.of(DayOfWeek.WEDNESDAY, DayOfWeek.MONDAY), LocalTime.of(8, 0), LocalTime.of(12, 0),
+                LocalDate.of(2026, 11, 4), LocalDate.of(2026, 11, 9), List.of());
+        var resp = service.crearHorariosRecurrentes(req);
+        assertEquals(4, resp.creados());
+        assertEquals(LocalDate.of(2026, 11, 9), resp.horarios().get(0).fecha());
     }
 
     @Test
