@@ -1,0 +1,22 @@
+{
+  "properties": [
+    {
+      "name": "sigesmed.auth.recovery-ttl",
+      "type": "java.time.Duration",
+      "description": "Tiempo de vigencia del token de recuperación de contraseña.",
+      "defaultValue": "PT30M"
+    },
+    {
+      "name": "sigesmed.cita.plazo-cancelacion",
+      "type": "java.time.Duration",
+      "description": "Plazo mínimo de anticipación para cancelar o reprogramar una cita.",
+      "defaultValue": "PT2H"
+    },
+    {
+      "name": "sigesmed.frontend-origin",
+      "type": "java.lang.String",
+      "description": "Origen permitido del frontend para CORS.",
+      "defaultValue": "http://localhost:4200"
+    }
+  ]
+}

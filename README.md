@@ -33,10 +33,12 @@ Sistema web para la gestión integral de citas médicas del **Policlínico Infan
 
 ```text
 sistema_migracion/
-├── backend/     # API REST Spring Boot 3.5 + Flyway + pruebas (unitarias e integración)
-├── frontend/    # Aplicación Angular 17 (puerto 4200)
-├── scripts/     # Scripts auxiliares de pruebas
-└── legacy/      # Código monolítico original de referencia (pre-migración)
+├── backend/            # API REST Spring Boot 3.5 + Flyway + pruebas (unitarias e integración)
+├── frontend/           # Aplicación Angular 17 (puerto 4200)
+├── scripts/            # Scripts auxiliares de pruebas
+├── legacy/             # Código monolítico original de referencia (pre-migración)
+├── docker-compose.yml  # PostgreSQL 17 local listo para desarrollo
+└── .env.example        # Plantilla opcional de variables de entorno (ej. Supabase)
 ```
 
 ---
@@ -47,30 +49,23 @@ sistema_migracion/
 - **Java JDK 21+** (`java -version`)
 - **Apache Maven 3.9+** (`mvn -version`)
 - **Node.js 20+ y npm** (`node -v`, `npm -v`)
-- **PostgreSQL** (instancia en **Supabase** o PostgreSQL local)
+- **Docker** (recomendado para levantar PostgreSQL 17 al instante) o **PostgreSQL 17 local** en `localhost:5432` (base `sigesmed`, usuario/clave `postgres`/`postgres`)
 
-### 2. Variables de entorno requeridas
-Las credenciales nunca se guardan en el código ni en Git; se configuran en el entorno del sistema:
+### 2. Base de datos (solo la primera vez, o `.env` opcional)
+Si no tienes PostgreSQL local instalado, levanta la base con Docker:
 
 ```powershell
-# Base de datos principal (ej. Supabase o PostgreSQL)
-$env:SIGESMED_DB_URL="jdbc:postgresql://<HOST>:<PUERTO>/<BASE>"
-$env:SIGESMED_DB_USERNAME="<USUARIO>"
-$env:SIGESMED_DB_PASSWORD="<CONTRASEÑA>"
-
-# Opcional: base local dedicada para pruebas de integración (-Pintegration)
-$env:SIGESMED_TEST_DB_URL="jdbc:postgresql://localhost:5433/sigesmed_test"
-
-# Cuentas demo del perfil dev
-$env:SIGESMED_DEV_ADMIN_PASSWORD="<CONTRASEÑA_ADMIN>"
-$env:SIGESMED_DEV_RECEPCIONISTA_PASSWORD="<CONTRASEÑA_RECEPCIONISTA>"
+docker compose up -d
 ```
+
+> **Variables de entorno (opcionales):** por defecto el backend usa el perfil `dev` y se conecta a `jdbc:postgresql://localhost:5432/sigesmed` (`postgres` / `postgres`). Si prefieres usar **Supabase** u otra instancia, copia `.env.example` a `.env` en la raíz del proyecto y completa tus credenciales (`.env` está en `.gitignore` y nunca se sube a Git).
 
 ### 3. Levantar Backend (puerto `8081`)
 ```powershell
 cd backend
-mvn spring-boot:run "-Dspring-boot.run.profiles=dev"
+mvn spring-boot:run
 ```
+Flyway ejecutará automáticamente las migraciones (`V1` a `V5`) al iniciar.
 
 ### 4. Levantar Frontend (puerto `4200`)
 ```powershell
